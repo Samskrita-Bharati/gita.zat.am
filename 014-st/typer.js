@@ -287,7 +287,6 @@ function keyDownHandler(event) {
 
   const code = digit + 48;
 
-  // Destroy the matching number closest to the centre.
   let targetIndex = -1;
   let nearestDistance = Infinity;
 
@@ -312,8 +311,6 @@ function keyDownHandler(event) {
     incorrectPresses++;
     updateScore();
   }
-
-  // Typing never changes the survival-based score.
 }
 
 function keyUpHandler(event) {
