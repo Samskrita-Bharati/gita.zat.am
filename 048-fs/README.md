@@ -1,11 +1,19 @@
-<p align="center">
-  <img src="./img.png" width="800" height="500">
-</p>
+# Free Smash
 
-<div style="text-align: center;">
-  <h1>Play Game</h1>
-  <a href="https://chprince11.github.io/zat.am/048-fs">
-    <img src="https://img.icons8.com/color/96/000000/play--v1.png" alt="Play Game">
-  </a>
-</div>
+An arcade game for Zat.am. Drag or swipe across the play area to smash illustrated objects. Each object briefly reveals its Sanskrit name and English meaning when smashed.
 
+- **Play** starts the game: keep smashing objects to earn points. A missed object counts as one strike, and the round ends at five strikes.
+- Use the pause button or press **P** to pause and resume. The result screen offers another round or a return to the main menu.
+
+The game displays the number of objects smashed and the current score. Its best score is stored locally in the browser.
+
+## Run locally
+
+From the repository root, run `npm run dev` and open `/048-fs/`.
+
+## Files
+
+- `index.html` contains the page, canvas, HUD, and menus.
+- `gameStyle.css` styles the play area and game-specific controls using the shared theme.
+- `gameLogic.js` handles rendering, input, vocabulary, and scoring.
+- `../shared/game-theme.css` and `../js/navbar-loader.js` provide the shared Zat.am theme and navigation.

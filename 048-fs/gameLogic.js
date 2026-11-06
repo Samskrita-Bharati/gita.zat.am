@@ -11,6 +11,19 @@ const PINK =   { r: 0xfa, g: 0x24, b: 0x73 };
 const ORANGE = { r: 0xfe, g: 0x95, b: 0x22 };
 const allColors = [BLUE, GREEN, PINK, ORANGE];
 
+const vocabulary = [
+	{ sanskrit: 'सूर्यः', meaning: 'sun', icon: '☀️' },
+	{ sanskrit: 'चन्द्रः', meaning: 'moon', icon: '🌙' },
+	{ sanskrit: 'जलम्', meaning: 'water', icon: '💧' },
+	{ sanskrit: 'पुष्पम्', meaning: 'flower', icon: '🌸' },
+	{ sanskrit: 'फलम्', meaning: 'fruit', icon: '🍎' },
+	{ sanskrit: 'वृक्षः', meaning: 'tree', icon: '🌳' },
+	{ sanskrit: 'पक्षी', meaning: 'bird', icon: '🐦' },
+	{ sanskrit: 'गजः', meaning: 'elephant', icon: '🐘' },
+	{ sanskrit: 'गृहम्', meaning: 'house', icon: '🏠' },
+	{ sanskrit: 'पुस्तकम्', meaning: 'book', icon: '📖' }
+];
+
 // Gameplay
 const getSpawnDelay = () => {
 	const spawnDelayMax = 1400;
@@ -23,6 +36,7 @@ const doubleStrongEnableScore = 2000;
 const slowmoThreshold = 10;
 const strongThreshold = 25;
 const spinnerThreshold = 25;
+const maxStrikes = 5;
 
 // Interaction state
 let pointerIsDown = false;
@@ -90,10 +104,6 @@ const allShadowPolys = [];
 // Enums //
 ///////////
 
-// Game Modes
-const GAME_MODE_RANKED = Symbol('GAME_MODE_RANKED');
-const GAME_MODE_CASUAL = Symbol('GAME_MODE_CASUAL');
-
 // Available Menus
 const MENU_MAIN = Symbol('MENU_MAIN');
 const MENU_PAUSE = Symbol('MENU_PAUSE');
@@ -105,13 +115,13 @@ const MENU_SCORE = Symbol('MENU_SCORE');
 
 const state = {
 	game: {
-		mode: GAME_MODE_RANKED,
 		// Run time of current game.
 		time: 0,
 		// Player score.
 		score: 0,
 		// Total number of cubes smashed in game.
-		cubeCount: 0
+		cubeCount: 0,
+		strikes: 0
 	},
 	menus: {
 		// Set to `null` to hide all menus
@@ -126,7 +136,6 @@ const state = {
 
 const isInGame = () => !state.menus.active;
 const isMenuVisible = () => !!state.menus.active;
-const isCasualGame = () => state.game.mode === GAME_MODE_CASUAL;
 const isPaused = () => state.menus.active === MENU_PAUSE;
 
 
@@ -164,10 +173,6 @@ const invariant = (condition, message) => {
 
 const $ = selector => document.querySelector(selector);
 const handleClick = (element, handler) => element.addEventListener('click', handler);
-const handlePointerDown = (element, handler) => {
-	element.addEventListener('touchstart', handler);
-	element.addEventListener('mousedown', handler);
-};
 
 
 ////////////////////////
@@ -906,6 +911,7 @@ const getTarget = (() => {
 		// Target Creation
 		// --------------------------------
 		const target = getTargetOfStyle(color, wireframe);
+		target.vocabulary = pickOne(vocabulary);
 		target.hit = false;
 		target.maxHealth = maxHealth;
 		target.health = health;
@@ -1172,6 +1178,29 @@ function returnSpark(spark) {
 // ============================================================================
 
 const hudContainerNode = $('.hud');
+const vocabularyCard = $('.smash-vocabulary-card');
+const vocabularyWord = $('.smash-vocabulary-word');
+const vocabularyMeaning = $('.smash-vocabulary-meaning');
+const vocabularyIcon = $('.smash-vocabulary-icon');
+let vocabularyTimer;
+
+function clearVocabulary() {
+	clearTimeout(vocabularyTimer);
+	vocabularyCard.hidden = true;
+	vocabularyWord.textContent = '';
+	vocabularyMeaning.textContent = '';
+	vocabularyIcon.textContent = '';
+}
+
+function revealVocabulary(entry) {
+	if (!isInGame()) return;
+	clearTimeout(vocabularyTimer);
+	vocabularyWord.textContent = entry.sanskrit;
+	vocabularyMeaning.textContent = entry.meaning;
+	vocabularyIcon.textContent = entry.icon;
+	vocabularyCard.hidden = false;
+	vocabularyTimer = setTimeout(clearVocabulary, 3000);
+}
 
 function setHudVisibility(visible) {
 	if (visible) {
@@ -1187,17 +1216,16 @@ function setHudVisibility(visible) {
 ///////////
 const scoreNode = $('.score-lbl');
 const cubeCountNode = $('.cube-count-lbl');
+const strikeMessage = $('.strike-message');
+const strikeMarks = document.querySelectorAll('.strike-mark');
 
 function renderScoreHud() {
-	if (isCasualGame()) {
-		scoreNode.style.display = 'none';
-		cubeCountNode.style.opacity = 1;
-	} else {
-		scoreNode.innerText=`प्राप्ताङ्काः  ${toSanskritNumerals(state.game.score)}`;
-		scoreNode.style.display = 'block';
-		cubeCountNode.style.opacity = 0.65 ;
-	}
-	cubeCountNode.innerText = `Cubes Smashed: ${toSanskritNumerals(state.game.cubeCount)}`;
+	scoreNode.innerText = `प्राप्ताङ्काः  ${toSanskritNumerals(state.game.score)}`;
+	cubeCountNode.innerText = `Objects smashed: ${toSanskritNumerals(state.game.cubeCount)}`;
+	strikeMessage.textContent = `${state.game.strikes} of ${maxStrikes} strikes`;
+	strikeMarks.forEach((mark, index) => {
+		mark.classList.toggle('is-missed', index < state.game.strikes);
+	});
 }
 // Function to convert numbers to Sanskrit numerals
 function toSanskritNumerals(number) {
@@ -1212,7 +1240,7 @@ renderScoreHud();
 // Pause Button //
 //////////////////
 
-handlePointerDown($('.pause-btn'), () => pauseGame());
+handleClick($('.pause-btn'), () => pauseGame());
 
 
 ////////////////////
@@ -1289,13 +1317,6 @@ renderMenus();
 
 // Main Menu
 handleClick($('.play-normal-btn'), () => {
-	setGameMode(GAME_MODE_RANKED);
-	setActiveMenu(null);
-	resetGame();
-});
-
-handleClick($('.play-casual-btn'), () => {
-	setGameMode(GAME_MODE_CASUAL);
 	setActiveMenu(null);
 	resetGame();
 });
@@ -1313,36 +1334,6 @@ handleClick($('.play-again-btn'), () => {
 handleClick($('.menu-btn--score'), () => setActiveMenu(MENU_MAIN));
 
 
-
-
-////////////////////
-// Button Actions //
-////////////////////
-
-// Main Menu
-handleClick($('.play-normal-btn'), () => {
-	setGameMode(GAME_MODE_RANKED);
-	setActiveMenu(null);
-	resetGame();
-});
-
-handleClick($('.play-casual-btn'), () => {
-	setGameMode(GAME_MODE_CASUAL);
-	setActiveMenu(null);
-	resetGame();
-});
-
-// Pause Menu
-handleClick($('.resume-btn'), () => resumeGame());
-handleClick($('.menu-btn--pause'), () => setActiveMenu(MENU_MAIN));
-
-// Score Menu
-handleClick($('.play-again-btn'), () => {
-	setActiveMenu(null);
-	resetGame();
-});
-
-handleClick($('.menu-btn--score'), () => setActiveMenu(MENU_MAIN));
 
 
 // actions.js
@@ -1395,13 +1386,11 @@ function incrementCubeCount(inc) {
 // GAME ACTIONS //
 //////////////////
 
-function setGameMode(mode) {
-	state.game.mode = mode;
-}
-
 function resetGame() {
+	clearVocabulary();
 	resetAllTargets();
 	state.game.time = 0;
+	state.game.strikes = 0;
 	resetAllCooldowns();
 	setScore(0);
 	setCubeCount(0);
@@ -1587,11 +1576,9 @@ function tick(width, height, simTime, simSpeed, lag) {
 			targets.splice(i, 1);
 			returnTarget(target);
 			if (isInGame()) {
-				if (isCasualGame()) {
-					incrementScore(-25);
-				} else {
-					endGame();
-				}
+				state.game.strikes++;
+				renderScoreHud();
+				if (state.game.strikes >= maxStrikes) endGame();
 			}
 			continue;
 		}
@@ -1629,6 +1616,7 @@ function tick(width, height, simTime, simSpeed, lag) {
 						incrementScore(10);
 
 						if (target.health <= 0) {
+							revealVocabulary(target.vocabulary);
 							incrementCubeCount(1);
 							createBurst(target, forceMultiplier);
 							sparkBurst(hitX, hitY, 8, sparkSpeed);
@@ -1738,9 +1726,7 @@ function tick(width, height, simTime, simSpeed, lag) {
 	allShadowPolys.length = 0;
 	targets.forEach(entity => {
 		allVertices.push(...entity.vertices);
-		allPolys.push(...entity.polys);
 		allShadowVertices.push(...entity.shadowVertices);
-		allShadowPolys.push(...entity.shadowPolys);
 	});
 
 	frags.forEach(entity => {
@@ -1891,6 +1877,35 @@ function draw(ctx, width, height, viewScale) {
 	});
 	PERF_END('drawPolys');
 
+	// Draw each target as its vocabulary object at its hit-test position.
+	ctx.save();
+	ctx.textAlign = 'center';
+	ctx.textBaseline = 'middle';
+	targets.forEach(target => {
+		const depth = cameraDistance / (cameraDistance - target.z);
+		const size = targetRadius * 2 * depth;
+		ctx.font = `${size}px "Segoe UI Emoji", "Apple Color Emoji", sans-serif`;
+		ctx.globalAlpha = target.z > cameraFadeStartZ
+			? Math.max(0, 1 - (target.z - cameraFadeStartZ) / cameraFadeRange)
+			: 1;
+		const glow = ctx.createRadialGradient(target.projected.x, target.projected.y, size * 0.12, target.projected.x, target.projected.y, size * 0.64);
+		glow.addColorStop(0, 'rgba(255, 215, 130, 0.28)');
+		glow.addColorStop(1, 'rgba(255, 215, 130, 0)');
+		ctx.fillStyle = glow;
+		ctx.beginPath();
+		ctx.arc(target.projected.x, target.projected.y, size * 0.64, 0, TAU);
+		ctx.fill();
+		if (target.wireframe || target.health > 1) {
+			ctx.beginPath();
+			ctx.arc(target.projected.x, target.projected.y, size * 0.55, 0, TAU);
+			ctx.lineWidth = target.health > 1 ? 5 : 3;
+			ctx.strokeStyle = target.wireframe ? '#67d7f0' : '#fa2473';
+			ctx.stroke();
+		}
+		ctx.fillText(target.vocabulary.icon, target.projected.x, target.projected.y);
+	});
+	ctx.restore();
+
 
 	PERF_START('draw2D');
 
@@ -1948,16 +1963,18 @@ function draw(ctx, width, height, viewScale) {
 
 function setupCanvases() {
 	const ctx = canvas.getContext('2d');
-	// devicePixelRatio alias
-	const dpr = window.devicePixelRatio || 1;
+	const stage = canvas.parentElement;
+	let dpr = window.devicePixelRatio || 1;
 	// View will be scaled so objects appear sized similarly on all screen sizes.
 	let viewScale;
 	// Dimensions (taking viewScale into account!)
 	let width, height;
 
 	function handleResize() {
-		const w = window.innerWidth;
-		const h = window.innerHeight;
+		const w = stage.clientWidth;
+		const h = stage.clientHeight;
+		if (!w || !h) return;
+		dpr = window.devicePixelRatio || 1;
 		viewScale = h / 1000;
 		width = w / viewScale;
 		height = h / viewScale;
@@ -1969,8 +1986,12 @@ function setupCanvases() {
 
 	// Set initial size
 	handleResize();
-	// resize fullscreen canvas
+	// Follow the play area as its size changes, including navbar changes.
 	window.addEventListener('resize', handleResize);
+	if ('ResizeObserver' in window) {
+		new ResizeObserver(handleResize).observe(stage);
+	}
+	window.addEventListener('zatam:navbarresize', handleResize);
 
 
 	// Run game loop
@@ -1981,6 +2002,8 @@ function setupCanvases() {
 
 		// always queue another frame
 		raf();
+		// The stage can briefly have no size while the page is laying out.
+		if (!viewScale) return;
 
 		// If game is paused, we'll still track frameTime (above) but all other
 		// game logic and drawing can be avoided.
@@ -1998,9 +2021,10 @@ function setupCanvases() {
 		const halfW = width / 2;
 		const halfH = height / 2;
 
-		// Convert pointer position from screen to scene coords.
-		pointerScene.x = pointerScreen.x / viewScale - halfW;
-		pointerScene.y = pointerScreen.y / viewScale - halfH;
+		// Pointer positions use viewport coordinates; the canvas may be offset.
+		const canvasBounds = canvas.getBoundingClientRect();
+		pointerScene.x = (pointerScreen.x - canvasBounds.left) / viewScale - halfW;
+		pointerScene.y = (pointerScreen.y - canvasBounds.top) / viewScale - halfH;
 
 		const lag = frameTime / 16.6667;
 		const simTime = gameSpeed * frameTime;
@@ -2069,7 +2093,10 @@ function handleCanvasPointerMove(x, y) {
 // Use pointer events if available, otherwise fallback to touch events (for iOS).
 if ('PointerEvent' in window) {
 	canvas.addEventListener('pointerdown', event => {
-		event.isPrimary && handleCanvasPointerDown(event.clientX, event.clientY);
+		if (event.isPrimary) {
+			canvas.setPointerCapture(event.pointerId);
+			handleCanvasPointerDown(event.clientX, event.clientY);
+		}
 	});
 
 	canvas.addEventListener('pointerup', event => {
@@ -2079,6 +2106,8 @@ if ('PointerEvent' in window) {
 	canvas.addEventListener('pointermove', event => {
 		event.isPrimary && handleCanvasPointerMove(event.clientX, event.clientY);
 	});
+	canvas.addEventListener('pointercancel', handleCanvasPointerUp);
+	canvas.addEventListener('lostpointercapture', handleCanvasPointerUp);
 
 	// We also need to know if the mouse leaves the page.
 	document.body.addEventListener('mouseleave', handleCanvasPointerUp);
@@ -2099,6 +2128,7 @@ if ('PointerEvent' in window) {
 			}
 		}
 	});
+	canvas.addEventListener('touchcancel', handleCanvasPointerUp);
 	canvas.addEventListener('touchmove', event => {
 		for (let touch of event.changedTouches) {
 			if (touch.identifier === activeTouchId) {
