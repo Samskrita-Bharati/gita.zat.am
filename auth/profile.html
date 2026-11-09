@@ -3,134 +3,272 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Profile - zat.am</title>
+    <title>Profile & Settings - Zat.am</title>
+
     <link rel="stylesheet" href="./css/profile.css" />
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css"
-    />
   </head>
-  <body>
-    <div class="profile-container">
-      <div class="left-section">
-        <span class="profile-icon">
-          <i class="fas fa-user-circle"></i>
-        </span>
-        <h2 id="profile-name">Loading...</h2>
-        <p id="profile-email">Loading...</p>
 
-        <hr />
+  <body class="profile-page" data-page="profile">
+    <div id="navbar-mount"></div>
 
-        <div class="profile-details">
-          <div class="detail-row" id="role-row" style="display: none">
-            <span class="detail-label">Role</span>
-            <span class="detail-value" id="display-role">User</span>
+    <main class="profile-page-shell">
+      <section class="profile-hero" aria-labelledby="profilePageTitle">
+        <p class="profile-eyebrow">ZAT.AM ACCOUNT</p>
+        <h1 id="profilePageTitle">Profile &amp; Settings</h1>
+        <p class="profile-hero-copy">
+          Manage your personal information, language preferences, location and
+          account security.
+        </p>
+      </section>
+
+      <div class="profile-layout">
+        <aside class="profile-summary-card" aria-label="Profile summary">
+          <div class="profile-identity">
+            <span class="profile-icon" aria-label="Profile photo">
+              <span class="profile-avatar-fallback" aria-hidden="true">ZA</span>
+            </span>
+
+            <h2 id="profile-name">Loading...</h2>
+            <p id="profile-email">Loading...</p>
           </div>
-          <div class="detail-row">
-            <span class="detail-label">Member Since</span>
-            <span class="detail-value" id="display-date">Loading...</span>
-          </div>
-          <div class="detail-row">
-            <span class="detail-label">Preferred Language</span>
-            <span class="detail-value" id="display-language" data-cy="display-language">Not set yet</span>
-          </div>
-          <div class="detail-row">
-            <span class="detail-label">Location</span>
-            <span class="detail-value" id="display-location" data-cy="display-location">Not set yet</span>
-          </div>
-        </div>
 
-        <hr />
+          <div class="profile-divider"></div>
 
-        <div class="left-actions">
-          <button id="logout-btn" data-cy="profile-logout-button" class="logout-btn">Logout</button>
-          <a href="#" id="back-link" class="back-link">Back to Games</a>
-        </div>
-      </div>
-
-      <div class="right-section">
-        <div class="profile-card">
-          <h2>Edit Profile</h2>
-          <form id="edit-name-form">
-            <label for="new-name">Display Name</label>
-            <input
-              type="text"
-              id="new-name"
-              placeholder="Enter your full name"
-              required
-            />
-
-            <label for="language">Choose Second Language</label>
-            <select id="language" data-cy="profile-language">
-              <option value="">Select Language</option>
-              <option value="1">Devanagari</option>
-              <option value="be">Bengali (বাংলা)</option>
-              <option value="gu">Gujarati (ગુજરાતી)</option>
-              <option value="ka">Kannada (ಕನ್ನಡ)</option>
-              <option value="ml">Malayalam (മലയാളം)</option>
-              <option value="te">Telugu (తెలుగు)</option>
-              <option value="ta">Tamil (தமிழ்)</option>
-            </select>
-
-            <label for="country">Choose Your Country</label>
-            <select id="country" data-cy="profile-country">
-              <optgroup label="Popular Countries">
-                <option value="">Select Country</option>
-                <option value="United States">United States</option>
-                <option value="Canada">Canada</option>
-              </optgroup>
-              <optgroup label="All Countries" id="all-countries"></optgroup>
-            </select>
-
-            <div id="province-group" style="display: none">
-              <label for="province">Select Province / State</label>
-              <select id="province" data-cy="profile-province"></select>
+          <div class="profile-details">
+            <div class="detail-row" id="role-row" style="display: none">
+              <span class="detail-label">Role</span>
+              <span class="detail-value detail-badge" id="display-role"
+                >User</span
+              >
             </div>
 
-            <div id="other-country-group" style="display: none">
-              <label for="other-country">Enter Your Country</label>
-              <input type="text" id="other-country" />
+            <div class="detail-row">
+              <span class="detail-label">Member Since</span>
+              <span class="detail-value" id="display-date">Loading...</span>
             </div>
 
-            <button type="submit" data-cy="profile-save">Save Changes</button>
-          </form>
-          <div id="name-message"></div>
-        </div>
+            <div class="detail-row">
+              <span class="detail-label">Preferred Language</span>
+              <span
+                class="detail-value"
+                id="display-language"
+                data-cy="display-language"
+              >
+                Not set yet
+              </span>
+            </div>
 
-        <div class="profile-card" id="password-card">
-          <h2>Change Password</h2>
-          <form id="change-password-form">
-            <label for="current-password">Current Password</label>
-            <input
-              type="password"
-              id="current-password"
-              placeholder="Enter current password"
-              required
-            />
+            <div class="detail-row">
+              <span class="detail-label">Location</span>
+              <span
+                class="detail-value"
+                id="display-location"
+                data-cy="display-location"
+              >
+                Not set yet
+              </span>
+            </div>
+          </div>
 
-            <label for="new-password">New Password</label>
-            <input
-              type="password"
-              id="new-password"
-              placeholder="Enter new password (min 8 characters)"
-              required
-            />
+          <div class="profile-divider"></div>
 
-            <label for="confirm-new-password">Confirm New Password</label>
-            <input
-              type="password"
-              id="confirm-new-password"
-              placeholder="Confirm new password"
-              required
-            />
+          <nav class="profile-shortcuts" aria-label="Profile shortcuts">
+            <a
+              href="../leaderboard.html"
+              class="profile-link profile-link-primary"
+            >
+              <span aria-hidden="true">🏆</span>
+              View Leaderboard
+            </a>
 
-            <button type="submit">Update Password</button>
-          </form>
-          <div id="password-message"></div>
-        </div>
+            <a href="#" id="back-link" class="profile-link">
+              <span aria-hidden="true">🎮</span>
+              Back to Games
+            </a>
+          </nav>
+
+          <button
+            id="logout-btn"
+            data-cy="profile-logout-button"
+            class="logout-btn"
+            type="button"
+          >
+            Log Out
+          </button>
+        </aside>
+
+        <section class="profile-settings-column" aria-label="Account settings">
+          <article class="profile-card">
+            <header class="profile-card-header">
+              <div>
+                <p class="card-eyebrow">PROFILE</p>
+                <h2>Personal Information</h2>
+                <p>
+                  Update the information Zat.am uses for your profile and
+                  bilingual learning experience.
+                </p>
+              </div>
+            </header>
+
+            <form id="edit-name-form" class="profile-form">
+              <div class="form-field form-field-full">
+                <label for="new-name">Display Name</label>
+                <input
+                  type="text"
+                  id="new-name"
+                  placeholder="Enter your full name"
+                  autocomplete="name"
+                  required
+                />
+              </div>
+
+              <div class="form-field">
+                <label for="language">Second Language</label>
+                <select id="language" data-cy="profile-language">
+                  <option value="">Select Language</option>
+                  <option value="1">Devanagari</option>
+                  <option value="be">Bengali (বাংলা)</option>
+                  <option value="gu">Gujarati (ગુજરાતી)</option>
+                  <option value="ka">Kannada (ಕನ್ನಡ)</option>
+                  <option value="ml">Malayalam (മലയാളം)</option>
+                  <option value="te">Telugu (తెలుగు)</option>
+                  <option value="ta">Tamil (தமிழ்)</option>
+                </select>
+              </div>
+
+              <div class="form-field">
+                <label for="country">Country</label>
+                <select id="country" data-cy="profile-country">
+                  <optgroup label="Popular Countries">
+                    <option value="">Select Country</option>
+                    <option value="United States">United States</option>
+                    <option value="Canada">Canada</option>
+                  </optgroup>
+                  <optgroup label="All Countries" id="all-countries"></optgroup>
+                </select>
+              </div>
+
+              <div
+                class="form-field form-field-full"
+                id="province-group"
+                style="display: none"
+              >
+                <label for="province">Province / State</label>
+                <select id="province" data-cy="profile-province"></select>
+              </div>
+
+              <div
+                class="form-field form-field-full"
+                id="other-country-group"
+                style="display: none"
+              >
+                <label for="other-country">Country Name</label>
+                <input
+                  type="text"
+                  id="other-country"
+                  placeholder="Enter your country"
+                  autocomplete="country-name"
+                />
+              </div>
+
+              <div class="form-actions form-field-full">
+                <button
+                  type="submit"
+                  data-cy="profile-save"
+                  class="primary-btn"
+                >
+                  Save Changes
+                </button>
+              </div>
+            </form>
+
+            <div
+              id="name-message"
+              class="form-message"
+              aria-live="polite"
+            ></div>
+          </article>
+
+          <article class="profile-card security-card" id="password-card">
+            <header class="profile-card-header security-header">
+              <div>
+                <p class="card-eyebrow">ACCOUNT SECURITY</p>
+                <h2>Change Password</h2>
+                <p>
+                  Keep your Zat.am account secure by using a strong, unique
+                  password.
+                </p>
+              </div>
+
+              <span id="password-provider-badge" class="provider-badge" hidden>
+                Managed by Google
+              </span>
+            </header>
+
+            <div id="password-provider-note" class="provider-note" hidden>
+              <span class="provider-note-icon" aria-hidden="true">G</span>
+              <div>
+                <strong>Password managed by Google</strong>
+                <p>
+                  You signed in with Google, so password changes are managed
+                  through your Google Account. Your Zat.am profile settings are
+                  still editable above.
+                </p>
+              </div>
+            </div>
+
+            <form id="change-password-form" class="profile-form password-form">
+              <div class="form-field form-field-full">
+                <label for="current-password">Current Password</label>
+                <input
+                  type="password"
+                  id="current-password"
+                  placeholder="Enter current password"
+                  autocomplete="current-password"
+                  required
+                />
+              </div>
+
+              <div class="form-field">
+                <label for="new-password">New Password</label>
+                <input
+                  type="password"
+                  id="new-password"
+                  placeholder="Minimum 8 characters"
+                  autocomplete="new-password"
+                  required
+                />
+              </div>
+
+              <div class="form-field">
+                <label for="confirm-new-password">Confirm New Password</label>
+                <input
+                  type="password"
+                  id="confirm-new-password"
+                  placeholder="Confirm new password"
+                  autocomplete="new-password"
+                  required
+                />
+              </div>
+
+              <div class="form-actions form-field-full">
+                <button type="submit" class="primary-btn">
+                  Update Password
+                </button>
+              </div>
+            </form>
+
+            <div
+              id="password-message"
+              class="form-message"
+              aria-live="polite"
+            ></div>
+          </article>
+        </section>
       </div>
-    </div>
+    </main>
 
+    <script type="module" src="../js/navbar-loader.js"></script>
     <script type="module" src="./js/profile.js"></script>
   </body>
 </html>
