@@ -32,7 +32,6 @@
     <script src="https://cdn.jsdelivr.net/npm/@sanskrit-coders/sanscript@1.1.0/sanscript.min.js"></script>
     <script src="./js/transliteration.js"></script>
 
-    <!-- Page CSS first, BP26 shared header CSS last -->
     <link href="css/mmk.css" rel="stylesheet" type="text/css" />
     <link rel="stylesheet" href="css/header.css" />
 
@@ -43,193 +42,308 @@
   </head>
 
   <body class="memory-game">
-    <!-- Auth Middleware -->
     <script type="module" src="/auth/api/middleware.js"></script>
 
-    <!-- BP26 shared navbar -->
     <div id="header-placeholder"></div>
     <script type="module" src="../js/bilingual-toggle.js"></script>
     <script src="js/load-header.js"></script>
 
-    <main class="memory-game-main">
-      <h1>Memory क्रीडा</h1>
-      <div class="header-divider"></div>
+    <main class="memory-game-shell">
+      <section class="game-intro" aria-labelledby="gameTitle">
+        <p class="game-eyebrow">BodhaPlay 2026</p>
+        <h1 id="gameTitle">Memory <span>क्रीडा</span></h1>
+        <p class="game-description">
+          Match each Sanskrit word with the correct picture. Make fewer wrong
+          moves to keep your score high and finish faster to earn a time bonus.
+        </p>
+      </section>
 
-      <!-- Added Time + keep old counters -->
-      <p id="wm">
-        Matches Done: <span id="nomd">०</span> Wrong Moves:
-        <span id="nowt">०</span>
-        <span class="time-stat">Time: <span id="timeDisp">0</span>s</span>
-      </p>
+      <section class="game-panel" aria-label="Game progress and scoring">
+        <div class="score-panel">
+          <div class="score-stat">
+            <span class="score-stat-label">Matches</span>
+            <strong
+              ><span id="nomd">०</span> /
+              <span id="totalPairs">१२</span></strong
+            >
+          </div>
 
-      <progress id="pr" max="15" value="0"></progress>
-      <div id="mytable"></div>
+          <div class="score-stat">
+            <span class="score-stat-label">Memory Score</span>
+            <strong><span id="memoryScoreValue">90</span> / 90</strong>
+          </div>
 
-      <!-- Score badge + submit button -->
-      <div id="scoreBadge">Score: <span id="scoreValue">0</span></div>
-      <button id="submitScoreBtn">Submit Score (Game 2)</button>
+          <div class="score-stat">
+            <span class="score-stat-label">Wrong Moves</span>
+            <strong id="nowt">०</strong>
+          </div>
+
+          <div class="score-stat">
+            <span class="score-stat-label">Time</span>
+            <strong id="timeDisp">00:00</strong>
+          </div>
+
+          <div class="score-stat score-stat-bonus">
+            <span class="score-stat-label">Potential Time Bonus</span>
+            <strong id="timeBonusValue">+10</strong>
+          </div>
+        </div>
+
+        <details class="scoring-help">
+          <summary>How scoring works</summary>
+          <div class="scoring-help-content">
+            <p>
+              <strong>Memory score:</strong> starts at 90. Every wrong match
+              deducts 3 points.
+            </p>
+            <p>
+              <strong>Time bonus:</strong> finish faster to earn up to 10 extra
+              points. Time never deducts points from your memory score.
+            </p>
+            <div class="bonus-table" aria-label="Time bonus thresholds">
+              <span>2:00 or less</span><strong>+10</strong>
+              <span>2:01–2:30</span><strong>+8</strong> <span>2:31–3:00</span
+              ><strong>+6</strong> <span>3:01–3:30</span><strong>+4</strong>
+              <span>3:31–4:00</span><strong>+2</strong> <span>Over 4:00</span
+              ><strong>+0</strong>
+            </div>
+          </div>
+        </details>
+      </section>
+
+      <progress
+        id="pr"
+        class="memory-progress"
+        max="12"
+        value="0"
+        aria-hidden="true"
+      ></progress>
+
+      <div id="mytable" class="memory-board"></div>
     </main>
 
-    <!-- Celebration overlay -->
-    <div id="bp26CelebrateOverlay">
-      <div class="bp26CelebrateBox">
-        <div class="bp26Sparkles">✨🎉✨</div>
-        <div
-          id="bp26CelebrateTitle"
-          style="font-weight: 700; font-size: 18px; margin-bottom: 6px"
-        >
-          Submitted ✅
+    <div
+      id="bp26CelebrateOverlay"
+      class="celebration-overlay"
+      aria-hidden="true"
+    >
+      <div
+        class="celebration-box"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="bp26CelebrateTitle"
+      >
+        <div class="bp26Sparkles" aria-hidden="true">✨🎉✨</div>
+        <h2 id="bp26CelebrateTitle">Game Complete!</h2>
+        <p id="bp26CelebrateSub">Great job!</p>
+
+        <div class="final-score-grid">
+          <div>
+            <span>Memory Score</span>
+            <strong id="finalMemoryScore">90 / 90</strong>
+          </div>
+          <div>
+            <span>Time Bonus</span>
+            <strong id="finalTimeBonus">+10</strong>
+          </div>
+          <div>
+            <span>Final Score</span>
+            <strong id="finalScore">100 / 100</strong>
+          </div>
+          <div>
+            <span>Time</span>
+            <strong id="finalTime">00:00</strong>
+          </div>
+          <div>
+            <span>Wrong Moves</span>
+            <strong id="finalWrongMoves">0</strong>
+          </div>
         </div>
-        <div id="bp26CelebrateSub" style="font-size: 14px; color: #374151">
-          Nice work!
+
+        <p id="saveStatus" class="save-status"></p>
+
+        <div class="celebration-actions">
+          <button
+            id="playAgainBtn"
+            class="bp26Btn bp26BtnPrimary"
+            type="button"
+          >
+            Play Again
+          </button>
+          <button id="bp26CelebrateClose" class="bp26Btn" type="button">
+            Close
+          </button>
         </div>
-        <button id="bp26CelebrateClose" class="bp26Btn">Close</button>
       </div>
     </div>
 
     <script type="module">
-      /* Make reportScore available globally like your new file expects */
-      import { reportScore, bp26Init } from "./js/bp26-score.js";
-      window.reportScore = reportScore;
+      import { initGameScore, submitGameScore } from "../js/game-score.js";
+
+      const GAME_ID = "bp26-Game2";
+      const GAME_NAME = "Memory Game (क्रीडा)";
+      const MAX_MEMORY_SCORE = 90;
+      const WRONG_MOVE_PENALTY = 3;
+
       const translit = window.bp26Translit;
 
-      // Init scoring namespace
-      window.bp26Init = bp26Init;
-      window.bp26Init({ game: "bp26-Game2", day: 2 });
+      // ---------------------------
+      // Timer + scoring helpers
+      // ---------------------------
+      let secs = 0;
+      let timer = null;
+      let scoreSubmitted = false;
+      let scorerInitialized = false;
+      let currentMemoryScore = MAX_MEMORY_SCORE;
+      let currentTimeBonus = 10;
+      let currentFinalScore = 100;
 
-      // celebration helpers
-      function bp26BurstConfetti(count = 60) {
-        for (let i = 0; i < count; i++) {
-          const c = document.createElement("div");
-          c.className = "bp26Confetti";
-          c.style.left = Math.random() * 100 + "vw";
-          c.style.width = 6 + Math.random() * 8 + "px";
-          c.style.height = 6 + Math.random() * 8 + "px";
-          c.style.background = `hsl(${Math.floor(Math.random() * 360)}, 90%, 60%)`;
-          c.style.animationDuration = 800 + Math.random() * 600 + "ms";
-          document.body.appendChild(c);
-          setTimeout(() => c.remove(), 2000);
+      function formatTime(totalSeconds) {
+        const safeSeconds = Math.max(0, Number(totalSeconds) || 0);
+        const minutes = Math.floor(safeSeconds / 60);
+        const seconds = safeSeconds % 60;
+        return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+      }
+
+      function getTimeBonus(seconds) {
+        if (seconds <= 120) return 10;
+        if (seconds <= 150) return 8;
+        if (seconds <= 180) return 6;
+        if (seconds <= 210) return 4;
+        if (seconds <= 240) return 2;
+        return 0;
+      }
+
+      function computeMemoryScore(wrongMoves) {
+        return Math.max(0, MAX_MEMORY_SCORE - wrongMoves * WRONG_MOVE_PENALTY);
+      }
+
+      function updateScoreUI(wrongMoves = 0) {
+        currentMemoryScore = computeMemoryScore(wrongMoves);
+        currentTimeBonus = getTimeBonus(secs);
+        currentFinalScore = Math.min(
+          100,
+          currentMemoryScore + currentTimeBonus,
+        );
+
+        const memoryScoreEl = document.getElementById("memoryScoreValue");
+        const timeBonusEl = document.getElementById("timeBonusValue");
+        const timeEl = document.getElementById("timeDisp");
+
+        if (memoryScoreEl)
+          memoryScoreEl.textContent = String(currentMemoryScore);
+        if (timeBonusEl) timeBonusEl.textContent = `+${currentTimeBonus}`;
+        if (timeEl) timeEl.textContent = formatTime(secs);
+      }
+
+      function tick(getWrongMoves) {
+        secs += 1;
+        updateScoreUI(getWrongMoves());
+      }
+
+      async function submitScoreNow({ matchesdone, wrongMoves, set }) {
+        if (scoreSubmitted) return;
+
+        currentMemoryScore = computeMemoryScore(wrongMoves);
+        currentTimeBonus = getTimeBonus(secs);
+        currentFinalScore = Math.min(
+          100,
+          currentMemoryScore + currentTimeBonus,
+        );
+        updateScoreUI(wrongMoves);
+
+        try {
+          const result = await submitGameScore(currentFinalScore, {
+            result: "completed",
+            metrics: {
+              matchesCompleted: matchesdone,
+              wrongMoves,
+              memoryScore: currentMemoryScore,
+              timeBonus: currentTimeBonus,
+              set: Number(set) || 0,
+            },
+          });
+
+          scoreSubmitted = Boolean(result?.ok);
+
+          if (result?.ok) {
+            document.getElementById("saveStatus").textContent =
+              "Score saved to the leaderboard ✓";
+          } else if (result?.reason === "not-signed-in") {
+            document.getElementById("saveStatus").textContent =
+              "Sign in to save this score to the leaderboard.";
+          } else {
+            document.getElementById("saveStatus").textContent =
+              "Score calculated, but it was not saved.";
+          }
+        } catch (error) {
+          console.error("[Memory Game] Score submission failed", error);
+          document.getElementById("saveStatus").textContent =
+            "Score calculated, but saving failed.";
         }
       }
 
-      function bp26Celebrate({
-        title = "Submitted ✅",
-        subtitle = "Nice work!",
-        score = null,
-      } = {}) {
+      function showCelebration({ wrongMoves }) {
+        document.getElementById("finalMemoryScore").textContent =
+          `${currentMemoryScore} / 90`;
+        document.getElementById("finalTimeBonus").textContent =
+          `+${currentTimeBonus}`;
+        document.getElementById("finalScore").textContent =
+          `${currentFinalScore} / 100`;
+        document.getElementById("finalTime").textContent = formatTime(secs);
+        document.getElementById("finalWrongMoves").textContent =
+          String(wrongMoves);
+        document.getElementById("saveStatus").textContent = "Saving score…";
+
         const overlay = document.getElementById("bp26CelebrateOverlay");
-        const t = document.getElementById("bp26CelebrateTitle");
-        const s = document.getElementById("bp26CelebrateSub");
-
-        t.textContent = title;
-        s.textContent =
-          score === null ? subtitle : `${subtitle}  Score: ${score} ✨`;
-
         overlay.style.display = "flex";
-        bp26BurstConfetti(70);
+        overlay.setAttribute("aria-hidden", "false");
+        burstConfetti(70);
+      }
 
-        setTimeout(() => {
-          overlay.style.display = "none";
-        }, 3000);
+      function hideCelebration() {
+        const overlay = document.getElementById("bp26CelebrateOverlay");
+        overlay.style.display = "none";
+        overlay.setAttribute("aria-hidden", "true");
+      }
+
+      function burstConfetti(count = 60) {
+        const colors = ["#f6b23b", "#f16945", "#2f6dff", "#0b2b4f", "#68a357"];
+
+        for (let i = 0; i < count; i += 1) {
+          const confetti = document.createElement("div");
+          confetti.className = "bp26Confetti";
+          confetti.style.left = `${Math.random() * 100}vw`;
+          confetti.style.width = `${6 + Math.random() * 8}px`;
+          confetti.style.height = `${6 + Math.random() * 8}px`;
+          confetti.style.background =
+            colors[Math.floor(Math.random() * colors.length)];
+          confetti.style.animationDuration = `${800 + Math.random() * 600}ms`;
+          document.body.appendChild(confetti);
+          setTimeout(() => confetti.remove(), 2000);
+        }
       }
 
       document
         .getElementById("bp26CelebrateClose")
-        .addEventListener("click", () => {
-          document.getElementById("bp26CelebrateOverlay").style.display =
-            "none";
-        });
+        .addEventListener("click", hideCelebration);
 
       document
         .getElementById("bp26CelebrateOverlay")
-        .addEventListener("click", (e) => {
-          if (e.target.id === "bp26CelebrateOverlay") {
-            e.target.style.display = "none";
+        .addEventListener("click", (event) => {
+          if (event.target.id === "bp26CelebrateOverlay") {
+            hideCelebration();
           }
         });
 
-      // ---------------------------
-      // Timer
-      // ---------------------------
-      let secs = 0;
-      let timer = null;
-
-      function tick() {
-        secs++;
-        const t = document.getElementById("timeDisp");
-        if (t) t.textContent = String(secs);
-      }
-
-      // score state
-      let scoreSubmitted = false;
-      let currentScore = 0;
-
-      function updateScoreUI() {
-        const el = document.getElementById("scoreValue");
-        if (el) el.textContent = String(currentScore);
-      }
-
-      function computeScore(matchesdone) {
-        // computeScore(wpp, wrongMoves) OLD FORMULA
-        // const base = wpp * 10;
-        // const penaltyWrong = wrongMoves * 2;
-        // const penaltyTime = secs;
-        // return Math.max(0, base - penaltyWrong - penaltyTime);
-        return matchesdone * 10;
-      }
-
-      async function submitScoreNow() {
-        if (scoreSubmitted) return;
-
-        const btn = document.getElementById("submitScoreBtn");
-
-        if (btn) {
-          btn.disabled = true;
-          btn.textContent = "Submitting...";
-        }
-
-        try {
-          if (typeof window.reportScore !== "function") {
-            alert("Score system not loaded. Check ./js/bp26-score.js path.");
-
-            if (btn) {
-              btn.disabled = false;
-              btn.textContent = "Submit Score (Game 2)";
-            }
-
-            return;
-          }
-
-          await window.reportScore(currentScore);
-          scoreSubmitted = true;
-
-          if (btn) {
-            btn.textContent = `Submitted ✅ (Score: ${currentScore})`;
-          }
-
-          bp26Celebrate({
-            title: "Score Submitted ✅",
-            subtitle: "Great job!",
-            score: currentScore,
-          });
-        } catch (e) {
-          console.error("❌ submit score failed", e);
-          alert("Submit failed. Open Console (F12) and send the red error.");
-
-          if (btn) {
-            btn.disabled = false;
-            btn.textContent = "Submit Score (Game 2)";
-          }
-        }
-      }
-
-      document
-        .getElementById("submitScoreBtn")
-        .addEventListener("click", submitScoreNow);
+      document.getElementById("playAgainBtn").addEventListener("click", () => {
+        location.reload();
+      });
 
       // ---------------------------
-      // OLD GAME LOGIC BELOW
-      // Gameplay, score, data source and submission behavior are preserved.
+      // Existing game logic below.
+      // Card creation, random placement, URL modes, matching behavior,
+      // flipback timing, data source, and transliteration are preserved.
       // ---------------------------
       document.addEventListener("DOMContentLoaded", function () {
         var lnk =
@@ -244,7 +358,6 @@
 
       function populateWlist(fildat) {
         var wpp = 15; // words per page
-        document.getElementById("pr").max = wpp;
 
         const fullist = fildat.data || [];
         var openmojibase = "https://openmoji.org/data/color/svg/";
@@ -285,32 +398,10 @@
         while (words.length && !words[words.length - 1]) words.pop();
         while (image.length && !image[image.length - 1]) image.pop();
 
-        var colors = [
-          "tomato",
-          "aqua",
-          "blue",
-          "fuchsia",
-          "gray",
-          "green",
-          "lime",
-          "maroon",
-          "navy",
-          "olive",
-          "purple",
-          "red",
-          "silver",
-          "teal",
-          "yellow",
-        ];
-
         var l = urlParams.get("l");
         if (!l) l = 0;
 
         const tScript = translit.getTargetScript();
-
-        function restart() {
-          location.reload();
-        }
 
         /*
           Same 24-card game size at every breakpoint:
@@ -327,14 +418,14 @@
 
         const viewportWidth = window.innerWidth;
 
-        if (viewportWidth <= 768) {
-          // Mobile
+        if (viewportWidth <= 420) {
+          // Small mobile
           colLength = 3;
           rowLength = 8;
           width = 82;
           height = 82;
         } else if (viewportWidth <= 1024) {
-          // Tablet
+          // Mobile + tablet
           colLength = 4;
           rowLength = 6;
           width = 95;
@@ -348,23 +439,41 @@
         }
 
         var gamesize = rowLength * colLength;
+        var totalPairs = gamesize / 2;
 
-        // start timer (only play mode)
+        document.getElementById("pr").max = totalPairs;
+        document.getElementById("totalPairs").textContent =
+          translit.numberToDevanagari(totalPairs);
+
+        function getWrongMoves() {
+          return numberOfWrongTries;
+        }
+
+        // Start timer/scoring only in playable mode, after the game data is ready.
         if (l != 1) {
           secs = 0;
+          scoreSubmitted = false;
+
+          if (!scorerInitialized) {
+            initGameScore({
+              gameId: GAME_ID,
+              gameName: GAME_NAME,
+            });
+            scorerInitialized = true;
+          }
 
           if (timer) {
             clearInterval(timer);
           }
 
-          timer = setInterval(tick, 1000);
+          updateScoreUI(numberOfWrongTries);
+          timer = setInterval(() => tick(getWrongMoves), 1000);
+        } else {
+          updateScoreUI(numberOfWrongTries);
         }
 
-        tick();
-
         function refreshScoreUI() {
-          currentScore = computeScore(matchesdone);
-          updateScoreUI();
+          updateScoreUI(numberOfWrongTries);
         }
 
         refreshScoreUI();
@@ -471,16 +580,15 @@
                   document.getElementsByTagName("tr")[clickedCards[0].x];
                 const r = d.getElementsByTagName("td")[clickedCards[0].y];
 
-                r.style.border = "2px dashed red";
+                r.classList.add("is-selected");
               } else {
                 if (D2Data[row][column].src === clickedCards[0].src) {
                   const d =
                     document.getElementsByTagName("tr")[clickedCards[0].x];
                   const r = d.getElementsByTagName("td")[clickedCards[0].y];
 
-                  r.style.border = "3px solid " + colors[matchesdone];
-                  r.style.cursor = "no-drop";
-                  r.style.color = "blue";
+                  r.classList.remove("is-selected", "is-wrong");
+                  r.classList.add("is-matched");
 
                   matchesdone++;
 
@@ -492,11 +600,11 @@
                   document.getElementById("nomd").innerHTML =
                     translit.numberToDevanagari(matchesdone);
 
-                  this.parentElement.style.border =
-                    "3px solid " + colors[matchesdone - 1];
-
-                  this.parentElement.style.cursor = "no-drop";
-                  this.style.color = "blue";
+                  this.parentElement.classList.remove(
+                    "is-selected",
+                    "is-wrong",
+                  );
+                  this.parentElement.classList.add("is-matched");
 
                   this.innerHTML +=
                     "<br>✔️ " + translit.numberToDevanagari(matchesdone);
@@ -514,27 +622,17 @@
                   if (count == gamesize) {
                     if (timer) {
                       clearInterval(timer);
+                      timer = null;
                     }
 
                     refreshScoreUI();
-                    submitScoreNow();
+                    showCelebration({ wrongMoves: numberOfWrongTries });
 
-                    window.alert(
-                      "उत्तमम् ! You matched all " +
-                        translit.numberToDevanagari(wpp) +
-                        " in " +
-                        translit.numberToDevanagari(secs) +
-                        " seconds while making " +
-                        translit.numberToDevanagari(numberOfWrongTries) +
-                        " wrong moves\n\nFinal Score: " +
-                        currentScore,
-                    );
-
-                    var ask = confirm("पुनः ? Press 'ok' to play again");
-
-                    if (ask) {
-                      restart();
-                    }
+                    submitScoreNow({
+                      matchesdone,
+                      wrongMoves: numberOfWrongTries,
+                      set,
+                    });
                   }
                 } else {
                   numberOfWrongTries += 1;
@@ -553,7 +651,9 @@
                     document.getElementsByTagName("tr")[clickedCards[0].x];
                   const r = d.getElementsByTagName("td")[clickedCards[0].y];
 
-                  r.style.border = "1px solid blue";
+                  r.classList.remove("is-selected");
+                  r.classList.add("is-wrong");
+                  this.parentElement.classList.add("is-wrong");
 
                   refreshScoreUI();
 
@@ -573,6 +673,16 @@
           };
 
           function flipback(row, column, This, clickedCards, waiting, D2Data) {
+            const firstCell =
+              document.getElementById("tbl").rows[clickedCards[0].x].cells[
+                clickedCards[0].y
+              ];
+            const secondCell =
+              document.getElementById("tbl").rows[row].cells[column];
+
+            firstCell.classList.remove("is-selected", "is-wrong");
+            secondCell.classList.remove("is-selected", "is-wrong");
+
             if (This.tagName.toLowerCase() === "img") {
               This.src = bg;
             }
