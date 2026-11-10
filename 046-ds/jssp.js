@@ -179,6 +179,9 @@ nameDialog.addEventListener("submit", (event) => {
 window.addEventListener("keydown", (event) => {
   const key = event.key.toLowerCase();
   if (!["w", "a", "s", "d"].includes(key)) return;
+  if (!gameStarted || gameOver) return;
+  if (event.target instanceof HTMLElement && event.target.isContentEditable) return;
+  if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement || event.target instanceof HTMLSelectElement) return;
   event.preventDefault();
   movePlayer(key);
 });
