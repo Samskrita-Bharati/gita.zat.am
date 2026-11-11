@@ -40,10 +40,12 @@ const maxStrikes = 5;
 
 // Interaction state
 let pointerIsDown = false;
+// Pointer events can arrive faster than animation frames, particularly on phones.
+// Keep each swipe segment until the next frame, even if the finger has lifted.
+let pointerSegments = [];
+let pointerIsTouch = false;
 // The last known position of the primary pointer in screen coordinates.`
 let pointerScreen = { x: 0, y: 0 };
-// Same as `pointerScreen`, but converted to scene coordinates in rAF.
-let pointerScene = { x: 0, y: 0 };
 // Minimum speed of pointer before "hits" are counted.
 const minPointerSpeed = 60;
 // The hit speed affects the direction the target post-hit. This number dampens that force.
@@ -1388,6 +1390,9 @@ function incrementCubeCount(inc) {
 
 function resetGame() {
 	clearVocabulary();
+	pointerSegments = [];
+	handleCanvasPointerUp();
+	touchPoints.length = 0;
 	resetAllTargets();
 	state.game.time = 0;
 	state.game.strikes = 0;
@@ -1398,7 +1403,11 @@ function resetGame() {
 }
 
 function pauseGame() {
-	isInGame() && setActiveMenu(MENU_PAUSE);
+	if (isInGame()) {
+		pointerSegments = [];
+		handleCanvasPointerUp();
+		setActiveMenu(MENU_PAUSE);
+	}
 }
 
 function resumeGame() {
@@ -1443,7 +1452,7 @@ const spawnExtraDelay = 300;
 let targetSpeed = 1;
 
 
-function tick(width, height, simTime, simSpeed, lag) {
+function tick(width, height, simTime, simSpeed, lag, frameSegments) {
 	PERF_START('frame');
 	PERF_START('tick');
 
@@ -1484,27 +1493,19 @@ function tick(width, height, simTime, simSpeed, lag) {
 	pointerDelta.y = 0;
 	pointerDeltaScaled.x = 0;
 	pointerDeltaScaled.y = 0;
-	const lastPointer = touchPoints[touchPoints.length - 1];
-
-	if (pointerIsDown && lastPointer && !lastPointer.touchBreak) {
-		pointerDelta.x = (pointerScene.x - lastPointer.x);
-		pointerDelta.y = (pointerScene.y - lastPointer.y);
-		pointerDeltaScaled.x = pointerDelta.x * forceMultiplier;
-		pointerDeltaScaled.y = pointerDelta.y * forceMultiplier;
-	}
-	const pointerSpeed = Math.hypot(pointerDelta.x, pointerDelta.y);
-	const pointerSpeedScaled = pointerSpeed * forceMultiplier;
+	const pathLength = frameSegments.reduce((total, segment) =>
+		total + Math.hypot(segment.end.x - segment.start.x, segment.end.y - segment.start.y), 0);
+	const pointerSpeedScaled = pathLength * forceMultiplier;
+	const minSwipeSpeed = frameSegments.some(segment => segment.isTouch) ? 8 : minPointerSpeed;
 
 	// Track points for later calculations, including drawing trail.
 	touchPoints.forEach(p => p.life -= simTime);
 
-	if (pointerIsDown) {
-		touchPoints.push({
-			x: pointerScene.x,
-			y: pointerScene.y,
-			life: touchPointLife
-		});
-	}
+	frameSegments.forEach(segment => {
+		touchPoints.push({ ...segment.start, life: touchPointLife });
+		touchPoints.push({ ...segment.end, life: touchPointLife });
+		touchPoints.push({ touchBreak: true, life: touchPointLife });
+	});
 
 	while (touchPoints[0] && touchPoints[0].life <= 0) {
 		touchPoints.shift();
@@ -1587,13 +1588,16 @@ function tick(width, height, simTime, simSpeed, lag) {
 		// If pointer is moving really fast, we want to hittest multiple points along the path.
 		// We can't use scaled pointer speed to determine this, since we care about actual screen
 		// distance covered.
-		const hitTestCount = Math.ceil(pointerSpeed / targetRadius * 2);
-		// Start loop at `1` and use `<=` check, so we skip 0% and end up at 100%.
-		// This omits the previous point position, and includes the most recent.
-		for (let ii=1; ii<=hitTestCount; ii++) {
-			const percent = 1 - (ii / hitTestCount);
-			const hitX = pointerScene.x - pointerDelta.x * percent;
-			const hitY = pointerScene.y - pointerDelta.y * percent;
+		for (const segment of frameSegments) {
+			pointerDelta.x = segment.end.x - segment.start.x;
+			pointerDelta.y = segment.end.y - segment.start.y;
+			pointerDeltaScaled.x = pointerDelta.x * forceMultiplier;
+			pointerDeltaScaled.y = pointerDelta.y * forceMultiplier;
+			const hitTestCount = Math.max(1, Math.ceil(Math.hypot(pointerDelta.x, pointerDelta.y) / targetRadius * 2));
+			for (let ii=0; ii<=hitTestCount; ii++) {
+			const percent = ii / hitTestCount;
+			const hitX = segment.start.x + pointerDelta.x * percent;
+			const hitY = segment.start.y + pointerDelta.y * percent;
 			const distance = Math.hypot(
 				hitX - target.projected.x,
 				hitY - target.projected.y
@@ -1611,7 +1615,7 @@ function tick(width, height, simTime, simSpeed, lag) {
 
 					const sparkSpeed = 7 + pointerSpeedScaled * 0.125;
 
-					if (pointerSpeedScaled > minPointerSpeed) {
+					if (pointerSpeedScaled > minSwipeSpeed) {
 						target.health--;
 						incrementScore(10);
 
@@ -1640,6 +1644,7 @@ function tick(width, height, simTime, simSpeed, lag) {
 				// Break the current loop and continue the outer loop.
 				// This skips to processing the next target.
 				continue targetLoop;
+			}
 			}
 		}
 
@@ -1975,7 +1980,8 @@ function setupCanvases() {
 		const h = stage.clientHeight;
 		if (!w || !h) return;
 		dpr = window.devicePixelRatio || 1;
-		viewScale = h / 1000;
+		// Keep targets large enough to see and swipe in short landscape viewports.
+		viewScale = Math.max(h / 1000, Math.min(w / 900, 0.45));
 		width = w / viewScale;
 		height = h / viewScale;
 		canvas.width = w * dpr;
@@ -2023,13 +2029,20 @@ function setupCanvases() {
 
 		// Pointer positions use viewport coordinates; the canvas may be offset.
 		const canvasBounds = canvas.getBoundingClientRect();
-		pointerScene.x = (pointerScreen.x - canvasBounds.left) / viewScale - halfW;
-		pointerScene.y = (pointerScreen.y - canvasBounds.top) / viewScale - halfH;
+		const toScene = point => ({
+			x: (point.x - canvasBounds.left) / viewScale - halfW,
+			y: (point.y - canvasBounds.top) / viewScale - halfH
+		});
+		const frameSegments = pointerSegments.splice(0).map(segment => ({
+			start: toScene(segment.start),
+			end: toScene(segment.end),
+			isTouch: segment.isTouch
+		}));
 
 		const lag = frameTime / 16.6667;
 		const simTime = gameSpeed * frameTime;
 		const simSpeed = gameSpeed * lag;
-		tick(width, height, simTime, simSpeed, lag);
+		tick(width, height, simTime, simSpeed, lag, frameSegments);
 
 		// Auto clear canvas
 		ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -2058,9 +2071,10 @@ function setupCanvases() {
 // Interaction
 // -----------------------------
 
-function handleCanvasPointerDown(x, y) {
+function handleCanvasPointerDown(x, y, isTouch = false) {
 	if (!pointerIsDown) {
 		pointerIsDown = true;
+		pointerIsTouch = isTouch;
 		pointerScreen.x = x;
 		pointerScreen.y = y;
 		// On when menus are open, point down/up toggles an interactive mode.
@@ -2072,10 +2086,6 @@ function handleCanvasPointerDown(x, y) {
 function handleCanvasPointerUp() {
 	if (pointerIsDown) {
 		pointerIsDown = false;
-		touchPoints.push({
-			touchBreak: true,
-			life: touchPointLife
-		});
 		// On when menus are open, point down/up toggles an interactive mode.
 		// We just need to rerender the menu system for it to respond.
 		if (isMenuVisible()) renderMenus();
@@ -2084,6 +2094,9 @@ function handleCanvasPointerUp() {
 
 function handleCanvasPointerMove(x, y) {
 	if (pointerIsDown) {
+		if (pointerScreen.x !== x || pointerScreen.y !== y) {
+			pointerSegments.push({ start: { ...pointerScreen }, end: { x, y }, isTouch: pointerIsTouch });
+		}
 		pointerScreen.x = x;
 		pointerScreen.y = y;
 	}
@@ -2094,13 +2107,16 @@ function handleCanvasPointerMove(x, y) {
 if ('PointerEvent' in window) {
 	canvas.addEventListener('pointerdown', event => {
 		if (event.isPrimary) {
-			canvas.setPointerCapture(event.pointerId);
-			handleCanvasPointerDown(event.clientX, event.clientY);
+			try { canvas.setPointerCapture(event.pointerId); } catch (_) { /* Capture is optional. */ }
+			handleCanvasPointerDown(event.clientX, event.clientY, event.pointerType === 'touch');
 		}
 	});
 
 	canvas.addEventListener('pointerup', event => {
-		event.isPrimary && handleCanvasPointerUp();
+		if (event.isPrimary) {
+			handleCanvasPointerMove(event.clientX, event.clientY);
+			handleCanvasPointerUp();
+		}
 	});
 
 	canvas.addEventListener('pointermove', event => {
@@ -2117,13 +2133,16 @@ if ('PointerEvent' in window) {
 		if (!pointerIsDown) {
 			const touch = event.changedTouches[0];
 			activeTouchId = touch.identifier;
-			handleCanvasPointerDown(touch.clientX, touch.clientY);
+			handleCanvasPointerDown(touch.clientX, touch.clientY, true);
 		}
-	});
+		event.preventDefault();
+	}, { passive: false });
 	canvas.addEventListener('touchend', event => {
 		for (let touch of event.changedTouches) {
 			if (touch.identifier === activeTouchId) {
+				handleCanvasPointerMove(touch.clientX, touch.clientY);
 				handleCanvasPointerUp();
+				activeTouchId = null;
 				break;
 			}
 		}
@@ -2141,3 +2160,12 @@ if ('PointerEvent' in window) {
 }
 
 setupCanvases();
+
+// Avoid losing a round when a call, app switch, or lock screen interrupts play.
+document.addEventListener('visibilitychange', () => {
+	if (document.hidden && isInGame()) {
+		pointerSegments = [];
+		handleCanvasPointerUp();
+		pauseGame();
+	}
+});
