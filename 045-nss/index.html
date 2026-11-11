@@ -1,32 +1,359 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NS-SHAFT - क्रीडा</title>
-<script src="https://cdn.jsdelivr.net/npm/@sanskrit-coders/sanscript@1.1.0/sanscript.min.js"></script>
-</head>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NS-SHAFT - क्रीडा | Zat.am</title>
 
-<body data-page="games">
+    <script src="https://cdn.jsdelivr.net/npm/@sanskrit-coders/sanscript@1.1.0/sanscript.min.js"></script>
+    <link rel="stylesheet" href="./css/style.css" />
+  </head>
 
+  <body class="nss-page" data-page="games">
     <!-- Shared Zat.am Navbar -->
     <div id="navbar-mount"></div>
-
-    <div id="content">शीघ्रम् आगमिष्यति ...</div>
-    <script src="js/main.js"></script>
     <script>
-        ~function () {
-            var Game = window.Game;
-            Game && Game.launch(document.getElementById('content'));
-        }();
+      // Align the page with the VISIBLE shared navbar, whether the navbar
+      // loader inserts it in document flow or positions it fixed/sticky.
+      // This avoids reserving navbar space twice (the large blank band seen
+      // above the heading), without obscuring the heading on fixed navbars.
+      (() => {
+        const mount = document.getElementById("navbar-mount");
+        let scheduled = false;
+        let lastOffset = 0;
+
+        function findNavbarBottom() {
+          const nodes = [
+            mount,
+            ...document.querySelectorAll(
+              "#navbar-mount header, #navbar-mount nav, header, nav, [role='navigation'], #navbar-mount > *",
+            ),
+          ];
+          let bottom = 0;
+          for (const el of nodes) {
+            if (!el) continue;
+            const r = el.getBoundingClientRect();
+            if (
+              r.width >= window.innerWidth * 0.5 &&
+              r.height >= 38 &&
+              r.height <= 160 &&
+              r.top >= -12 &&
+              r.top <= 30
+            ) {
+              bottom = Math.max(bottom, r.bottom);
+            }
+          }
+          return bottom;
+        }
+
+        function syncNavbarSpace() {
+          scheduled = false;
+          if (window.scrollY > 2) return;
+          const shell = document.querySelector(".nss-shell");
+          if (!shell) return;
+          const navbarBottom = findNavbarBottom();
+          if (!navbarBottom) return;
+
+          // Measure the heading at its natural position. Positive offsets
+          // use padding (so a fixed navbar does not introduce collapsed
+          // margins); negative offsets pull back a duplicate navbar spacer.
+          shell.style.marginTop = "0px";
+          shell.style.paddingTop = "0px";
+          const naturalTop = shell
+            .querySelector(".nss-hero")
+            .getBoundingClientRect().top;
+          const offset = Math.round(navbarBottom + 12 - naturalTop);
+          if (offset >= 0) {
+            shell.style.paddingTop = `${offset}px`;
+          } else {
+            shell.style.marginTop = `${offset}px`;
+          }
+          if (Math.abs(offset - lastOffset) > 1) {
+            lastOffset = offset;
+            window.dispatchEvent(new Event("resize"));
+          }
+        }
+
+        function scheduleSync() {
+          if (scheduled) return;
+          scheduled = true;
+          requestAnimationFrame(syncNavbarSpace);
+        }
+
+        new MutationObserver(scheduleSync).observe(mount, {
+          childList: true,
+          subtree: true,
+        });
+        new MutationObserver(scheduleSync).observe(document.body, {
+          childList: true,
+        });
+        window.addEventListener("resize", scheduleSync);
+        window.addEventListener("load", scheduleSync);
+        scheduleSync();
+      })();
     </script>
 
+    <main class="nss-shell">
+      <section class="nss-hero" aria-labelledby="game-title">
+        <div class="nss-eyebrow">Zat.am Games</div>
+        <h1 id="game-title">NS-SHAFT <span>क्रीडा</span></h1>
+        <div class="nss-title-rule" aria-hidden="true"></div>
+        <p>
+          Stay on the platforms, avoid hazards, and climb as high as you can.
+        </p>
+      </section>
+
+      <section class="nss-layout" aria-label="NS-SHAFT game and instructions">
+        <div class="nss-game-card">
+          <div class="nss-game-top">
+            <div class="nss-game-card-header">
+              <div>
+                <span class="nss-card-kicker">Arcade Survival</span>
+                <h2>Climb the Shaft</h2>
+              </div>
+              <span
+                id="gameStatusBadge"
+                class="nss-status-badge"
+                role="status"
+                aria-live="polite"
+                >Ready</span
+              >
+            </div>
+
+            <!-- Live statistics share the heading row to give the canvas more height. -->
+            <section class="nss-stats" aria-label="Current game statistics">
+              <div class="nss-stat-item">
+                <span class="nss-stat-label">Score</span>
+                <strong id="currentScore">0</strong>
+              </div>
+              <div class="nss-stat-item">
+                <span class="nss-stat-label">Level</span>
+                <strong id="currentLevel">0</strong>
+              </div>
+              <div class="nss-stat-item">
+                <span class="nss-stat-label">Session Best</span>
+                <strong id="sessionBest">0</strong>
+              </div>
+            </section>
+          </div>
+
+          <div class="nss-canvas-frame">
+            <div id="content" class="nss-game-stage">शीघ्रम् आगमिष्यति ...</div>
+          </div>
+
+          <p class="nss-mobile-hint">
+            <strong>Mobile:</strong> touch the left or right half of the game
+            canvas to move.
+          </p>
+        </div>
+
+        <aside
+          id="gameSidebar"
+          class="nss-sidebar"
+          aria-label="Game guide and results"
+        >
+          <div class="nss-help-content">
+            <section class="nss-info-card">
+              <div class="nss-info-heading">
+                <div class="nss-info-icon" aria-hidden="true">🎮</div>
+                <div>
+                  <span class="nss-card-kicker">How to Play</span>
+                  <h2>Keep moving</h2>
+                </div>
+              </div>
+
+              <div class="nss-control-list">
+                <div class="nss-control-row">
+                  <span class="nss-key">←</span>
+                  <span>Move left</span>
+                </div>
+                <div class="nss-control-row">
+                  <span class="nss-key">→</span>
+                  <span>Move right</span>
+                </div>
+                <div class="nss-control-row">
+                  <span class="nss-key nss-key-wide">Space</span>
+                  <span>Start / restart</span>
+                </div>
+              </div>
+            </section>
+
+            <details class="nss-details">
+              <summary>How scoring works</summary>
+              <div class="nss-details-body">
+                <p>
+                  Your in-game score increases as you reach higher platforms.
+                  That score is also used for the Zat.am leaderboard, capped at
+                  <strong>100 points</strong>.
+                </p>
+                <p>Run time is recorded but does not affect your score.</p>
+              </div>
+            </details>
+
+            <details class="nss-details">
+              <summary>Platform guide</summary>
+              <div class="nss-details-body nss-platform-list">
+                <p>
+                  <strong>Normal:</strong> safe landing and can restore life.
+                </p>
+                <p><strong>Spring:</strong> launches the character upward.</p>
+                <p><strong>Conveyor:</strong> pushes the character sideways.</p>
+                <p><strong>Fake:</strong> disappears after you stand on it.</p>
+                <p><strong>Hazard:</strong> damages your life when you land.</p>
+              </div>
+            </details>
+          </div>
+
+          <!-- Results replace the guide in the sidebar, directly beside the game. -->
+          <section
+            id="runResult"
+            class="nss-result-card"
+            hidden
+            aria-live="polite"
+          >
+            <div class="nss-result-heading">
+              <div class="nss-result-icon" aria-hidden="true">🏁</div>
+              <div>
+                <span class="nss-card-kicker">Run Complete</span>
+                <h2>Game Over</h2>
+              </div>
+            </div>
+
+            <div class="nss-result-grid">
+              <div>
+                <span>Leaderboard Score</span>
+                <strong id="resultLeaderboardScore">0 / 100</strong>
+              </div>
+              <div>
+                <span>Session Best</span>
+                <strong id="resultBestScore">0</strong>
+              </div>
+            </div>
+
+            <p id="resultRawDetail" class="nss-raw-detail" hidden></p>
+            <p id="scoreSaveStatus" class="nss-save-status">Saving score…</p>
+            <p class="nss-restart-note">
+              Press <strong>Space</strong> or tap the game canvas to play again.
+            </p>
+          </section>
+        </aside>
+      </section>
+    </main>
+
+    <script src="./js/main.js"></script>
+
+    <script type="module">
+      import {
+        initGameScore,
+        resetGameScore,
+        submitGameScore,
+      } from "../js/game-score.js";
+
+      const GAME_ID = "045-nss";
+      const GAME_NAME = "NS-SHAFT (क्रीडा)";
+      const game = window.Game;
+
+      const els = {
+        currentScore: document.getElementById("currentScore"),
+        currentLevel: document.getElementById("currentLevel"),
+        sessionBest: document.getElementById("sessionBest"),
+        status: document.getElementById("gameStatusBadge"),
+        sidebar: document.getElementById("gameSidebar"),
+        result: document.getElementById("runResult"),
+        resultLeaderboardScore: document.getElementById(
+          "resultLeaderboardScore",
+        ),
+        resultBestScore: document.getElementById("resultBestScore"),
+        rawDetail: document.getElementById("resultRawDetail"),
+        saveStatus: document.getElementById("scoreSaveStatus"),
+      };
+
+      let submittedForRun = false;
+      let latestLevel = 0;
+
+      initGameScore({ gameId: GAME_ID, gameName: GAME_NAME });
+
+      function leaderboardScore(rawScore) {
+        const numericScore = Number(rawScore) || 0;
+        return Math.max(0, Math.min(100, Math.round(numericScore)));
+      }
+
+      game.on("gameStart", () => {
+        submittedForRun = false;
+        latestLevel = 0;
+        resetGameScore();
+
+        els.currentScore.textContent = "0";
+        els.currentLevel.textContent = "0";
+        els.status.textContent = "Playing";
+        els.status.classList.add("is-playing");
+        els.sidebar.classList.remove("is-finished");
+        els.result.hidden = true;
+        els.rawDetail.hidden = true;
+        els.saveStatus.textContent = "";
+        els.saveStatus.classList.remove("is-success");
+      });
+
+      game.on("scoreChange", (score, bestScore, level) => {
+        latestLevel = Number(level) || 0;
+        els.currentScore.textContent = String(Number(score) || 0);
+        els.currentLevel.textContent = String(latestLevel);
+        els.sessionBest.textContent = String(Number(bestScore) || 0);
+      });
+
+      game.on("gameOver", async (rawScore, bestScore) => {
+        const numericRawScore = Number(rawScore) || 0;
+        const numericBestScore = Number(bestScore) || 0;
+        const finalScore = leaderboardScore(numericRawScore);
+
+        els.currentScore.textContent = String(numericRawScore);
+        els.sessionBest.textContent = String(numericBestScore);
+        els.status.textContent = "Game Over";
+        els.status.classList.remove("is-playing");
+
+        els.resultLeaderboardScore.textContent = `${finalScore} / 100`;
+        els.resultBestScore.textContent = String(numericBestScore);
+        // Only show a separate raw score if it differs from the capped leaderboard result.
+        els.rawDetail.hidden = numericRawScore <= 100;
+        els.rawDetail.textContent = `In-game score: ${numericRawScore}`;
+        els.result.hidden = false;
+        els.sidebar.classList.add("is-finished");
+
+        if (submittedForRun) return;
+        submittedForRun = true;
+        els.saveStatus.textContent = "Saving score…";
+
+        try {
+          const result = await submitGameScore(finalScore, {
+            result: "completed",
+            metrics: {
+              rawScore: numericRawScore,
+              levelReached: latestLevel,
+              sessionBest: numericBestScore,
+            },
+          });
+
+          if (result?.ok) {
+            els.saveStatus.textContent = "Score saved to the leaderboard ✓";
+            els.saveStatus.classList.add("is-success");
+          } else if (result?.reason === "not-signed-in") {
+            els.saveStatus.textContent =
+              "Run complete. Sign in to save scores to the leaderboard.";
+          } else {
+            els.saveStatus.textContent =
+              "Run complete, but the score was not saved.";
+          }
+        } catch (error) {
+          console.error("[NS-SHAFT] Score submission failed", error);
+          els.saveStatus.textContent =
+            "Run complete, but saving the score failed.";
+        }
+      });
+
+      game.launch(document.getElementById("content"));
+    </script>
 
     <!-- Shared Zat.am Navbar -->
-    <script
-      type="module"
-      src="../js/navbar-loader.js"
-    ></script>
-</body>
-
+    <script type="module" src="../js/navbar-loader.js"></script>
+  </body>
 </html>
