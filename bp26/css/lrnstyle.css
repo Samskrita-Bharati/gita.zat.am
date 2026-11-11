@@ -1,0 +1,711 @@
+:root {
+  --vocab-navy: #0b2b4f;
+  --vocab-heading: #09264a;
+  --vocab-gold: #f6b23b;
+  --vocab-coral: #f16945;
+  --vocab-blue: #2f6dff;
+  --vocab-background: #fffaf2;
+  --vocab-surface: #ffffff;
+  --vocab-soft: #fff6e6;
+  --vocab-border: #eadfce;
+  --vocab-border-strong: #dcc9ad;
+  --vocab-text: #18284a;
+  --vocab-muted: #687789;
+  --vocab-success: #2f855a;
+  --vocab-success-soft: #eef9f1;
+  --vocab-shadow: 0 8px 24px rgba(11, 43, 79, 0.08);
+  --vocab-shadow-small: 0 4px 12px rgba(11, 43, 79, 0.06);
+}
+
+html {
+  box-sizing: border-box;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: inherit;
+}
+
+body.bp26-vocabulary {
+  margin: 0;
+  padding: 7% 0 44px;
+  background: var(--vocab-background);
+  color: var(--vocab-text);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.vocab-game-shell {
+  width: min(calc(100% - 32px), 1180px);
+  margin: 0 auto;
+}
+
+/* ======================================================
+   INTRO
+====================================================== */
+
+.game-intro {
+  margin: 0 auto 26px;
+  padding: 16px 20px 0;
+  text-align: center;
+}
+
+.game-eyebrow {
+  margin: 0 0 7px;
+  color: var(--vocab-coral);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.game-intro h1 {
+  display: inline-block;
+  margin: 0;
+  padding: 0 0 9px;
+  border-bottom: 3px solid var(--vocab-gold);
+  color: var(--vocab-heading);
+  font-family: "Libre Baskerville", Baskerville, Georgia, serif;
+  font-size: clamp(2rem, 4vw, 2.7rem);
+  line-height: 1.2;
+}
+
+.game-intro h1 span {
+  white-space: nowrap;
+}
+
+.set-number {
+  margin-left: 0.22em;
+  color: var(--vocab-coral);
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 0.55em;
+  font-weight: 800;
+}
+
+.game-description {
+  max-width: 720px;
+  margin: 12px auto 0;
+  color: var(--vocab-muted);
+  font-size: 0.92rem;
+  line-height: 1.55;
+}
+
+/* ======================================================
+   SCORE PANEL
+====================================================== */
+
+.game-panel {
+  margin-bottom: 18px;
+}
+
+.score-panel {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid var(--vocab-border);
+  border-radius: 13px;
+  background: var(--vocab-surface);
+  box-shadow: var(--vocab-shadow-small);
+}
+
+.score-stat {
+  min-height: 62px;
+  padding: 9px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  border: 1px solid var(--vocab-border);
+  border-radius: 9px;
+  background: #fffaf2;
+  text-align: center;
+}
+
+.score-stat-primary {
+  border-color: var(--vocab-gold);
+  background: #fff4d8;
+}
+
+.score-stat-label {
+  color: var(--vocab-muted);
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.score-stat strong {
+  color: var(--vocab-heading);
+  font-size: 1.05rem;
+}
+
+/* ======================================================
+   SCORING HELP
+====================================================== */
+
+.scoring-help {
+  margin-top: 10px;
+  border: 1px solid var(--vocab-border);
+  border-radius: 10px;
+  background: var(--vocab-surface);
+  box-shadow: var(--vocab-shadow-small);
+  overflow: hidden;
+}
+
+.scoring-help summary {
+  padding: 10px 14px;
+  color: var(--vocab-heading);
+  font-size: 0.82rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.scoring-help-content {
+  padding: 0 14px 13px;
+  color: var(--vocab-muted);
+  font-size: 0.84rem;
+  line-height: 1.55;
+}
+
+.scoring-help-content p {
+  margin: 6px 0;
+}
+
+/* ======================================================
+   VOCABULARY GRID
+====================================================== */
+
+.vocab-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.vocab-card {
+  min-width: 0;
+  min-height: 310px;
+  padding: 18px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  border: 1px solid var(--vocab-border);
+  border-radius: 14px;
+
+  background: var(--vocab-surface);
+
+  box-shadow: var(--vocab-shadow-small);
+
+  transition:
+    transform 0.16s ease,
+    border-color 0.16s ease,
+    box-shadow 0.16s ease,
+    background 0.16s ease;
+}
+
+.vocab-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--vocab-border-strong);
+  box-shadow: var(--vocab-shadow);
+}
+
+.vocab-card.is-explored {
+  border-color: var(--vocab-success);
+  background: var(--vocab-success-soft);
+  box-shadow: 0 0 0 3px rgba(47, 133, 90, 0.1);
+}
+
+/* ======================================================
+   CARD CONTENT
+====================================================== */
+
+.vocab-word {
+  width: 100%;
+  margin: 0 0 14px;
+
+  color: var(--vocab-heading);
+
+  font-size: clamp(1rem, 1.7vw, 1.18rem);
+  font-weight: 750;
+  line-height: 1.4;
+
+  text-align: center;
+
+  overflow-wrap: anywhere;
+}
+
+.vocab-visual {
+  width: 100%;
+  min-height: 160px;
+  flex: 1;
+
+  display: grid;
+  place-items: center;
+
+  margin-bottom: 14px;
+}
+
+.vocab-image {
+  max-width: 155px;
+  max-height: 155px;
+
+  width: auto;
+  height: auto;
+
+  object-fit: contain;
+}
+
+.vocab-unicode {
+  display: grid;
+  min-height: 155px;
+  place-items: center;
+
+  font-size: clamp(4.5rem, 9vw, 7.5rem);
+  line-height: 1;
+}
+
+.vocab-image-missing {
+  color: var(--vocab-muted);
+  font-size: 0.8rem;
+}
+
+/* ======================================================
+   AUDIO BUTTON
+====================================================== */
+
+.playBtn {
+  min-width: 112px;
+  min-height: 42px;
+
+  padding: 9px 16px;
+
+  border: 1px solid var(--vocab-border-strong);
+  border-radius: 9px;
+
+  background: var(--vocab-surface);
+  color: var(--vocab-heading);
+
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 800;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.15s ease,
+    background 0.15s ease,
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.playBtn:hover {
+  transform: translateY(-1px);
+
+  border-color: var(--vocab-gold);
+  background: var(--vocab-soft);
+
+  box-shadow: var(--vocab-shadow-small);
+}
+
+.playBtn.is-explored {
+  border-color: var(--vocab-success);
+  color: #205c3e;
+}
+
+.playBtn:focus-visible,
+.scoring-help summary:focus-visible,
+.bp26Btn:focus-visible {
+  outline: 3px solid rgba(47, 109, 255, 0.3);
+  outline-offset: 2px;
+}
+
+.explored-status {
+  margin-top: 10px;
+
+  color: var(--vocab-success);
+
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+/* ======================================================
+   ERROR
+====================================================== */
+
+.load-error {
+  grid-column: 1 / -1;
+
+  padding: 26px;
+
+  border: 1px solid var(--vocab-border);
+  border-radius: 12px;
+
+  background: var(--vocab-surface);
+  color: var(--vocab-coral);
+
+  text-align: center;
+}
+
+/* ======================================================
+   CELEBRATION
+====================================================== */
+
+.celebration-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+
+  display: none;
+  align-items: center;
+  justify-content: center;
+
+  padding: 20px;
+
+  background: rgba(9, 38, 74, 0.42);
+
+  backdrop-filter: blur(2px);
+}
+
+.celebration-overlay.is-visible {
+  display: flex;
+}
+
+.celebration-box {
+  width: min(460px, 92vw);
+
+  padding: 22px;
+
+  border: 1px solid var(--vocab-border);
+  border-radius: 18px;
+
+  background: var(--vocab-surface);
+
+  box-shadow: 0 20px 50px rgba(11, 43, 79, 0.24);
+
+  text-align: center;
+}
+
+.bp26Sparkles {
+  margin: 4px 0 8px;
+
+  font-size: 52px;
+  line-height: 1.1;
+
+  animation: bp26Pop 600ms ease-out both;
+}
+
+.celebration-box h2 {
+  margin: 0;
+
+  color: var(--vocab-heading);
+
+  font-family: "Libre Baskerville", Baskerville, Georgia, serif;
+  font-size: 1.6rem;
+}
+
+.celebration-box > p {
+  margin: 8px 0 0;
+
+  color: var(--vocab-muted);
+
+  font-size: 0.9rem;
+}
+
+/* ======================================================
+   FINAL SCORE
+====================================================== */
+
+.final-score-grid {
+  margin-top: 18px;
+
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+
+  gap: 8px;
+}
+
+.final-score-grid > div {
+  padding: 12px;
+
+  border: 1px solid var(--vocab-border);
+  border-radius: 10px;
+
+  background: var(--vocab-soft);
+}
+
+.final-score-grid span {
+  display: block;
+
+  margin-bottom: 4px;
+
+  color: var(--vocab-muted);
+
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+
+  text-transform: uppercase;
+}
+
+.final-score-grid strong {
+  color: var(--vocab-heading);
+  font-size: 1rem;
+}
+
+.save-status {
+  min-height: 20px;
+
+  margin: 14px 0 0 !important;
+
+  color: var(--vocab-muted) !important;
+
+  font-size: 0.8rem !important;
+}
+
+.bp26Btn {
+  margin-top: 14px;
+
+  min-height: 42px;
+
+  padding: 9px 18px;
+
+  border: 1px solid var(--vocab-navy);
+  border-radius: 9px;
+
+  background: var(--vocab-navy);
+  color: #fff;
+
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 800;
+
+  cursor: pointer;
+}
+
+.bp26Btn:hover {
+  background: #133f6d;
+  border-color: #133f6d;
+}
+
+/* ======================================================
+   CONFETTI
+====================================================== */
+
+.bp26Confetti {
+  position: fixed;
+  top: -12px;
+
+  z-index: 10001;
+
+  border-radius: 3px;
+
+  opacity: 0.95;
+
+  pointer-events: none;
+
+  animation: bp26Fall 950ms linear forwards;
+}
+
+@keyframes bp26Pop {
+  from {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes bp26Fall {
+  to {
+    transform: translateY(110vh) rotate(540deg);
+    opacity: 0.9;
+  }
+}
+
+/* ======================================================
+   TABLETS
+====================================================== */
+
+@media (max-width: 900px) {
+  body.bp26-vocabulary {
+    padding-top: 96px;
+  }
+
+  .vocab-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* ======================================================
+   MOBILE
+   Keep 2 cards per row on normal phones
+====================================================== */
+
+@media (max-width: 640px) {
+  body.bp26-vocabulary {
+    padding-top: 92px;
+  }
+
+  .vocab-game-shell {
+    width: min(calc(100% - 20px), 1180px);
+  }
+
+  .game-intro {
+    margin-bottom: 20px;
+    padding: 10px 8px 0;
+  }
+
+  .game-intro h1 {
+    font-size: clamp(1.65rem, 8vw, 2.15rem);
+  }
+
+  .score-panel {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .score-stat:last-child {
+    grid-column: 1 / -1;
+  }
+
+  /*
+   * IMPORTANT:
+   * Normal mobile devices now keep TWO vocabulary
+   * cards per row.
+   */
+  .vocab-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .vocab-card {
+    min-height: 250px;
+    padding: 12px 10px;
+    border-radius: 12px;
+  }
+
+  .vocab-word {
+    margin-bottom: 8px;
+    font-size: 0.95rem;
+    line-height: 1.35;
+  }
+
+  .vocab-visual {
+    min-height: 110px;
+    margin-bottom: 10px;
+  }
+
+  .vocab-image {
+    max-width: 108px;
+    max-height: 108px;
+  }
+
+  .vocab-unicode {
+    min-height: 108px;
+    font-size: clamp(3.4rem, 15vw, 5rem);
+  }
+
+  .playBtn {
+    width: 100%;
+    min-width: 0;
+    min-height: 40px;
+
+    padding: 8px 6px;
+
+    font-size: 0.82rem;
+  }
+
+  .explored-status {
+    margin-top: 7px;
+    font-size: 0.7rem;
+  }
+}
+
+/* ======================================================
+   SMALL MOBILE
+   Only very narrow screens use one card
+====================================================== */
+
+@media (max-width: 360px) {
+  body.bp26-vocabulary {
+    padding-top: 86px;
+  }
+
+  .score-panel {
+    grid-template-columns: 1fr;
+  }
+
+  .score-stat:last-child {
+    grid-column: auto;
+  }
+
+  .vocab-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .vocab-card {
+    min-height: 0;
+    padding: 16px;
+  }
+
+  .vocab-word {
+    font-size: 1rem;
+  }
+
+  .vocab-visual {
+    min-height: 145px;
+  }
+
+  .vocab-image {
+    max-width: 140px;
+    max-height: 140px;
+  }
+
+  .vocab-unicode {
+    min-height: 140px;
+    font-size: clamp(4rem, 20vw, 6rem);
+  }
+
+  .playBtn {
+    width: auto;
+    min-width: 112px;
+  }
+
+  .final-score-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ======================================================
+   PRINT
+====================================================== */
+
+@media print {
+  button,
+  .scoring-help,
+  .celebration-overlay {
+    display: none !important;
+  }
+
+  .k {
+    border-left: 4px ridge green;
+  }
+
+  .p {
+    border-left: 3px groove blue;
+  }
+
+  .s {
+    border-left: 3px groove red;
+  }
+
+  .n {
+    border-left: 3px groove black;
+  }
+}
