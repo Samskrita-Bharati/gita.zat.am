@@ -366,6 +366,14 @@ export const menu = [
     desc: `Practice typing on English (Harvard-Kyoto) transliteration of the shlokas from Bhagavad Gita`,
   },
   {
+    id: 60,
+    title: "Sanskrit Dialogue Game",
+    category: "RG",
+    dir: "060-sanskrit-dialogue",
+    cover: "./060-sanskrit-dialogue/Dialogue-thumbnail.png",
+    desc: `Learn conversational Sanskrit through interactive dialogue stories.`,
+  },
+  {
     id: 28,
     title: "शीघ्रम् आगमिष्यति ...",
     category: "TA",
@@ -490,7 +498,7 @@ function getGameCover(item) {
     return "./शत.म्.png";
   }
 
-  return `./${item.dir}/cover.jpg`;
+  return item.cover || `./${item.dir}/cover.jpg`;
 }
 
 // =====================================================
