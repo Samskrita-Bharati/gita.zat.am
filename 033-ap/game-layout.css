@@ -4,6 +4,10 @@
   --archive-panel-height: 500px;
 }
 
+.ap-score-modal[hidden] {
+  display: none;
+}
+
 .archive-game-card {
   overflow: hidden;
   padding: clamp(12px, 2.5vw, 24px);
@@ -36,6 +40,11 @@
 }
 
 .archive-game-card .archive-heading-row {
+  flex: 0 0 83.333333%;
+  max-width: 83.333333%;
+  margin-right: auto;
+  margin-bottom: 16px;
+  margin-left: auto;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -43,12 +52,23 @@
 }
 
 .archive-game-card .archive-heading-row h1.title {
-  margin: 4px 0 24px;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.archive-game-card .archive-back-button {
+  line-height: 1.2;
 }
 
 .archive-game-card #list,
 .archive-game-card #if {
   background: transparent;
+}
+
+.archive-game-card #if {
+  height: var(--archive-panel-height);
+  padding-top: 0 !important;
+  overflow: hidden;
 }
 
 .archive-game-card #list > .row,
@@ -123,11 +143,13 @@
   }
 
   .archive-game-card .archive-heading-row {
+    flex-basis: 100%;
+    max-width: 100%;
     flex-wrap: wrap;
   }
 
   .archive-game-card .archive-heading-row h1.title {
-    margin-bottom: 8px;
+    margin: 0;
   }
 
   .archive-game-card .archive-back-button {
