@@ -142,8 +142,12 @@
    * var
    */
   var floorArray, hero;
-  var $wrap, $canvas, $ctx, $res;
+  var $wrap, $canvas, $playfield, $ctx, $res;
   var lastTime;
+  var frameId = null;
+  var isPaused = false,
+    pauseStartedAt = 0,
+    totalPausedTime = 0;
   var drawCountStartTime = 0,
     drawCount = 0,
     lastInterval = 0,
@@ -154,10 +158,12 @@
     level;
   var isRunning = false,
     isCooldownTime = false;
+  var restartLocked = false,
+    cooldownTimer = null;
   var leftPressed = NaN,
     rightPressed = NaN,
     spacePressed = NaN;
-  var topBarChange = false;
+  // Lives and score now live in the page's accessible four-stat strip.
   // var timeCoefficient = 1, timeModifier = 0;
 
   var FloorSeq = (function () {
@@ -608,13 +614,13 @@
       regain: function () {
         if (this.life < 10) {
           ++this.life;
-          topBarChange = true;
+          fireEvent("lifeChange", this.life);
         }
       },
       hurt: function (num, time) {
         this.hurtTime = time;
         this.life = Math.max(0, this.life - num);
-        topBarChange = true;
+        fireEvent("lifeChange", this.life);
       },
     },
   );
@@ -818,22 +824,8 @@
 
     context.restore();
 
-    if (topBarChange) {
-      topBarChange = false;
-      context.save();
-      context.clearRect(0, 0, STAGE_WIDTH, MARGIN_TOP);
-      context.fillStyle = "#000";
-      context.font = "12pt monospace";
-      context.fillText(
-        "जीवनम्‌ " +
-          "oooooooooo----------".substr(10 - hero.life, 10) +
-          "   प्राप्ताङ्काः  " +
-          Sanscript.t(String(score), "iast", "devanagari"),
-        10,
-        24,
-      );
-      context.restore();
-    }
+    // The former Sanskrit lives/score HUD is no longer painted here.
+    // Only the 30px HUD strip is visually cropped in the page layout.
 
     if (window.DEBUG) {
       context.save();
@@ -859,7 +851,6 @@
   function updateScore(floorSeq) {
     var newScore = Math.floor(floorSeq * 0.2);
     if (newScore != score) {
-      topBarChange = true;
       var newLevel = Math.floor(newScore * 0.1);
       if (newLevel > level) {
         console.info("level up", newLevel);
@@ -884,73 +875,75 @@
     return judge();
   }
 
-  function frame(time) {
-    if (window.DEBUG_TIME) {
-      time *= window.DEBUG_TIME;
-    }
-    if (!lastTime) {
-      lastTime = time;
-    }
+  // Use a game clock that excludes every paused interval: springs, fake
+  // platforms, collision recovery and sprite animations all freeze together.
+  function timeScale() {
+    return window.DEBUG_TIME || 1;
+  }
+
+  function frame(rawTime) {
+    frameId = null;
+    if (!isRunning || isPaused) return;
+    var time = rawTime * timeScale() - totalPausedTime;
+    if (!lastTime) lastTime = time;
     var duration = time - lastTime;
     if (duration > 2000) {
-      console.info("Pause, duration: " + duration);
+      // rAF may stop when a tab becomes inactive. Never abandon a run or
+      // advance physics by the whole period on return.
+      totalPausedTime += duration;
+      Game.pause("interruption");
+      return;
+    }
+
+    var ended = false;
+    for (; duration > MAX_ACTION_INTERVAL; duration -= MAX_ACTION_INTERVAL) {
+      ended = loop(MAX_ACTION_INTERVAL, time - duration);
+      if (ended) break;
+    }
+    if (!ended) ended = loop(duration, time);
+    if (ended) {
+      isCooldownTime = true;
+      cooldownTimer = setTimeout(function () {
+        isCooldownTime = false;
+        if (!isRunning) drawAll($ctx, time);
+      }, 1000);
+      bestScore = Math.max(score, bestScore);
+      fireEvent("gameOver", score, bestScore);
       isRunning = false;
       window.addEventListener("touchmove", onMove, false);
-    } else {
-      var ended = false;
-      for (; duration > MAX_ACTION_INTERVAL; duration -= MAX_ACTION_INTERVAL) {
-        ended = loop(MAX_ACTION_INTERVAL, time - duration);
-        if (ended) {
-          break;
-        }
-      }
-      if (!ended) {
-        ended = loop(duration, time);
-      }
-      if (ended) {
-        isCooldownTime = true;
-        setTimeout(function () {
-          isCooldownTime = false;
-          drawAll($ctx, time);
-        }, 1000);
-        bestScore = Math.max(score, bestScore);
-        fireEvent("gameOver", score, bestScore);
-        isRunning = false;
-        window.addEventListener("touchmove", onMove, false);
-      }
     }
     drawAll($ctx, time);
     lastTime = time;
-    if (isRunning) {
-      requestAnimationFrame(frame);
-    }
+    if (isRunning && !isPaused) frameId = requestAnimationFrame(frame);
   }
 
   function resizeCanvas($wrap, $canvas, $ctx) {
     var wrapWidth =
       ($wrap && $wrap.clientWidth) || document.documentElement.clientWidth;
-    // Fill as much of the usable viewport as possible on desktop. The
-    // previous 1.12 cap kept the playable area much smaller than the card.
-    // Preserve the 360x510 game coordinate system/aspect ratio, and avoid
-    // vertical scrolling on ordinary laptop displays. Mobile can scroll.
-    var desktopLayout = window.innerWidth > 900;
+    // Scale only the visible 360x480 playfield (the old 30px HUD is cropped).
+    // Keep native 360x510 drawing coordinates and physics unchanged.
+    // Fit the stage below the header on laptops; smaller screens may scroll.
+    var desktopLayout = window.innerWidth > 800;
     var stageTop = Math.max(0, $wrap.getBoundingClientRect().top);
+    var visibleHeight = STAGE_HEIGHT - MARGIN_TOP;
     var visibleStageHeight = desktopLayout
-      ? Math.max(270, window.innerHeight - stageTop - 24)
-      : STAGE_HEIGHT * 1.35;
+      ? Math.max(310, window.innerHeight - stageTop - 16)
+      : visibleHeight * 1.35;
     var zoomRate = Math.min(
       wrapWidth / STAGE_WIDTH,
-      visibleStageHeight / STAGE_HEIGHT,
-      desktopLayout ? 1.52 : 1.35,
+      visibleStageHeight / visibleHeight,
+      desktopLayout ? 1.65 : 1.35,
     );
     var ratio = window.devicePixelRatio || 1;
+    $playfield.style.width = STAGE_WIDTH * zoomRate + "px";
+    $playfield.style.height = visibleHeight * zoomRate + "px";
+    $canvas.style.top = -MARGIN_TOP * zoomRate + "px";
     $canvas.style.width = STAGE_WIDTH * zoomRate + "px";
     $canvas.style.height = STAGE_HEIGHT * zoomRate + "px";
     $canvas.width = STAGE_WIDTH * zoomRate * ratio;
     $canvas.height = STAGE_HEIGHT * zoomRate * ratio;
 
     $ctx.setTransform(zoomRate * ratio, 0, 0, zoomRate * ratio, 0, 0);
-    topBarChange = true;
     if (lastTime) {
       drawAll($ctx, lastTime);
     }
@@ -982,9 +975,11 @@
     // $canvas.style.height = '0px';
     // $canvas.style.transition = 'width 0.5s, height 0.5s';
     $canvas.style.display = "block";
-    $canvas.style.margin = "0 auto";
     clearNode($wrap);
-    $wrap.appendChild($canvas);
+    $playfield = document.createElement("div");
+    $playfield.className = "nss-playfield-window";
+    $playfield.appendChild($canvas);
+    $wrap.appendChild($playfield);
 
     $ctx = $canvas.getContext("2d");
 
@@ -1003,7 +998,37 @@
     window.addEventListener(
       "keydown",
       function (e) {
-        if (e.keyCode == 37) {
+        // P works even when the Pause / Resume button has focus, but never
+        // intercepts typing in editable fields. Leave Space/Enter to buttons.
+        var editing =
+          e.target &&
+          e.target.closest &&
+          e.target.closest('input, select, textarea, [contenteditable="true"]');
+        if (e.keyCode == 80 && !editing) {
+          if (!e.repeat) Game.togglePause();
+          e.preventDefault();
+          e.stopPropagation();
+          return;
+        }
+        if (
+          e.target &&
+          e.target.closest &&
+          e.target.closest(
+            'button, a, input, select, textarea, summary, [role="button"]',
+          )
+        )
+          return;
+        if (isPaused) {
+          // Ignore gameplay movement while paused.
+          if (
+            e.keyCode == 37 ||
+            e.keyCode == 39 ||
+            e.keyCode == 32 ||
+            e.keyCode == 13
+          ) {
+            e.preventDefault();
+          }
+        } else if (e.keyCode == 37) {
           // left
           leftPressed = 0;
           hero.turnLeft();
@@ -1017,7 +1042,7 @@
           e.stopPropagation();
         } else if (e.keyCode == 32 || e.keyCode == 13) {
           // space or enter
-          if (!isRunning && !isCooldownTime) {
+          if (!isRunning && !isCooldownTime && !restartLocked) {
             spacePressed = 0;
             drawAll($ctx, lastTime);
           }
@@ -1030,6 +1055,14 @@
     window.addEventListener(
       "keyup",
       function (e) {
+        if (
+          e.target &&
+          e.target.closest &&
+          e.target.closest(
+            'button, a, input, select, textarea, summary, [role="button"]',
+          )
+        )
+          return;
         if (e.keyCode == 37) {
           leftPressed = NaN;
           if (isFinite(rightPressed)) {
@@ -1049,7 +1082,7 @@
           (e.keyCode == 32 || e.keyCode == 13)
         ) {
           spacePressed = NaN;
-          start();
+          if (!restartLocked) start();
         }
       },
       false,
@@ -1058,9 +1091,9 @@
       "touchstart",
       function (e) {
         var touch = e.changedTouches[0];
-        if (touch) {
+        if (touch && !isPaused) {
           if (!isRunning) {
-            if (!isCooldownTime && e.target == $canvas) {
+            if (!isCooldownTime && !restartLocked && e.target == $canvas) {
               spacePressed = touch.identifier;
               drawAll($ctx, lastTime);
             }
@@ -1088,7 +1121,7 @@
         if (touch) {
           if (touch.identifier == spacePressed) {
             spacePressed = NaN;
-            start();
+            if (!restartLocked) start();
           } else if (touch.identifier == leftPressed) {
             leftPressed = NaN;
             if (isFinite(rightPressed)) {
@@ -1108,6 +1141,9 @@
       },
       false,
     );
+    document.addEventListener("visibilitychange", function () {
+      if (document.hidden) Game.pause("hidden");
+    });
     window.addEventListener(
       "touchcancel",
       function (e) {
@@ -1138,7 +1174,7 @@
   }
 
   function start() {
-    if (isRunning) {
+    if (isRunning || restartLocked) {
       return;
     }
     if (judge()) {
@@ -1153,14 +1189,79 @@
       floorVelocity = FLOOR_VELOCITY_BASE;
       score = 0;
       level = 0;
-      topBarChange = true;
+      fireEvent("lifeChange", hero.life);
       fireEvent("scoreChange", score, bestScore, level);
     }
     window.removeEventListener("touchmove", onMove, false);
     isRunning = true;
+    isPaused = false;
+    pauseStartedAt = 0;
+    totalPausedTime = 0;
     lastTime = 0;
-    requestAnimationFrame(frame);
+    if (frameId !== null) cancelAnimationFrame(frameId);
+    frameId = requestAnimationFrame(frame);
+    if (document.hidden) Game.pause("hidden");
   }
+
+  Game.pause = function (reason) {
+    if (!isRunning || isPaused) return false;
+    isPaused = true;
+    pauseStartedAt = performance.now() * timeScale();
+    leftPressed = NaN;
+    rightPressed = NaN;
+    spacePressed = NaN;
+    if (hero) hero.stay();
+    if (frameId !== null) {
+      cancelAnimationFrame(frameId);
+      frameId = null;
+    }
+    fireEvent("gamePause", reason || "manual");
+    return true;
+  };
+
+  Game.resume = function () {
+    if (!isRunning || !isPaused || document.hidden) return false;
+    totalPausedTime += Math.max(
+      0,
+      performance.now() * timeScale() - pauseStartedAt,
+    );
+    pauseStartedAt = 0;
+    isPaused = false;
+    lastTime = 0; // First resumed frame should have no catch-up physics.
+    fireEvent("gameResume");
+    frameId = requestAnimationFrame(frame);
+    return true;
+  };
+
+  Game.togglePause = function () {
+    return isPaused ? Game.resume() : Game.pause("manual");
+  };
+
+  Game.getState = function () {
+    return isPaused ? "paused" : isRunning ? "playing" : "stopped";
+  };
+
+  // The page controls when a finished run can be restarted. In-game physics,
+  // movement, progression, and score calculations are otherwise unchanged.
+  Game.setRestartLocked = function (locked) {
+    restartLocked = !!locked;
+    if (restartLocked) spacePressed = NaN;
+  };
+
+  Game.restart = function () {
+    if (isRunning) return false;
+    if (cooldownTimer !== null) {
+      clearTimeout(cooldownTimer);
+      cooldownTimer = null;
+    }
+    isCooldownTime = false;
+    restartLocked = false;
+    spacePressed = NaN;
+    leftPressed = NaN;
+    rightPressed = NaN;
+    start();
+    return true;
+  };
 
   Game.launch = function ($wrapNode) {
     $wrap = $wrapNode;

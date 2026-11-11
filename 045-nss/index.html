@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>NS-SHAFT - क्रीडा | Zat.am</title>
 
-    <script src="https://cdn.jsdelivr.net/npm/@sanskrit-coders/sanscript@1.1.0/sanscript.min.js"></script>
     <link rel="stylesheet" href="./css/style.css" />
   </head>
 
@@ -95,15 +94,17 @@
 
     <main class="nss-shell">
       <section class="nss-hero" aria-labelledby="game-title">
-        <div class="nss-eyebrow">Zat.am Games</div>
-        <h1 id="game-title">NS-SHAFT <span>क्रीडा</span></h1>
-        <div class="nss-title-rule" aria-hidden="true"></div>
+        <div class="nss-hero-title">
+          <div class="nss-eyebrow">Zat.am Games</div>
+          <h1 id="game-title">NS-SHAFT <span>क्रीडा</span></h1>
+          <div class="nss-title-rule" aria-hidden="true"></div>
+        </div>
         <p>
           Stay on the platforms, avoid hazards, and climb as high as you can.
         </p>
       </section>
 
-      <section class="nss-layout" aria-label="NS-SHAFT game and instructions">
+      <section class="nss-layout" aria-label="NS-SHAFT arcade game">
         <div class="nss-game-card">
           <div class="nss-game-top">
             <div class="nss-game-card-header">
@@ -111,16 +112,26 @@
                 <span class="nss-card-kicker">Arcade Survival</span>
                 <h2>Climb the Shaft</h2>
               </div>
-              <span
-                id="gameStatusBadge"
-                class="nss-status-badge"
-                role="status"
-                aria-live="polite"
-                >Ready</span
-              >
+              <div class="nss-game-controls">
+                <span
+                  id="gameStatusBadge"
+                  class="nss-status-badge"
+                  role="status"
+                  aria-live="polite"
+                  >Ready</span
+                >
+                <button
+                  type="button"
+                  id="gamePauseButton"
+                  class="nss-pause-button"
+                  aria-keyshortcuts="P"
+                  disabled
+                >
+                  <span class="nss-pause-symbol" aria-hidden="true">Ⅱ</span>
+                  <span id="gamePauseLabel">Pause Game</span>
+                </button>
+              </div>
             </div>
-
-            <!-- Live statistics share the heading row to give the canvas more height. -->
             <section class="nss-stats" aria-label="Current game statistics">
               <div class="nss-stat-item">
                 <span class="nss-stat-label">Score</span>
@@ -131,6 +142,10 @@
                 <strong id="currentLevel">0</strong>
               </div>
               <div class="nss-stat-item">
+                <span class="nss-stat-label">Lives</span>
+                <strong id="currentLives">10 / 10</strong>
+              </div>
+              <div class="nss-stat-item">
                 <span class="nss-stat-label">Session Best</span>
                 <strong id="sessionBest">0</strong>
               </div>
@@ -138,106 +153,158 @@
           </div>
 
           <div class="nss-canvas-frame">
-            <div id="content" class="nss-game-stage">शीघ्रम् आगमिष्यति ...</div>
-          </div>
+            <div
+              id="content"
+              class="nss-game-stage"
+              tabindex="-1"
+              role="region"
+              aria-label="NS-SHAFT game"
+            >
+              शीघ्रम् आगमिष्यति ...
+            </div>
 
-          <p class="nss-mobile-hint">
-            <strong>Mobile:</strong> touch the left or right half of the game
-            canvas to move.
-          </p>
-        </div>
-
-        <aside
-          id="gameSidebar"
-          class="nss-sidebar"
-          aria-label="Game guide and results"
-        >
-          <div class="nss-help-content">
-            <section class="nss-info-card">
-              <div class="nss-info-heading">
-                <div class="nss-info-icon" aria-hidden="true">🎮</div>
-                <div>
-                  <span class="nss-card-kicker">How to Play</span>
-                  <h2>Keep moving</h2>
-                </div>
-              </div>
-
-              <div class="nss-control-list">
-                <div class="nss-control-row">
-                  <span class="nss-key">←</span>
-                  <span>Move left</span>
-                </div>
-                <div class="nss-control-row">
-                  <span class="nss-key">→</span>
-                  <span>Move right</span>
-                </div>
-                <div class="nss-control-row">
-                  <span class="nss-key nss-key-wide">Space</span>
-                  <span>Start / restart</span>
-                </div>
+            <section
+              id="pauseOverlay"
+              class="nss-pause-overlay"
+              aria-labelledby="pauseTitle"
+              hidden
+            >
+              <div class="nss-pause-content">
+                <div class="nss-pause-icon" aria-hidden="true">Ⅱ</div>
+                <h3 id="pauseTitle">Game paused</h3>
+                <p>
+                  Your progress is safe. Select
+                  <strong>Resume Game</strong> above, or press <kbd>P</kbd> to
+                  continue.
+                </p>
               </div>
             </section>
 
-            <details class="nss-details">
-              <summary>How scoring works</summary>
-              <div class="nss-details-body">
-                <p>
-                  Your in-game score increases as you reach higher platforms.
-                  That score is also used for the Zat.am leaderboard, capped at
-                  <strong>100 points</strong>.
-                </p>
-                <p>Run time is recorded but does not affect your score.</p>
+            <!-- A decision card appears over the navy stage after Game Over,
+                 keeping the next action visible without scrolling. -->
+            <section
+              id="runResult"
+              class="nss-decision-panel"
+              role="dialog"
+              aria-labelledby="resultTitle"
+              aria-describedby="resultMessage"
+              hidden
+              tabindex="-1"
+            >
+              <div class="nss-result-heading">
+                <div class="nss-result-icon" aria-hidden="true">🏁</div>
+                <div>
+                  <span id="resultKicker" class="nss-card-kicker"
+                    >Run Complete</span
+                  >
+                  <h2 id="resultTitle">Nice run!</h2>
+                </div>
               </div>
-            </details>
-
-            <details class="nss-details">
-              <summary>Platform guide</summary>
-              <div class="nss-details-body nss-platform-list">
-                <p>
-                  <strong>Normal:</strong> safe landing and can restore life.
-                </p>
-                <p><strong>Spring:</strong> launches the character upward.</p>
-                <p><strong>Conveyor:</strong> pushes the character sideways.</p>
-                <p><strong>Fake:</strong> disappears after you stand on it.</p>
-                <p><strong>Hazard:</strong> damages your life when you land.</p>
+              <p id="resultMessage" class="nss-result-message">
+                Try another round to beat your score, or save your best result
+                now.
+              </p>
+              <div class="nss-result-grid">
+                <div>
+                  <span>Best unsaved score</span>
+                  <strong id="resultLeaderboardScore">0 / 100</strong>
+                </div>
+                <div>
+                  <span>Session best</span>
+                  <strong id="resultBestScore">0</strong>
+                </div>
               </div>
-            </details>
+              <p id="resultRawDetail" class="nss-raw-detail" hidden></p>
+              <p
+                id="scoreSaveStatus"
+                class="nss-save-status"
+                role="status"
+                aria-live="polite"
+              >
+                Nothing has been sent to the leaderboard yet.
+              </p>
+              <div class="nss-result-actions">
+                <button
+                  type="button"
+                  id="tryAgainButton"
+                  class="nss-button nss-button-outline"
+                >
+                  Try again
+                </button>
+                <button
+                  type="button"
+                  id="saveScoreButton"
+                  class="nss-button nss-button-primary"
+                >
+                  Save best score
+                </button>
+              </div>
+            </section>
           </div>
-
-          <!-- Results replace the guide in the sidebar, directly beside the game. -->
-          <section
-            id="runResult"
-            class="nss-result-card"
-            hidden
-            aria-live="polite"
-          >
-            <div class="nss-result-heading">
-              <div class="nss-result-icon" aria-hidden="true">🏁</div>
-              <div>
-                <span class="nss-card-kicker">Run Complete</span>
-                <h2>Game Over</h2>
-              </div>
-            </div>
-
-            <div class="nss-result-grid">
-              <div>
-                <span>Leaderboard Score</span>
-                <strong id="resultLeaderboardScore">0 / 100</strong>
-              </div>
-              <div>
-                <span>Session Best</span>
-                <strong id="resultBestScore">0</strong>
-              </div>
-            </div>
-
-            <p id="resultRawDetail" class="nss-raw-detail" hidden></p>
-            <p id="scoreSaveStatus" class="nss-save-status">Saving score…</p>
-            <p class="nss-restart-note">
-              Press <strong>Space</strong> or tap the game canvas to play again.
-            </p>
-          </section>
-        </aside>
+          <p class="nss-mobile-hint">
+            <strong>Mobile:</strong> touch the left or right half of the canvas
+            to move.
+          </p>
+        </div>
       </section>
+
+      <!-- The guide sits below the main game, leaving the canvas full-width. -->
+      <aside class="nss-guide" aria-label="How to play and platform guide">
+        <section class="nss-info-card">
+          <div class="nss-info-heading">
+            <div class="nss-info-icon" aria-hidden="true">🎮</div>
+            <div>
+              <span class="nss-card-kicker">How to Play</span>
+              <h2>Keep moving</h2>
+            </div>
+          </div>
+          <div class="nss-control-list">
+            <div class="nss-control-row">
+              <span class="nss-key">←</span><span>Move left</span>
+            </div>
+            <div class="nss-control-row">
+              <span class="nss-key">→</span><span>Move right</span>
+            </div>
+            <div class="nss-control-row">
+              <span class="nss-key nss-key-wide">Space</span
+              ><span>Start game</span>
+            </div>
+            <div class="nss-control-row">
+              <span class="nss-key">P</span><span>Pause / resume</span>
+            </div>
+          </div>
+          <p class="nss-guide-tip">
+            Switching tabs also pauses the game. When your run ends, choose
+            whether to try again or save your best score.
+          </p>
+        </section>
+        <div class="nss-guide-details">
+          <details class="nss-details">
+            <summary>How scoring works</summary>
+            <div class="nss-details-body">
+              <p>
+                Your in-game score increases as you reach higher platforms. Your
+                best unsaved result is used for the Zat.am leaderboard, capped
+                at <strong>100 points</strong>.
+              </p>
+              <p>
+                Run time is recorded but does not affect your score. Nothing is
+                submitted until you select <strong>Save best score</strong>.
+              </p>
+            </div>
+          </details>
+          <details class="nss-details">
+            <summary>Platform guide</summary>
+            <div class="nss-details-body nss-platform-list">
+              <p><strong>Normal:</strong> safe landing and can restore life.</p>
+              <p><strong>Spring:</strong> launches the character upward.</p>
+              <p><strong>Conveyor:</strong> pushes the character sideways.</p>
+              <p><strong>Fake:</strong> disappears after you stand on it.</p>
+              <p><strong>Hazard:</strong> damages your life when you land.</p>
+            </div>
+          </details>
+        </div>
+      </aside>
     </main>
 
     <script src="./js/main.js"></script>
@@ -256,42 +323,105 @@
       const els = {
         currentScore: document.getElementById("currentScore"),
         currentLevel: document.getElementById("currentLevel"),
+        currentLives: document.getElementById("currentLives"),
         sessionBest: document.getElementById("sessionBest"),
         status: document.getElementById("gameStatusBadge"),
-        sidebar: document.getElementById("gameSidebar"),
+        pauseButton: document.getElementById("gamePauseButton"),
+        pauseLabel: document.getElementById("gamePauseLabel"),
+        pauseOverlay: document.getElementById("pauseOverlay"),
+        gameStage: document.getElementById("content"),
         result: document.getElementById("runResult"),
+        resultKicker: document.getElementById("resultKicker"),
+        resultTitle: document.getElementById("resultTitle"),
+        resultMessage: document.getElementById("resultMessage"),
         resultLeaderboardScore: document.getElementById(
           "resultLeaderboardScore",
         ),
         resultBestScore: document.getElementById("resultBestScore"),
         rawDetail: document.getElementById("resultRawDetail"),
         saveStatus: document.getElementById("scoreSaveStatus"),
+        tryAgain: document.getElementById("tryAgainButton"),
+        saveScore: document.getElementById("saveScoreButton"),
       };
 
-      let submittedForRun = false;
       let latestLevel = 0;
+      let runFinished = false;
+      let pendingBest = null;
+      let pendingAttempts = 0;
+      let submitting = false;
+      let scoreSaved = false;
 
       initGameScore({ gameId: GAME_ID, gameName: GAME_NAME });
 
       function leaderboardScore(rawScore) {
-        const numericScore = Number(rawScore) || 0;
-        return Math.max(0, Math.min(100, Math.round(numericScore)));
+        const value = Number(rawScore) || 0;
+        return Math.max(0, Math.min(100, Math.round(value)));
+      }
+
+      function setSaveStatus(message, type = "") {
+        els.saveStatus.textContent = message;
+        els.saveStatus.classList.toggle("is-success", type === "success");
+        els.saveStatus.classList.toggle("is-error", type === "error");
+      }
+
+      function showDecision(bestScore) {
+        const score = leaderboardScore(pendingBest.rawScore);
+        els.resultKicker.textContent = "Run Complete";
+        els.resultTitle.textContent = "One more round?";
+        els.resultMessage.textContent =
+          pendingAttempts > 1
+            ? `You've played ${pendingAttempts} rounds. Try to beat your best score, or save it now.`
+            : "Want to beat your score? Play again, or save your best result to the leaderboard.";
+        els.resultLeaderboardScore.textContent = `${score} / 100`;
+        els.resultBestScore.textContent = String(bestScore);
+        els.rawDetail.hidden = pendingBest.rawScore <= 100;
+        els.rawDetail.textContent = `In-game best: ${pendingBest.rawScore} (leaderboard limit: 100)`;
+        els.tryAgain.textContent = "Try again";
+        els.tryAgain.disabled = false;
+        els.saveScore.hidden = false;
+        els.saveScore.disabled = false;
+        els.saveScore.textContent = "Save best score";
+        setSaveStatus("Not saved yet — the choice is yours.");
+        els.result.hidden = false;
+        // Focus the dialog itself, not Try again, to prevent a held Space/Enter
+        // key from accidentally choosing an action for the player.
+        els.result.focus({ preventScroll: true });
+      }
+
+      function setPausedUI(paused) {
+        els.pauseOverlay.hidden = !paused;
+        els.pauseButton.disabled = false;
+        els.pauseLabel.textContent = paused ? "Resume Game" : "Pause Game";
+        els.pauseButton.querySelector(".nss-pause-symbol").textContent = paused
+          ? "▶"
+          : "Ⅱ";
+        els.status.textContent = paused ? "Paused" : "Playing";
+        els.status.classList.toggle("is-playing", !paused);
+        els.status.classList.toggle("is-paused", paused);
       }
 
       game.on("gameStart", () => {
-        submittedForRun = false;
+        runFinished = false;
         latestLevel = 0;
         resetGameScore();
-
         els.currentScore.textContent = "0";
         els.currentLevel.textContent = "0";
-        els.status.textContent = "Playing";
-        els.status.classList.add("is-playing");
-        els.sidebar.classList.remove("is-finished");
+        els.currentLives.textContent = "10 / 10";
+        setPausedUI(false);
         els.result.hidden = true;
         els.rawDetail.hidden = true;
-        els.saveStatus.textContent = "";
-        els.saveStatus.classList.remove("is-success");
+      });
+
+      game.on("gamePause", () => setPausedUI(true));
+      game.on("gameResume", () => {
+        setPausedUI(false);
+        // Clicking Pause leaves keyboard focus on the button. Restore focus to
+        // the gameplay region so arrow keys immediately work after resuming,
+        // whether the user selected Resume Game or pressed P.
+        els.gameStage.focus({ preventScroll: true });
+      });
+      game.on("lifeChange", (lives) => {
+        els.currentLives.textContent = `${Math.max(0, Number(lives) || 0)} / 10`;
       });
 
       game.on("scoreChange", (score, bestScore, level) => {
@@ -301,54 +431,102 @@
         els.sessionBest.textContent = String(Number(bestScore) || 0);
       });
 
-      game.on("gameOver", async (rawScore, bestScore) => {
-        const numericRawScore = Number(rawScore) || 0;
-        const numericBestScore = Number(bestScore) || 0;
-        const finalScore = leaderboardScore(numericRawScore);
+      game.on("gameOver", (rawScore, bestScore) => {
+        if (runFinished) return;
+        runFinished = true;
+        const runScore = Math.max(0, Number(rawScore) || 0);
+        const sessionBest = Math.max(0, Number(bestScore) || 0);
+        pendingAttempts += 1;
 
-        els.currentScore.textContent = String(numericRawScore);
-        els.sessionBest.textContent = String(numericBestScore);
-        els.status.textContent = "Game Over";
-        els.status.classList.remove("is-playing");
+        // Retain the highest score from ALL attempts not yet submitted.
+        // A retry never silently discards a better previous run.
+        if (!pendingBest || runScore > pendingBest.rawScore) {
+          pendingBest = { rawScore: runScore, level: latestLevel };
+        }
+        els.currentScore.textContent = String(runScore);
+        els.sessionBest.textContent = String(sessionBest);
+        els.status.textContent = "Run complete";
+        els.status.classList.remove("is-playing", "is-paused");
+        els.pauseButton.disabled = true;
+        els.pauseOverlay.hidden = true;
 
-        els.resultLeaderboardScore.textContent = `${finalScore} / 100`;
-        els.resultBestScore.textContent = String(numericBestScore);
-        // Only show a separate raw score if it differs from the capped leaderboard result.
-        els.rawDetail.hidden = numericRawScore <= 100;
-        els.rawDetail.textContent = `In-game score: ${numericRawScore}`;
-        els.result.hidden = false;
-        els.sidebar.classList.add("is-finished");
+        // Block Space/Enter/tap auto-restarts until a visible choice is made.
+        game.setRestartLocked(true);
+        scoreSaved = false;
+        showDecision(sessionBest);
+      });
 
-        if (submittedForRun) return;
-        submittedForRun = true;
-        els.saveStatus.textContent = "Saving score…";
+      function playAgain() {
+        if (submitting) return;
+        // After a successful save, start a new series of attempts.
+        // Otherwise preserve the best UNSAVED score for the next choice.
+        if (scoreSaved) {
+          pendingBest = null;
+          pendingAttempts = 0;
+          scoreSaved = false;
+        }
+        els.tryAgain.disabled = true;
+        game.restart();
+      }
 
+      async function saveBestScore() {
+        if (submitting || scoreSaved || !pendingBest) return;
+        submitting = true;
+        els.saveScore.disabled = true;
+        els.tryAgain.disabled = true;
+        els.saveScore.textContent = "Saving…";
+        setSaveStatus("Saving your best score…");
+
+        const submission = { ...pendingBest };
         try {
-          const result = await submitGameScore(finalScore, {
-            result: "completed",
-            metrics: {
-              rawScore: numericRawScore,
-              levelReached: latestLevel,
-              sessionBest: numericBestScore,
+          const result = await submitGameScore(
+            leaderboardScore(submission.rawScore),
+            {
+              result: "completed",
+              metrics: {
+                rawScore: submission.rawScore,
+                levelReached: submission.level,
+                sessionBest: Number(els.sessionBest.textContent) || 0,
+              },
             },
-          });
+          );
 
           if (result?.ok) {
-            els.saveStatus.textContent = "Score saved to the leaderboard ✓";
-            els.saveStatus.classList.add("is-success");
+            scoreSaved = true;
+            els.status.textContent = "Score saved";
+            els.resultKicker.textContent = "Leaderboard updated";
+            els.resultTitle.textContent = "Score saved!";
+            els.resultMessage.textContent =
+              "Your best result is on the leaderboard. Ready for another round?";
+            els.tryAgain.textContent = "Play again";
+            els.saveScore.hidden = true;
+            setSaveStatus("Successfully saved to the leaderboard ✓", "success");
+            els.result.focus({ preventScroll: true });
           } else if (result?.reason === "not-signed-in") {
-            els.saveStatus.textContent =
-              "Run complete. Sign in to save scores to the leaderboard.";
+            setSaveStatus(
+              "Please sign in to save your score, then try again.",
+              "error",
+            );
           } else {
-            els.saveStatus.textContent =
-              "Run complete, but the score was not saved.";
+            setSaveStatus(
+              "Your score wasn't saved. You can retry or keep playing.",
+              "error",
+            );
           }
         } catch (error) {
           console.error("[NS-SHAFT] Score submission failed", error);
-          els.saveStatus.textContent =
-            "Run complete, but saving the score failed.";
+          setSaveStatus("Couldn't save your score. Please try again.", "error");
+        } finally {
+          submitting = false;
+          els.tryAgain.disabled = false;
+          els.saveScore.disabled = false;
+          if (!scoreSaved) els.saveScore.textContent = "Retry saving";
         }
-      });
+      }
+
+      els.tryAgain.addEventListener("click", playAgain);
+      els.saveScore.addEventListener("click", saveBestScore);
+      els.pauseButton.addEventListener("click", () => game.togglePause());
 
       game.launch(document.getElementById("content"));
     </script>
