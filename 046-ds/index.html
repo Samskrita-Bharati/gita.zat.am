@@ -1,42 +1,86 @@
-<html>
-	<head>
-		<title>गगननौका - Space Ship</title>
-		<meta charset="UTF-8">
-		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-		<link rel="stylesheet" type="text/css" href="sp.css"></link>
-	</head>
-	<body data-page="games">
-
-    <!-- Shared Zat.am Navbar -->
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>गगननौका (Gagananauka)</title>
+    <link rel="stylesheet" href="../shared/game-theme.css" />
+    <link rel="stylesheet" href="sp.css" />
+  </head>
+  <body class="zatam-themed-game" data-page="games">
     <div id="navbar-mount"></div>
 
-		<div class = "info">
-			<p>क्रीडकः (Player)-<span id="name"></span> &nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp प्राप्ताङ्काः (Score)-<span id="score">0</span></p>
-		</div>
-		<div class = "game-window">
-			<img id = "player" src = "ufo.png"></img>
-			<div class="robo">
-				<div style='left:3vw;'></div>
-				<div style='left:11vw;'></div>
-				<div style='left:19vw;'></div>
-				<div style='left:27vw;'></div>
-				<div style='left:35vw;'></div>
-				<div style='left:43vw;'></div>
-				<div style='left:51vw;'></div>
-				<div style='left:59vw;'></div>
-				<div style='left:67vw;'></div>
-				<div style='left:75vw;'></div>
-				<div style='left:83vw;'></div>
-				<div style='left:91vw;'></div>
-			</div>
-		</div>
-		<script type="text/javascript" src="jssp.js"></script>
-	
+    <main class="zatam-game-shell space-shell">
+      <header class="zatam-game-header">
+        <span class="zatam-game-eyebrow">Space Ship</span>
+        <h1 class="zatam-game-title">गगननौका</h1>
+        <p class="zatam-game-subtitle">Pilot your ship through the falling robots.</p>
+      </header>
 
-    <!-- Shared Zat.am Navbar -->
-    <script
-      type="module"
-      src="../js/navbar-loader.js"
-    ></script>
-</body>
+      <section class="zatam-game-instructions" aria-label="How to play">
+        <p>Use <strong>W A S D</strong> to steer. Avoid the falling robots and survive to earn points.</p>
+      </section>
+
+      <section class="zatam-game-play-area space-play-area" aria-label="Space Ship game">
+        <div class="zatam-game-stats space-stats" aria-label="Game status">
+          <div class="zatam-game-stat">
+            <span class="zatam-game-stat-label">Player</span>
+            <span class="zatam-game-stat-value" id="name">Pilot</span>
+          </div>
+          <div class="zatam-game-stat zatam-game-score" aria-live="polite">
+            <span class="zatam-game-stat-label">Score</span>
+            <span class="zatam-game-stat-value" id="score">0 (०)</span>
+          </div>
+        </div>
+
+        <div class="game-window" id="game-window" tabindex="0" aria-label="Game field. Use W A S D keys to move.">
+          <img id="player" src="ufo.png" alt="Your spaceship" />
+          <div class="robo" aria-hidden="true">
+            <div></div><div></div><div></div><div></div><div></div><div></div>
+            <div></div><div></div><div></div><div></div><div></div><div></div>
+          </div>
+        </div>
+        <div class="zatam-game-actions space-touch-controls" aria-label="Touch controls">
+          <button class="zatam-game-btn zatam-game-btn-secondary" type="button" data-move="w" aria-label="Move up">↑</button>
+          <button class="zatam-game-btn zatam-game-btn-secondary" type="button" data-move="a" aria-label="Move left">←</button>
+          <button class="zatam-game-btn zatam-game-btn-secondary" type="button" data-move="s" aria-label="Move down">↓</button>
+          <button class="zatam-game-btn zatam-game-btn-secondary" type="button" data-move="d" aria-label="Move right">→</button>
+        </div>
+      </section>
+    </main>
+
+    <div id="collision-modal" class="zatam-game-modal-backdrop" hidden>
+      <section class="zatam-game-result" role="dialog" aria-modal="true" aria-labelledby="collision-title">
+        <h2 id="collision-title" class="zatam-game-result-title">Game over</h2>
+        <p class="zatam-game-result-message">समाप्तम् — Your ship was hit.</p>
+        <p class="zatam-game-result-score"><span id="final-score">0</span></p>
+        <div id="score-save-status" class="zatam-game-status zatam-game-status-info" role="status" aria-live="polite" hidden></div>
+        <div class="zatam-game-actions">
+          <button id="play-again" class="zatam-game-btn zatam-game-btn-primary" type="button">Play again</button>
+        </div>
+      </section>
+    </div>
+
+    <div id="name-dialog-backdrop" class="zatam-game-modal-backdrop space-name-backdrop" hidden>
+      <form id="name-dialog" class="zatam-game-modal space-name-dialog" aria-labelledby="name-dialog-title">
+        <h2 id="name-dialog-title" class="zatam-game-modal-title">नाम लिखें</h2>
+        <p class="space-name-instructions">Enter your name to begin.</p>
+        <label class="space-name-field" for="player-name">Player name
+          <input id="player-name" name="playerName" type="text" maxlength="30" required autocomplete="name" />
+        </label>
+        <div class="zatam-game-actions">
+          <button type="submit" class="zatam-game-btn zatam-game-btn-primary">Start game</button>
+        </div>
+      </form>
+    </div>
+
+    <script src="score-config.js"></script>
+    <script src="jssp.js?v=score-config"></script>
+    <script type="module" src="../js/navbar-loader.js"></script>
+    <script type="module">
+      import { initGameScore } from "../js/game-score.js";
+
+      initGameScore({ gameId: "046-ds", gameName: "गगननौका" });
+    </script>
+  </body>
 </html>

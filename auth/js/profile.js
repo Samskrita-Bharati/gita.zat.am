@@ -29,6 +29,10 @@ const logoutBtn = document.getElementById("logout-btn");
 const changePasswordForm = document.getElementById("change-password-form");
 const passwordMessage = document.getElementById("password-message");
 const passwordCard = document.getElementById("password-card");
+const passwordProviderNote = document.getElementById("password-provider-note");
+const passwordProviderBadge = document.getElementById(
+  "password-provider-badge",
+);
 
 const countriesOptGroup = document.getElementById("all-countries");
 
@@ -44,6 +48,45 @@ const languageNames = {
 
 let currentUser = null;
 let currentProfile = null;
+
+function getInitials(name, email) {
+  const source = String(name || "").trim();
+
+  if (source) {
+    const parts = source.split(/\s+/).filter(Boolean);
+    return parts
+      .slice(0, 2)
+      .map((part) => part.charAt(0).toUpperCase())
+      .join("");
+  }
+
+  const emailValue = String(email || "").trim();
+  return emailValue ? emailValue.charAt(0).toUpperCase() : "ZA";
+}
+
+function renderProfileAvatar(user, profile) {
+  const profileIconElement = document.querySelector(".profile-icon");
+  if (!profileIconElement) return;
+
+  profileIconElement.replaceChildren();
+
+  if (user.photoURL) {
+    const image = document.createElement("img");
+    image.src = user.photoURL;
+    image.alt = `${profile?.name || user.displayName || "User"} profile`;
+    image.className = "profile-avatar-img";
+    profileIconElement.appendChild(image);
+    return;
+  }
+
+  const fallback = document.createElement("span");
+  fallback.className = "profile-avatar-fallback";
+  fallback.textContent = getInitials(
+    profile?.name || user.displayName,
+    user.email,
+  );
+  profileIconElement.appendChild(fallback);
+}
 
 // Load all countries
 async function loadAllCountries() {
@@ -125,18 +168,12 @@ checkAuth()
     currentProfile = await getCurrentUserProfile();
 
     profileName.textContent = currentProfile.name || "User";
-    profileEmail.textContent = user.email;
-
-    const profileIconElement = document.querySelector(".profile-icon");
-    if (user.photoURL) {
-      profileIconElement.innerHTML = `<img src="${user.photoURL}" alt="Profile" class="profile-avatar-img">`;
-    } else {
-      profileIconElement.innerHTML = '<i class="fas fa-user-circle"></i>';
-    }
+    profileEmail.textContent = user.email || "Email not available";
+    renderProfileAvatar(user, currentProfile);
 
     if (currentProfile.isAdmin) {
       displayRole.textContent = "Admin";
-      roleRow.style.display = "flex";
+      roleRow.style.display = "grid";
     } else {
       roleRow.style.display = "none";
     }
@@ -174,17 +211,28 @@ checkAuth()
       countrySelect.dispatchEvent(event);
     }
 
-    // Check if user signed in with Google
+    // Keep the existing Google-sign-in password restriction.
     const isGoogleUser = user.providerData.some(
       (provider) => provider.providerId === "google.com",
     );
 
     if (isGoogleUser) {
       passwordCard.classList.add("disabled");
+      passwordCard.setAttribute("aria-disabled", "true");
+
       const inputs = changePasswordForm.querySelectorAll("input");
       inputs.forEach((input) => (input.disabled = true));
+
       const button = changePasswordForm.querySelector("button");
       button.disabled = true;
+
+      if (passwordProviderNote) passwordProviderNote.hidden = false;
+      if (passwordProviderBadge) passwordProviderBadge.hidden = false;
+    } else {
+      passwordCard.classList.remove("disabled");
+      passwordCard.removeAttribute("aria-disabled");
+      if (passwordProviderNote) passwordProviderNote.hidden = true;
+      if (passwordProviderBadge) passwordProviderBadge.hidden = true;
     }
   })
   .catch(() => {
@@ -202,7 +250,7 @@ editNameForm.addEventListener("submit", async (e) => {
 
   if (!newName) {
     nameMessage.innerHTML = "Name cannot be empty!";
-    nameMessage.style.color = "red";
+    nameMessage.style.color = "#c94c4c";
     return;
   }
 
@@ -236,19 +284,31 @@ editNameForm.addEventListener("submit", async (e) => {
 
     // Update display
     profileName.textContent = newName;
+    renderProfileAvatar(currentUser, { ...currentProfile, name: newName });
+
     if (language) {
       displayLanguage.textContent = languageNames[language] || language;
     } else {
       displayLanguage.textContent = "Not set yet";
     }
+
     if (location) {
       displayLocation.textContent = location;
     } else {
       displayLocation.textContent = "Not set yet";
     }
 
+    currentProfile = {
+      ...currentProfile,
+      name: newName,
+      language: language || "",
+      country: country || "",
+      region: region || "",
+      location: location || "",
+    };
+
     nameMessage.innerHTML = "Profile updated successfully!";
-    nameMessage.style.color = "green";
+    nameMessage.style.color = "#2f855a";
 
     setTimeout(() => {
       nameMessage.innerHTML = "";
@@ -256,7 +316,7 @@ editNameForm.addEventListener("submit", async (e) => {
   } catch (error) {
     console.error(error);
     nameMessage.innerHTML = "Failed to update profile. Please try again.";
-    nameMessage.style.color = "red";
+    nameMessage.style.color = "#c94c4c";
   }
 });
 
@@ -269,27 +329,27 @@ changePasswordForm.addEventListener("submit", async (e) => {
 
   if (newPassword !== confirmPassword) {
     passwordMessage.innerHTML = "New passwords do not match!";
-    passwordMessage.style.color = "red";
+    passwordMessage.style.color = "#c94c4c";
     return;
   }
 
   if (newPassword.length < 8) {
     passwordMessage.innerHTML = "New password must be at least 8 characters.";
-    passwordMessage.style.color = "red";
+    passwordMessage.style.color = "#c94c4c";
     return;
   }
 
   if (currentPassword === newPassword) {
     passwordMessage.innerHTML =
       "New password must be different from current password.";
-    passwordMessage.style.color = "red";
+    passwordMessage.style.color = "#c94c4c";
     return;
   }
 
   try {
     await changePassword(currentPassword, newPassword);
     passwordMessage.innerHTML = "Password changed successfully!";
-    passwordMessage.style.color = "green";
+    passwordMessage.style.color = "#2f855a";
 
     changePasswordForm.reset();
 
@@ -311,7 +371,7 @@ changePasswordForm.addEventListener("submit", async (e) => {
         "Failed to change password. Please try again.";
     }
 
-    passwordMessage.style.color = "red";
+    passwordMessage.style.color = "#c94c4c";
   }
 });
 
@@ -332,9 +392,10 @@ if (backLink) {
 
   if (origin === "bp26") {
     backLink.href = "../bp26/index.html";
-    backLink.textContent = "Back to Competition";
+    backLink.innerHTML =
+      '<span aria-hidden="true">🏁</span> Back to Competition';
   } else {
     backLink.href = "../index.html";
-    backLink.textContent = "Back to Games";
+    backLink.innerHTML = '<span aria-hidden="true">🎮</span> Back to Games';
   }
 }
