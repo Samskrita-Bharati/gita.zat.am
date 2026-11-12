@@ -13,7 +13,9 @@ Vite prints the local URL when the server starts.
 
 ## Project structure
 
-- `index.html`, `app.js`, `styles.css` — home page and game list
+- `index.html`, `app.js`, `css/styles.css` — home page, shared design tokens,
+  and shared components
+- `css/game-theme.css` — shared game shell styles
 - `games/` — retained games and game-specific code
 - `about/`, `resources/`, `daily-challenges/`, `leaderboard/`, `contact/` — navigation pages
 - `auth/` — login, registration, profile, preferences, and password reset

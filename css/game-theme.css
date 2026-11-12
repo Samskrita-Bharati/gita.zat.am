@@ -21,51 +21,14 @@
 
    Then load this stylesheet:
 
-   <link rel="stylesheet" href="../shared/game-theme.css">
+   <link rel="stylesheet" href="../../css/styles.css">
+   <link rel="stylesheet" href="../../css/game-theme.css">
 
    IMPORTANT:
    Do not replace a game's core gameplay CSS with this file.
    Use these classes for the surrounding game UI:
    title, instructions, stats, buttons, result card/modal, etc.
    ========================================================= */
-
-/* =========================================================
-   THEME TOKENS
-   ========================================================= */
-
-:root {
-  --zatam-navy: #0b2b4f;
-  --zatam-heading: #09264a;
-  --zatam-gold: #f6b23b;
-  --zatam-coral: #f16945;
-  --zatam-blue: #2f6dff;
-
-  --zatam-white: #ffffff;
-  --zatam-page: #fffaf2;
-  --zatam-soft: #fff7e8;
-  --zatam-border: #eadfce;
-
-  --zatam-text: #18284a;
-  --zatam-muted: #687789;
-
-  --zatam-success: #2f855a;
-  --zatam-success-soft: #eef9f2;
-
-  --zatam-danger: #c2413b;
-  --zatam-danger-soft: #fff1ef;
-
-  --zatam-radius-sm: 10px;
-  --zatam-radius: 14px;
-  --zatam-radius-lg: 20px;
-
-  --zatam-shadow-sm: 0 4px 12px rgba(11, 43, 79, 0.08);
-  --zatam-shadow: 0 8px 22px rgba(11, 43, 79, 0.12);
-  --zatam-shadow-lg: 0 18px 40px rgba(11, 43, 79, 0.16);
-
-  --zatam-font: Arial, Helvetica, sans-serif;
-
-  --zatam-content-width: 1100px;
-}
 
 /* =========================================================
    PAGE WRAPPER
@@ -90,7 +53,7 @@
   width: min(calc(100% - 32px), var(--zatam-content-width));
 
   margin: 0 auto;
-  padding: 32px 0 48px;
+  padding: var(--space-8) 0 var(--space-12);
 }
 
 /* =========================================================
@@ -98,17 +61,17 @@
    ========================================================= */
 
 .zatam-game-header {
-  margin-bottom: 24px;
+  margin-bottom: var(--space-6);
   text-align: center;
 }
 
 .zatam-game-eyebrow {
   display: inline-block;
-  margin-bottom: 8px;
+  margin-bottom: var(--space-2);
 
   color: var(--zatam-coral);
 
-  font-size: 0.82rem;
+  font-size: var(--font-size-control);
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -119,7 +82,7 @@
 
   color: var(--zatam-heading);
 
-  font-size: clamp(1.9rem, 4vw, 2.8rem);
+  font-size: var(--font-size-game-title);
   line-height: 1.1;
   font-weight: 800;
 }
@@ -127,11 +90,11 @@
 .zatam-game-subtitle {
   max-width: 700px;
 
-  margin: 10px auto 0;
+  margin: var(--space-2-5) auto 0;
 
   color: var(--zatam-muted);
 
-  font-size: 1rem;
+  font-size: var(--font-size-body);
   line-height: 1.6;
 }
 
@@ -140,7 +103,7 @@
    ========================================================= */
 
 .zatam-game-card {
-  padding: 20px;
+  padding: var(--space-5);
 
   background: var(--zatam-white);
 
@@ -151,11 +114,11 @@
 }
 
 .zatam-game-card + .zatam-game-card {
-  margin-top: 18px;
+  margin-top: var(--space-4-5);
 }
 
 .zatam-game-section-title {
-  margin: 0 0 10px;
+  margin: 0 0 var(--space-2-5);
 
   color: var(--zatam-heading);
 
@@ -168,9 +131,9 @@
    ========================================================= */
 
 .zatam-game-instructions {
-  margin-bottom: 20px;
+  margin-bottom: var(--space-5);
 
-  padding: 16px 18px;
+  padding: var(--space-4) var(--space-4-5);
 
   background: var(--zatam-soft);
 
@@ -188,7 +151,7 @@
 }
 
 .zatam-game-instructions p + p {
-  margin-top: 8px;
+  margin-top: var(--space-2);
 }
 
 /* =========================================================
@@ -199,15 +162,15 @@
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
 
-  gap: 12px;
+  gap: var(--space-3);
 
-  margin-bottom: 20px;
+  margin-bottom: var(--space-5);
 }
 
 .zatam-game-stat {
   min-width: 0;
 
-  padding: 14px 16px;
+  padding: var(--space-3-5) var(--space-4);
 
   background: var(--zatam-white);
 
@@ -222,11 +185,11 @@
 .zatam-game-stat-label {
   display: block;
 
-  margin-bottom: 4px;
+  margin-bottom: var(--space-1);
 
   color: var(--zatam-muted);
 
-  font-size: 0.78rem;
+  font-size: var(--font-size-meta);
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -255,21 +218,21 @@
   flex-wrap: wrap;
   justify-content: center;
 
-  gap: 12px;
+  gap: var(--space-3);
 
-  margin-top: 20px;
+  margin-top: var(--space-5);
 }
 
 .zatam-game-btn {
-  min-height: 44px;
+  min-height: var(--button-height-md);
 
   display: inline-flex;
   align-items: center;
   justify-content: center;
 
-  gap: 8px;
+  gap: var(--space-2);
 
-  padding: 10px 18px;
+  padding: var(--space-2-5) var(--space-4-5);
 
   border: 1.5px solid transparent;
   border-radius: var(--zatam-radius);
@@ -350,9 +313,9 @@
    ========================================================= */
 
 .zatam-game-status {
-  margin-top: 16px;
+  margin-top: var(--space-4);
 
-  padding: 12px 14px;
+  padding: var(--space-3) var(--space-3-5);
 
   border-radius: var(--zatam-radius);
 
@@ -390,9 +353,9 @@
 .zatam-game-play-area {
   width: 100%;
 
-  margin-top: 20px;
+  margin-top: var(--space-5);
 
-  padding: 20px;
+  padding: var(--space-5);
 
   background: var(--zatam-white);
 
@@ -416,9 +379,9 @@
 .zatam-game-result {
   width: min(100%, 560px);
 
-  margin: 24px auto 0;
+  margin: var(--space-6) auto 0;
 
-  padding: 24px;
+  padding: var(--space-6);
 
   background: var(--zatam-white);
 
@@ -432,7 +395,7 @@
 }
 
 .zatam-game-result-title {
-  margin: 0 0 8px;
+  margin: 0 0 var(--space-2);
 
   color: var(--zatam-heading);
 
@@ -441,11 +404,11 @@
 }
 
 .zatam-game-result-score {
-  margin: 10px 0;
+  margin: var(--space-2-5) 0;
 
   color: var(--zatam-blue);
 
-  font-size: clamp(2rem, 6vw, 3rem);
+  font-size: var(--font-size-large-title);
   font-weight: 900;
 }
 
@@ -468,7 +431,7 @@
   display: grid;
   place-items: center;
 
-  padding: 20px;
+  padding: var(--space-5);
 
   background: rgba(9, 38, 74, 0.55);
 
@@ -480,7 +443,7 @@
   max-height: min(85vh, 720px);
   overflow: auto;
 
-  padding: 24px;
+  padding: var(--space-6);
 
   background: var(--zatam-white);
 
@@ -491,7 +454,7 @@
 }
 
 .zatam-game-modal-title {
-  margin: 0 0 10px;
+  margin: 0 0 var(--space-2-5);
 
   color: var(--zatam-heading);
 
@@ -508,9 +471,9 @@
   flex-wrap: wrap;
   justify-content: center;
 
-  gap: 8px;
+  gap: var(--space-2);
 
-  margin-top: 12px;
+  margin-top: var(--space-3);
 }
 
 .zatam-game-badge {
@@ -519,15 +482,15 @@
 
   min-height: 28px;
 
-  padding: 5px 10px;
+  padding: 5px var(--space-2-5);
 
   background: var(--zatam-soft);
   color: var(--zatam-navy);
 
   border: 1px solid var(--zatam-border);
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
 
-  font-size: 0.78rem;
+  font-size: var(--font-size-meta);
   font-weight: 800;
 }
 
@@ -568,7 +531,7 @@
   .zatam-game-play-area,
   .zatam-game-result,
   .zatam-game-modal {
-    padding: 16px;
+    padding: var(--space-4);
   }
 
   .zatam-game-stats {
@@ -588,11 +551,11 @@
   .zatam-game-stats {
     grid-template-columns: repeat(2, minmax(0, 1fr));
 
-    gap: 10px;
+    gap: var(--space-2-5);
   }
 
   .zatam-game-stat {
-    padding: 12px 8px;
+    padding: var(--space-3) var(--space-2);
   }
 
   .zatam-game-stat-label {

@@ -1,23 +1,23 @@
 :root {
-  --audio-navy: #0b2b4f;
-  --audio-heading: #09264a;
+  --audio-navy: var(--navy);
+  --audio-heading: var(--navy-dark);
 
-  --audio-gold: #f6b23b;
-  --audio-coral: #f16945;
-  --audio-blue: #2f6dff;
+  --audio-gold: var(--gold);
+  --audio-coral: var(--zatam-coral);
+  --audio-blue: var(--zatam-blue);
 
-  --audio-background: #fffaf2;
-  --audio-surface: #ffffff;
+  --audio-background: var(--cream);
+  --audio-surface: var(--white);
   --audio-soft: #fff6e6;
   --audio-soft-blue: #f4f7fb;
 
-  --audio-border: #eadfce;
+  --audio-border: var(--border);
   --audio-border-strong: #dcc9ad;
 
-  --audio-text: #18284a;
-  --audio-muted: #687789;
+  --audio-text: var(--zatam-text);
+  --audio-muted: var(--muted);
 
-  --audio-success: #2f855a;
+  --audio-success: var(--zatam-success);
   --audio-success-soft: #eef9f1;
 
   --audio-danger: #c94c4c;
@@ -41,7 +41,7 @@ html {
 body.bp26-audio-match {
   margin: 0;
 
-  padding: 0 0 40px;
+  padding: 0 0 var(--space-10);
 
   background: var(--audio-background);
 
@@ -57,9 +57,9 @@ body.bp26-audio-match {
 .audio-match-header {
   width: min(calc(100% - 32px), 1180px);
 
-  margin: 0 auto 18px;
+  margin: 0 auto var(--space-4-5);
 
-  padding: 18px 20px;
+  padding: var(--space-4-5) var(--space-5);
 
   text-align: center;
 }
@@ -90,7 +90,7 @@ body.bp26-audio-match {
 
   font-family: "Libre Baskerville", Baskerville, Georgia, serif;
 
-  font-size: clamp(2rem, 4vw, 2.7rem);
+  font-size: var(--font-size-audio-title);
 
   line-height: 1.2;
 }
@@ -98,7 +98,7 @@ body.bp26-audio-match {
 .audio-match-subtitle {
   max-width: 650px;
 
-  margin: 12px auto 0;
+  margin: var(--space-3) auto 0;
 
   color: var(--audio-muted);
 
@@ -118,9 +118,9 @@ body.bp26-audio-match {
 }
 
 .game-score-panel {
-  margin-bottom: 10px;
+  margin-bottom: var(--space-2-5);
 
-  padding: 12px;
+  padding: var(--space-3);
 
   border: 1px solid var(--audio-border);
 
@@ -136,13 +136,13 @@ body.bp26-audio-match {
 
   grid-template-columns: repeat(4, minmax(0, 1fr));
 
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .score-item {
   min-width: 0;
 
-  padding: 9px 12px;
+  padding: 9px var(--space-3);
 
   display: flex;
 
@@ -158,7 +158,7 @@ body.bp26-audio-match {
 
   border-radius: 9px;
 
-  background: #fffaf2;
+  background: var(--cream);
 
   color: var(--audio-heading);
 }
@@ -193,7 +193,7 @@ body.bp26-audio-match {
 
   color: var(--audio-muted);
 
-  font-size: 0.84rem;
+  font-size: var(--font-size-stat);
 
   line-height: 1.4;
 
@@ -203,7 +203,7 @@ body.bp26-audio-match {
 .audio-match-main .hint {
   max-width: 820px;
 
-  margin: 0 auto 18px;
+  margin: 0 auto var(--space-4-5);
 
   color: var(--audio-muted);
 
@@ -221,13 +221,13 @@ body.bp26-audio-match {
 
   grid-template-columns: repeat(3, minmax(0, 1fr));
 
-  gap: 10px;
+  gap: var(--space-2-5);
 }
 
 .audio-match-main .card {
   min-width: 0;
 
-  padding: 12px;
+  padding: var(--space-3);
 
   display: grid;
 
@@ -237,11 +237,11 @@ body.bp26-audio-match {
 
   align-items: center;
 
-  gap: 10px;
+  gap: var(--space-2-5);
 
   border: 1px solid var(--audio-border);
 
-  border-radius: 12px;
+  border-radius: var(--radius);
 
   background: var(--audio-surface);
 
@@ -262,9 +262,9 @@ body.bp26-audio-match {
 }
 
 .audio-match-game button {
-  min-height: 42px;
+  min-height: var(--control-height-md);
 
-  padding: 9px 16px;
+  padding: 9px var(--space-4);
 
   border: 1px solid var(--audio-border-strong);
 
@@ -276,7 +276,7 @@ body.bp26-audio-match {
 
   font-family: inherit;
 
-  font-size: 0.9rem;
+  font-size: var(--font-size-lead);
   font-weight: 700;
 
   cursor: pointer;
@@ -332,13 +332,13 @@ body.bp26-audio-match {
 
   border: 2px solid var(--audio-navy);
 
-  border-radius: 50%;
+  border-radius: var(--radius-circle);
 
   background: var(--audio-surface);
 
   color: var(--audio-navy);
 
-  font-size: 0.9rem;
+  font-size: var(--font-size-lead);
   font-weight: 800;
 
   box-shadow: none;
@@ -363,7 +363,7 @@ body.bp26-audio-match {
 .audio-match-main .label {
   color: var(--audio-muted);
 
-  font-size: 0.8rem;
+  font-size: var(--font-size-small-rem);
 }
 
 .audio-match-main .dropzone {
@@ -372,7 +372,7 @@ body.bp26-audio-match {
   min-width: 0;
   min-height: 46px;
 
-  padding: 9px 10px;
+  padding: 9px var(--space-2-5);
 
   display: flex;
 
@@ -380,13 +380,13 @@ body.bp26-audio-match {
 
   border: 2px dashed var(--audio-border-strong);
 
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
 
   background: var(--audio-soft-blue);
 
   color: var(--audio-muted);
 
-  font-size: 0.8rem;
+  font-size: var(--font-size-small-rem);
   font-style: italic;
 
   line-height: 1.35;
@@ -452,13 +452,13 @@ body.bp26-audio-match {
 }
 
 .audio-match-main .wordbank {
-  margin-top: 18px;
+  margin-top: var(--space-4-5);
 
-  padding: 16px;
+  padding: var(--space-4);
 
   border: 1px solid var(--audio-border);
 
-  border-radius: 14px;
+  border-radius: var(--radius-control);
 
   background: var(--audio-surface);
 
@@ -466,14 +466,14 @@ body.bp26-audio-match {
 }
 
 .wordbank-heading {
-  margin-bottom: 12px;
+  margin-bottom: var(--space-3);
 
   display: flex;
 
   justify-content: space-between;
   align-items: center;
 
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 .wordbank-heading h2 {
@@ -487,11 +487,11 @@ body.bp26-audio-match {
 }
 
 .wordbank-heading p {
-  margin: 4px 0 0;
+  margin: var(--space-1) 0 0;
 
   color: var(--audio-muted);
 
-  font-size: 0.8rem;
+  font-size: var(--font-size-small-rem);
 
   line-height: 1.4;
 }
@@ -501,15 +501,15 @@ body.bp26-audio-match {
 
   flex-wrap: wrap;
 
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .audio-match-main .tile {
-  padding: 7px 10px;
+  padding: 7px var(--space-2-5);
 
   border: 1px solid var(--audio-border-strong);
 
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
 
   background: var(--audio-soft);
 
@@ -575,11 +575,11 @@ body.bp26-audio-match {
 
   flex-wrap: wrap;
 
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .bottom-controls {
-  margin-top: 18px;
+  margin-top: var(--space-4-5);
 }
 
 .check-button {
@@ -601,7 +601,7 @@ body.bp26-audio-match {
 
   background: var(--audio-navy) !important;
 
-  color: #ffffff !important;
+  color: var(--white) !important;
 }
 
 .finish-button:hover:not(:disabled) {
@@ -629,7 +629,7 @@ body.bp26-audio-match {
 
   background: var(--audio-coral);
 
-  color: #ffffff;
+  color: var(--white);
 }
 
 #playAllBtn.is-playing:hover {
@@ -643,7 +643,7 @@ body.bp26-audio-match {
 
   background: var(--audio-coral);
 
-  color: #ffffff;
+  color: var(--white);
 }
 
 .audio-match-game button.warn:hover:not(:disabled) {
@@ -680,7 +680,7 @@ body.bp26-audio-match {
   align-items: center;
   justify-content: center;
 
-  padding: 20px;
+  padding: var(--space-5);
 
   background: rgba(9, 38, 74, 0.42);
 
@@ -696,7 +696,7 @@ body.bp26-audio-match {
 
   border: 1px solid var(--audio-border);
 
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
 
   background: var(--audio-surface);
 
@@ -706,7 +706,7 @@ body.bp26-audio-match {
 }
 
 .bp26Sparkles {
-  margin: 5px 0 8px;
+  margin: 5px 0 var(--space-2);
 
   font-size: 48px;
 
@@ -716,7 +716,7 @@ body.bp26-audio-match {
 }
 
 #bp26CelebrateTitle {
-  margin-bottom: 6px;
+  margin-bottom: var(--space-1-5);
 
   color: var(--audio-heading);
 
@@ -741,7 +741,7 @@ body.bp26-audio-match {
 
   background: var(--audio-navy);
 
-  color: #ffffff;
+  color: var(--white);
 }
 
 .bp26Confetti {
@@ -807,9 +807,9 @@ body.bp26-audio-match {
   .audio-match-header {
     width: calc(100% - 20px);
 
-    margin-bottom: 12px;
+    margin-bottom: var(--space-3);
 
-    padding: 12px 8px;
+    padding: var(--space-3) var(--space-2);
   }
 
   .audio-match-header h1 {
@@ -817,7 +817,7 @@ body.bp26-audio-match {
   }
 
   .audio-match-subtitle {
-    font-size: 0.82rem;
+    font-size: var(--font-size-control);
   }
 
   .audio-match-main {
@@ -825,13 +825,13 @@ body.bp26-audio-match {
   }
 
   .game-score-panel {
-    padding: 8px;
+    padding: var(--space-2);
   }
 
   .game-score-panel .scoreboard {
     grid-template-columns: repeat(2, minmax(0, 1fr));
 
-    gap: 6px;
+    gap: var(--space-1-5);
   }
 
   .score-item {
@@ -847,39 +847,39 @@ body.bp26-audio-match {
   }
 
   .audio-match-main .hint {
-    margin-bottom: 14px;
+    margin-bottom: var(--space-3-5);
 
-    font-size: 0.8rem;
+    font-size: var(--font-size-small-rem);
   }
 
   .audio-match-main .grid {
     grid-template-columns: 1fr;
 
-    gap: 8px;
+    gap: var(--space-2);
   }
 
   .audio-match-main .card {
-    padding: 10px;
+    padding: var(--space-2-5);
   }
 
   .audio-match-main .play {
     width: 42px;
-    height: 42px;
+    height: var(--control-height-md);
 
     min-width: 42px;
-    min-height: 42px;
+    min-height: var(--control-height-md);
   }
 
   .audio-match-main .dropzone {
     min-height: 44px;
 
-    font-size: 0.78rem;
+    font-size: var(--font-size-meta);
   }
 
   .audio-match-main .wordbank {
-    margin-top: 14px;
+    margin-top: var(--space-3-5);
 
-    padding: 12px;
+    padding: var(--space-3);
   }
 
   .wordbank-heading h2 {
@@ -893,7 +893,7 @@ body.bp26-audio-match {
   .audio-match-main .tile {
     padding: 7px 9px;
 
-    font-size: 0.82rem;
+    font-size: var(--font-size-control);
   }
 
   .bottom-controls {
@@ -913,7 +913,7 @@ body.bp26-audio-match {
 
     padding: 9px 7px;
 
-    font-size: 0.78rem;
+    font-size: var(--font-size-meta);
   }
 }
 
@@ -931,7 +931,7 @@ body.bp26-audio-match {
       40px
       minmax(0, 1fr);
 
-    gap: 8px;
+    gap: var(--space-2);
   }
 
   .audio-match-main .play {
@@ -943,7 +943,7 @@ body.bp26-audio-match {
   }
 
   .audio-match-main .tile {
-    font-size: 0.78rem;
+    font-size: var(--font-size-meta);
   }
 
   .bottom-controls button {

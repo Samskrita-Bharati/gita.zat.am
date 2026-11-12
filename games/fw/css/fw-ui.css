@@ -7,7 +7,7 @@ body.fw-page {
   width: min(1120px, calc(100% - 24px));
   max-width: none;
   height: auto;
-  margin: 24px auto;
+  margin: var(--space-6) auto;
   padding: 0;
   overflow: visible;
   color: var(--zatam-text);
@@ -17,18 +17,18 @@ body.fw-page {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(240px, 290px);
   align-items: start;
-  gap: 20px;
+  gap: var(--space-5);
 }
 
 #fwGameShell #footer {
   display: grid;
-  gap: 12px;
+  gap: var(--space-3);
   min-width: 0;
 }
 
 #fwGameShell .fw-panel {
   min-width: 0;
-  padding: clamp(10px, 2vw, 18px);
+  padding: clamp(var(--space-2-5), 2vw, var(--space-4-5));
   border: 1px solid var(--zatam-border);
   border-radius: var(--zatam-radius-lg);
   background: var(--zatam-white);
@@ -36,15 +36,15 @@ body.fw-page {
 }
 
 #fwGameShell #lead {
-  margin-bottom: 12px;
+  margin-bottom: var(--space-3);
   padding: 0;
-  font-size: 1rem;
+  font-size: var(--font-size-body);
   line-height: 1.7;
   overflow-wrap: anywhere;
 }
 
 #fwGameShell #liveScore {
-  margin-bottom: 12px;
+  margin-bottom: var(--space-3);
   text-align: center;
   color: var(--zatam-navy);
   font-size: 1.125rem;
@@ -65,7 +65,7 @@ body.fw-page {
   aspect-ratio: 1;
   container-type: inline-size;
   overflow: hidden;
-  border-radius: 10px;
+  border-radius: var(--radius-compact);
 }
 
 #fwGameShell #grid table {
@@ -76,10 +76,10 @@ body.fw-page {
 #fwGameShell #grid td {
   padding: 0;
   border: 1px solid #c2d5e9;
-  background: #eaf3fc;
+  background: var(--zatam-soft);
   color: var(--zatam-navy);
   cursor: pointer;
-  font-size: clamp(12px, 4cqi, 30px);
+  font-size: var(--font-size-grid-responsive);
 }
 
 #fwGameShell #grid td:hover { background: #fff0cf; }
@@ -100,26 +100,26 @@ body.fw-page {
   display: block;
   width: auto;
   margin: 0;
-  font-size: 1rem;
+  font-size: var(--font-size-body);
 }
 
 #fwGameShell .leveltext {
   display: block;
-  font-size: 1rem;
+  font-size: var(--font-size-body);
 }
 
 #fwGameShell #level ul,
 #fwGameShell #hintLink > div:first-of-type {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
-  margin: 8px 0 0;
+  gap: var(--space-1-5);
+  margin: var(--space-2) 0 0;
   padding: 0;
   list-style: none;
 }
 
 #fwGameShell .fw-panel h2 {
-  margin: 0 0 8px;
+  margin: 0 0 var(--space-2);
   color: var(--zatam-heading);
   font-size: 1.05rem;
 }
@@ -128,12 +128,12 @@ body.fw-page {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  min-height: 40px;
+  gap: var(--space-1-5);
+  min-height: var(--control-height-sm);
   margin: 0;
-  padding: 5px 8px;
+  padding: 5px var(--space-2);
   border: 1px solid var(--zatam-border);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   color: var(--zatam-navy);
   background: var(--zatam-soft);
 }
@@ -155,7 +155,7 @@ body.fw-page {
   padding-left: 1.25rem;
 }
 
-#fwGameShell .fw-instructions li + li { margin-top: 6px; }
+#fwGameShell .fw-instructions li + li { margin-top: var(--space-1-5); }
 
 #fwGameShell #hintPopup {
   inset: 0;
@@ -169,7 +169,7 @@ body.fw-page {
   width: min(540px, calc(100% - 24px));
   margin: 8vh auto;
   transform: none;
-  border-radius: 14px;
+  border-radius: var(--radius-control);
   background: var(--zatam-white);
 }
 
@@ -179,22 +179,22 @@ body.fw-page {
 
 /* Sizes above 10 are also supported by the existing URL parameter. */
 #fwGameShell #grid tr:has(> td:nth-child(11)) td {
-  font-size: clamp(9px, 3.2cqi, 22px);
+  font-size: var(--font-size-grid-responsive-small);
 }
 
 #fwGameShell .fw-actions {
   display: flex;
   justify-content: center;
   flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 12px;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
 }
 
 #fwGameShell .fw-actions button {
   min-height: 44px;
-  padding: 6px 16px;
+  padding: var(--space-1-5) var(--space-4);
   border: 1px solid var(--zatam-navy);
-  border-radius: 10px;
+  border-radius: var(--radius-compact);
   background: var(--zatam-white);
   color: var(--zatam-navy);
   font-weight: 700;
@@ -202,14 +202,14 @@ body.fw-page {
 
 #fwGameShell #fwStart {
   background: var(--zatam-navy);
-  color: white;
+  color: var(--white);
 }
 
 #fwGameShell #fwStart:disabled { opacity: .55; }
 
 /* Keep the completion status and action aligned with the final score. */
 #fwGameShell #fwSaveStatus {
-  margin: 0 0 8px;
+  margin: 0 0 var(--space-2);
   color: var(--zatam-muted);
   text-align: center;
   font-size: .875rem;
@@ -225,11 +225,11 @@ body.fw-page {
   width: fit-content;
   max-width: 100%;
   min-height: 44px;
-  margin: 0 auto 12px;
-  padding: 8px 16px;
+  margin: 0 auto var(--space-3);
+  padding: var(--space-2) var(--space-4);
   align-items: center;
   justify-content: center;
-  border-radius: 10px;
+  border-radius: var(--radius-compact);
   background: var(--zatam-navy);
   color: var(--zatam-white);
   text-decoration: none;
@@ -245,11 +245,11 @@ body.fw-page {
 #fwGameShell #hintLink button {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  min-height: 40px;
-  padding: 5px 8px;
+  gap: var(--space-1-5);
+  min-height: var(--control-height-sm);
+  padding: 5px var(--space-2);
   border: 1px solid var(--zatam-border);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   color: var(--zatam-navy);
   background: var(--zatam-soft);
   font-weight: 700;

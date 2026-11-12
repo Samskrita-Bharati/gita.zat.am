@@ -5,32 +5,118 @@ ZAT.AM MAIN HOMEPAGE
 */
 
 :root {
+  /* Brand palette */
   --navy: #0b2b4f;
   --navy-dark: #09264a;
   --navy-light: #143d6b;
-
   --gold: #f6b23b;
   --gold-light: #ffd36b;
-
   --cream: #fffaf2;
   --cream-dark: #fff7e8;
-
   --white: #ffffff;
-
   --border: #eadfce;
-
-  --text: #09264a;
+  --text: var(--navy-dark);
+  --slate: #18284a;
   --text-secondary: #24394f;
   --muted: #687789;
+  --success: #2f855a;
+  --success-soft: #eef9f2;
+  --danger: #c2413b;
+  --danger-soft: #fff1ef;
+  --accent-coral: #f16945;
+  --accent-blue: #2f6dff;
 
+  /* Typography */
+  --font-size-xs: 0.625rem;
+  --font-size-caption: 0.6875rem;
+  --font-size-sm: 0.75rem;
+  --font-size-label: 0.8125rem;
+  --font-size-base: 0.875rem;
+  --font-size-compact: 0.9375rem;
+  --font-size-body: 1rem;
+  --font-size-body-lg: 1.0625rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.25rem;
+  --font-size-2xl: 1.5rem;
+  --font-size-meta: 0.78rem;
+  --font-size-control: 0.82rem;
+  --font-size-stat: 0.84rem;
+  --font-size-lead: 0.9rem;
+  --font-size-small-rem: 0.8rem;
+  --font-size-display: clamp(2rem, 5vw, 2.8rem);
+  --font-size-game-title: clamp(1.9rem, 4vw, 2.8rem);
+  --font-size-large-title: clamp(2rem, 6vw, 3rem);
+  --font-size-challenge-title: clamp(2.25rem, 5vw, 3rem);
+  --font-size-audio-title: clamp(2rem, 4vw, 2.7rem);
+  --font-size-grid-responsive: clamp(12px, 4cqi, 30px);
+  --font-size-grid-responsive-small: clamp(9px, 3.2cqi, 22px);
+
+  /* Shared spacing scale */
+  --space-1: 4px;
+  --space-1-5: 6px;
+  --space-2: 8px;
+  --space-2-5: 10px;
+  --space-3: 12px;
+  --space-3-5: 14px;
+  --space-4: 16px;
+  --space-4-5: 18px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+
+  /* Surfaces and shape */
+  --control-height-sm: 40px;
+  --control-height-md: 42px;
+  --radius-xs: 4px;
+  --radius-control-sm: 6px;
   --shadow-sm: 0 3px 12px rgba(0, 0, 0, 0.1);
   --shadow-md: 0 8px 18px rgba(11, 43, 79, 0.14);
   --shadow-lg: 0 14px 28px rgba(11, 43, 79, 0.18);
-
+  --radius-sm: 8px;
+  --radius-compact: 10px;
   --radius: 12px;
+  --radius-control: 14px;
+  --radius-lg: 16px;
   --radius-large: 18px;
-
+  --radius-xl: 20px;
+  --radius-pill: 999px;
+  --radius-circle: 50%;
   --transition: 0.2s ease;
+
+  /* Shared controls */
+  --button-height-sm: 40px;
+  --button-height-md: 44px;
+  --button-height-lg: 46px;
+  --button-padding-primary: 0 20px;
+  --button-padding-compact: 0 16px;
+  --button-radius: var(--radius-sm);
+
+  /* Game theme aliases */
+  --zatam-navy: var(--navy);
+  --zatam-heading: var(--navy-dark);
+  --zatam-gold: var(--gold);
+  --zatam-coral: var(--accent-coral);
+  --zatam-blue: var(--accent-blue);
+  --zatam-white: var(--white);
+  --zatam-page: var(--cream);
+  --zatam-soft: var(--cream-dark);
+  --zatam-border: var(--border);
+  --zatam-text: var(--slate);
+  --zatam-muted: var(--muted);
+  --zatam-success: var(--success);
+  --zatam-success-soft: var(--success-soft);
+  --zatam-danger: var(--danger);
+  --zatam-danger-soft: var(--danger-soft);
+  --zatam-radius-sm: var(--radius-compact);
+  --zatam-radius: var(--radius-control);
+  --zatam-radius-lg: var(--radius-xl);
+  --zatam-shadow-sm: 0 4px 12px rgba(11, 43, 79, 0.08);
+  --zatam-shadow: 0 8px 22px rgba(11, 43, 79, 0.12);
+  --zatam-shadow-lg: 0 18px 40px rgba(11, 43, 79, 0.16);
+  --zatam-font: Arial, Helvetica, sans-serif;
+  --zatam-content-width: 1100px;
 }
 
 /*
@@ -119,7 +205,7 @@ HERO
 
   overflow: hidden;
 
-  padding: clamp(34px, 4.5vw, 58px) clamp(24px, 6vw, 72px);
+  padding: clamp(34px, 4.5vw, 58px) clamp(var(--space-6), 6vw, 72px);
 
   background:
     radial-gradient(
@@ -132,7 +218,7 @@ HERO
       rgba(246, 178, 59, 0.2) 0 120px,
       transparent 122px
     ),
-    linear-gradient(120deg, #fff2db 0%, #fffaf2 48%, #ffe8bf 100%);
+    linear-gradient(120deg, #fff2db 0%, var(--cream) 48%, #ffe8bf 100%);
 }
 
 .hero-text {
@@ -144,7 +230,7 @@ HERO
 .hero-text h2 {
   max-width: 580px;
 
-  margin: 0 0 18px;
+  margin: 0 0 var(--space-4-5);
 
   color: var(--navy);
 
@@ -163,11 +249,11 @@ HERO
   width: 68px;
   height: 5px;
 
-  margin-bottom: 18px;
+  margin-bottom: var(--space-4-5);
 
   background: var(--gold);
 
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
 }
 
 .hero-text p {
@@ -193,23 +279,23 @@ HERO BUTTONS
 
   flex-wrap: wrap;
 
-  gap: 14px;
+  gap: var(--space-3-5);
 }
 
 .primary-btn,
 .secondary-btn {
-  min-height: 46px;
+  min-height: var(--button-height-lg);
 
   display: inline-flex;
 
   align-items: center;
   justify-content: center;
 
-  padding: 0 20px;
+  padding: var(--button-padding-primary);
 
-  border-radius: 8px;
+  border-radius: var(--button-radius);
 
-  font-size: 16px;
+  font-size: var(--font-size-body);
   font-weight: 700;
 
   cursor: pointer;
@@ -222,7 +308,7 @@ HERO BUTTONS
 .primary-btn {
   background: var(--navy);
 
-  color: white;
+  color: var(--white);
 
   border: none;
 
@@ -230,7 +316,7 @@ HERO BUTTONS
 }
 
 .secondary-btn {
-  background: white;
+  background: var(--white);
 
   color: #1b2d44;
 
@@ -274,7 +360,7 @@ HERO ART
 
   background: var(--gold-light);
 
-  border-radius: 50%;
+  border-radius: var(--radius-circle);
 
   box-shadow: 0 0 0 20px rgba(255, 211, 107, 0.16);
 }
@@ -322,7 +408,7 @@ FLOATING LETTERS
 
   border: 3px solid var(--navy);
 
-  border-radius: 12px;
+  border-radius: var(--radius);
 
   font-size: 34px;
   font-weight: 800;
@@ -382,13 +468,13 @@ FEATURED SLIDESHOW
 
   overflow: hidden;
 
-  padding: 14px;
+  padding: var(--space-3-5);
 
   background: rgba(255, 250, 242, 0.78);
 
   border: 4px solid rgba(11, 43, 79, 0.2);
 
-  border-radius: 12px;
+  border-radius: var(--radius);
 
   box-shadow: 0 18px 38px rgba(11, 43, 79, 0.14);
 
@@ -410,7 +496,7 @@ FEATURED SLIDESHOW
 
   overflow: hidden;
 
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
 
   opacity: 0;
 
@@ -482,7 +568,7 @@ FEATURED SLIDESHOW
 
   z-index: 4;
 
-  padding: 14px 18px;
+  padding: var(--space-3-5) var(--space-4-5);
 
   background: linear-gradient(
     90deg,
@@ -494,7 +580,7 @@ FEATURED SLIDESHOW
 
   border: 1px solid rgba(255, 255, 255, 0.35);
 
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
 
   font-size: clamp(17px, 1.5vw, 22px);
 
@@ -512,7 +598,7 @@ FEATURED SLIDESHOW
 
   color: var(--gold-light);
 
-  font-size: 13px;
+  font-size: var(--font-size-label);
 
   text-transform: uppercase;
 }
@@ -546,7 +632,7 @@ SLIDER CONTROLS
 
   border: none;
 
-  border-radius: 50%;
+  border-radius: var(--radius-circle);
 
   cursor: pointer;
 
@@ -560,7 +646,7 @@ SLIDER CONTROLS
 
   background: var(--gold);
 
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
 }
 
 .slide-arrow,
@@ -582,7 +668,7 @@ SLIDER CONTROLS
 
 .slide-arrow {
   width: 40px;
-  height: 40px;
+  height: var(--control-height-sm);
 
   top: 50%;
 
@@ -592,7 +678,7 @@ SLIDER CONTROLS
 
   padding: 0;
 
-  border-radius: 50%;
+  border-radius: var(--radius-circle);
 
   font-size: 28px;
 
@@ -619,11 +705,11 @@ SLIDER CONTROLS
   top: 26px;
   right: 28px;
 
-  padding: 0 14px;
+  padding: 0 var(--space-3-5);
 
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
 
-  font-size: 13px;
+  font-size: var(--font-size-label);
   font-weight: 800;
 }
 
@@ -640,7 +726,7 @@ GAMES SECTION
 */
 
 .menu {
-  padding: 48px 0 80px;
+  padding: var(--space-12) 0 80px;
 
   background: var(--cream);
 }
@@ -688,7 +774,7 @@ GAME CARD
 
   border: 1px solid #f1e2c9;
 
-  border-radius: 12px;
+  border-radius: var(--radius);
 
   box-shadow: var(--shadow-sm);
 
@@ -751,15 +837,15 @@ GAME IMAGE
   top: 12px;
   left: 12px;
 
-  padding: 5px 10px;
+  padding: 5px var(--space-2-5);
 
   background: #95e22a;
 
   color: #0b2b2b;
 
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
 
-  font-size: 11px;
+  font-size: var(--font-size-caption);
   font-weight: 800;
 
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
@@ -778,7 +864,7 @@ GAME CARD CONTENT
 
   flex-direction: column;
 
-  padding: 16px 18px 18px;
+  padding: var(--space-4) var(--space-4-5) var(--space-4-5);
 }
 
 .game-title {
@@ -786,7 +872,7 @@ GAME CARD CONTENT
 
   font-family: Arial, Helvetica, sans-serif;
 
-  font-size: 18px;
+  font-size: var(--font-size-lg);
 
   line-height: 1.25;
 
@@ -802,7 +888,7 @@ GAME CARD CONTENT
 }
 
 .game-title a:hover {
-  color: #2f6dff;
+  color: var(--accent-blue);
 }
 
 .game-meta {
@@ -810,9 +896,9 @@ GAME CARD CONTENT
 
   align-items: center;
 
-  gap: 8px;
+  gap: var(--space-2);
 
-  margin-bottom: 12px;
+  margin-bottom: var(--space-3);
 }
 
 .price {
@@ -820,15 +906,15 @@ GAME CARD CONTENT
 
   flex-shrink: 0;
 
-  padding: 4px 9px;
+  padding: var(--space-1) 9px;
 
   background: #ffd766;
 
   color: #7a5500;
 
-  border-radius: 6px;
+  border-radius: var(--radius-control-sm);
 
-  font-size: 12px;
+  font-size: var(--font-size-sm);
 
   font-weight: 800;
 
@@ -838,11 +924,11 @@ GAME CARD CONTENT
 .item-text {
   flex: 1;
 
-  margin: 0 0 18px;
+  margin: 0 0 var(--space-4-5);
 
   color: #465564;
 
-  font-size: 13px;
+  font-size: var(--font-size-label);
 
   line-height: 1.45;
 }
@@ -884,7 +970,7 @@ PLAY BUTTON
   align-items: center;
   justify-content: center;
 
-  padding: 0 14px;
+  padding: 0 var(--space-3-5);
 
   background: var(--navy);
 
@@ -894,7 +980,7 @@ PLAY BUTTON
 
   border-radius: 7px;
 
-  font-size: 13px;
+  font-size: var(--font-size-label);
   font-weight: 700;
 
   transition:
@@ -918,14 +1004,14 @@ GENERAL BUTTON
 */
 
 .btn {
-  min-height: 42px;
+  min-height: var(--control-height-md);
 
   display: inline-flex;
 
   align-items: center;
   justify-content: center;
 
-  padding: 0 18px;
+  padding: 0 var(--space-4-5);
 
   background: var(--navy);
 
@@ -933,9 +1019,9 @@ GENERAL BUTTON
 
   border: none;
 
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
 
-  font-size: 14px;
+  font-size: var(--font-size-base);
   font-weight: 700;
 
   cursor: pointer;
@@ -976,16 +1062,16 @@ MINI LEADERBOARD
 }
 
 .leaderboard-btn {
-  min-height: 42px;
+  min-height: var(--control-height-md);
 
   display: inline-flex;
 
   align-items: center;
   justify-content: center;
 
-  margin-bottom: 10px;
+  margin-bottom: var(--space-2-5);
 
-  padding: 0 18px;
+  padding: 0 var(--space-4-5);
 
   background: var(--navy);
 
@@ -993,9 +1079,9 @@ MINI LEADERBOARD
 
   border: 1px solid var(--navy);
 
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
 
-  font-size: 14px;
+  font-size: var(--font-size-base);
   font-weight: 800;
 
   box-shadow: 0 8px 18px rgba(11, 43, 79, 0.18);
@@ -1023,17 +1109,17 @@ MINI LEADERBOARD
 
   border: 1px solid var(--border);
 
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
 
   box-shadow: 0 16px 34px rgba(11, 43, 79, 0.16);
 }
 
 .lb-title {
-  margin-bottom: 12px;
+  margin-bottom: var(--space-3);
 
   color: var(--navy);
 
-  font-size: 15px;
+  font-size: var(--font-size-compact);
   font-weight: 800;
 
   text-align: center;
@@ -1053,11 +1139,11 @@ MINI LEADERBOARD
 
   margin-bottom: 7px;
 
-  padding: 9px 10px;
+  padding: 9px var(--space-2-5);
 
-  border-radius: 10px;
+  border-radius: var(--radius-compact);
 
-  font-size: 13px;
+  font-size: var(--font-size-label);
   font-weight: 700;
 }
 
@@ -1086,7 +1172,7 @@ MINI LEADERBOARD
 
   color: var(--navy);
 
-  font-size: 13px;
+  font-size: var(--font-size-label);
   font-weight: 800;
 
   text-align: center;
@@ -1105,15 +1191,15 @@ SCORING PANEL
 */
 
 .scoring-panel {
-  margin-top: 12px;
+  margin-top: var(--space-3);
 
-  padding: 12px;
+  padding: var(--space-3);
 
   background: white;
 
   border: 1px solid var(--border);
 
-  border-radius: 14px;
+  border-radius: var(--radius-control);
 
   box-shadow: 0 10px 25px rgba(11, 43, 79, 0.08);
 }
@@ -1132,7 +1218,7 @@ SCORING PANEL
   align-items: center;
   justify-content: space-between;
 
-  padding: 10px 12px;
+  padding: var(--space-2-5) var(--space-3);
 
   background: var(--cream);
 
@@ -1140,9 +1226,9 @@ SCORING PANEL
 
   border: 1px solid var(--border);
 
-  border-radius: 10px;
+  border-radius: var(--radius-compact);
 
-  font-size: 13px;
+  font-size: var(--font-size-label);
   font-weight: 700;
 
   transition:
@@ -1162,7 +1248,7 @@ SCORING PANEL
 .scoring-code {
   min-width: 64px;
 
-  margin-right: 10px;
+  margin-right: var(--space-2-5);
 
   color: var(--muted);
 
@@ -1213,13 +1299,13 @@ HOW IT WORKS MODAL
 .zatam-modal {
   width: min(420px, 90%);
 
-  padding: 32px 28px 24px;
+  padding: var(--space-8) 28px var(--space-6);
 
   background: var(--cream);
 
   border: 1.5px solid var(--border);
 
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
 
   text-align: center;
 
@@ -1234,17 +1320,17 @@ HOW IT WORKS MODAL
 
   place-items: center;
 
-  margin: 0 auto 16px;
+  margin: 0 auto var(--space-4);
 
   background: linear-gradient(135deg, var(--gold), var(--gold-light));
 
-  border-radius: 50%;
+  border-radius: var(--radius-circle);
 
   font-size: 26px;
 }
 
 .zatam-modal h3 {
-  margin-bottom: 10px;
+  margin-bottom: var(--space-2-5);
 
   color: var(--navy);
 
@@ -1256,13 +1342,13 @@ HOW IT WORKS MODAL
 .zatam-modal p {
   color: var(--text-secondary);
 
-  font-size: 16px;
+  font-size: var(--font-size-body);
 
   line-height: 1.55;
 }
 
 .zatam-modal-btn {
-  margin-top: 20px;
+  margin-top: var(--space-5);
 
   padding: 11px 36px;
 
@@ -1272,9 +1358,9 @@ HOW IT WORKS MODAL
 
   border: none;
 
-  border-radius: 10px;
+  border-radius: var(--radius-compact);
 
-  font-size: 15px;
+  font-size: var(--font-size-compact);
   font-weight: 700;
 
   cursor: pointer;
@@ -1287,7 +1373,7 @@ FOOTER
 */
 
 footer {
-  padding: 26px 20px;
+  padding: 26px var(--space-5);
 
   background: white;
 
@@ -1299,7 +1385,7 @@ footer {
 footer a {
   color: var(--navy);
 
-  font-size: 14px;
+  font-size: var(--font-size-base);
   font-weight: 700;
 
   transition: color var(--transition);
@@ -1371,7 +1457,7 @@ MOBILE
 
 @media (max-width: 760px) {
   .hero {
-    padding: 34px 18px 40px;
+    padding: 34px var(--space-4-5) var(--space-10);
   }
 
   .hero-text h2 {
@@ -1405,7 +1491,7 @@ MOBILE
 
     grid-template-columns: minmax(0, 360px);
 
-    gap: 24px;
+    gap: var(--space-6);
   }
 
   .menu-item {
@@ -1441,7 +1527,7 @@ SMALL MOBILE
 
 @media (max-width: 420px) {
   .hero {
-    padding: 28px 14px 34px;
+    padding: 28px var(--space-3-5) 34px;
   }
 
   .game-slideshow {
@@ -1452,7 +1538,7 @@ SMALL MOBILE
     width: 36px;
     height: 36px;
 
-    font-size: 24px;
+    font-size: var(--font-size-2xl);
   }
 
   .slide-prev {
@@ -1500,5 +1586,356 @@ REDUCED MOTION
     animation-duration: 0.01ms !important;
 
     animation-iteration-count: 1 !important;
+  }
+}
+/* Shared presentation for Zat.am's verse-ordering games. */
+
+body.zatam-themed-game.zatam-ordering-game {
+  margin: 0;
+  color: var(--zatam-text);
+  font-family: var(--zatam-font);
+  line-height: 1.5;
+}
+
+.ordering-game-shell {
+  width: min(calc(100% - 1.5rem), 1100px);
+  padding-top: 1.5rem;
+}
+
+.ordering-game-header {
+  margin-bottom: 1.25rem;
+}
+
+.ordering-game-header .mangalam {
+  margin: 0 0 0.35rem;
+  color: var(--zatam-coral);
+  font-size: 1.25rem;
+  font-weight: 800;
+}
+
+.ordering-game-instructions {
+  max-width: 860px;
+  margin-inline: auto;
+  text-align: center;
+}
+
+.ordering-game-stats {
+  width: min(100%, 58rem);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin-top: 1.1rem;
+  margin-bottom: 0.85rem;
+  margin-inline: auto;
+}
+
+.ordering-game-stat-note {
+  display: block;
+  margin-top: 0.35rem;
+  color: var(--zatam-muted);
+  font-size: 0.76rem;
+  line-height: 1.35;
+}
+
+.ordering-game-stats .zatam-game-stat {
+  padding: 0.85rem 0.75rem;
+}
+
+.ordering-game-stats .zatam-game-stat-value {
+  font-size: 1.2rem;
+}
+
+#verseProgress {
+  white-space: nowrap;
+}
+
+.zatam-ordering-game .ordering-game-shell > .zatam-game-actions {
+  margin-top: 0;
+  margin-bottom: 1rem;
+}
+
+.zatam-ordering-game .ordering-game-shell > .zatam-game-actions .zatam-game-btn {
+  min-height: var(--control-height-sm);
+}
+
+.zatam-ordering-game #content.ordering-game-board {
+  display: grid;
+  grid-template-columns: minmax(12rem, 0.7fr) minmax(0, 1.3fr);
+  gap: clamp(0.85rem, 2.5vw, 1.35rem);
+  align-items: start;
+  width: 100%;
+  margin: 1.25rem 0 0;
+  padding: clamp(0.8rem, 2vw, 1.25rem);
+  text-align: left;
+  user-select: none;
+}
+
+.zatam-ordering-game #cardPile,
+.zatam-ordering-game #cardSlots {
+  display: grid;
+  gap: 0.55rem;
+  align-content: start;
+  width: auto;
+  min-height: 0;
+  height: auto;
+  margin: 0;
+  padding: 0.8rem;
+  float: none;
+  background: var(--zatam-soft);
+  border: 1px solid var(--zatam-border);
+  border-radius: var(--zatam-radius);
+  box-shadow: none;
+}
+
+.zatam-ordering-game #cardPile {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.zatam-ordering-game #cardSlots {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
+}
+
+.zatam-ordering-game #cardPile::before,
+.zatam-ordering-game #cardSlots::before {
+  grid-column: 1 / -1;
+  padding-bottom: 0.25rem;
+  color: var(--zatam-heading);
+  font-size: var(--font-size-control);
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.zatam-ordering-game #cardPile::before {
+  content: "Number cards";
+}
+
+.zatam-ordering-game #cardSlots::before {
+  content: "Verse in order";
+}
+
+.zatam-ordering-game #cardPile > div,
+.zatam-ordering-game #cardSlots > div {
+  display: grid;
+  place-items: center;
+  min-height: 4.25rem;
+  width: auto;
+  height: auto;
+  margin: 0;
+  padding: 0.75rem;
+  float: none;
+  color: var(--zatam-heading);
+  background: var(--zatam-white);
+  border: 1.5px solid var(--zatam-border);
+  border-radius: var(--zatam-radius-sm);
+  box-shadow: var(--zatam-shadow-sm);
+  font-family: var(--zatam-font);
+  font-size: 0.96rem;
+  line-height: 1.45;
+  text-align: center;
+  text-shadow: none;
+  touch-action: manipulation;
+  overflow-wrap: anywhere;
+}
+
+.zatam-ordering-game #cardPile > div {
+  color: var(--zatam-white);
+  background: var(--zatam-navy);
+  border-color: var(--zatam-navy);
+  cursor: grab;
+}
+
+.zatam-ordering-game #cardPile > div:active {
+  cursor: grabbing;
+}
+
+.zatam-ordering-game #cardPile > div.selected {
+  background: var(--zatam-blue);
+  border-color: var(--zatam-gold);
+  box-shadow: 0 0 0 3px rgb(246 178 59 / 30%);
+}
+
+.zatam-ordering-game #cardSlots > div {
+  border-style: dashed;
+  border-color: #b8c8da;
+}
+
+.zatam-ordering-game #cardSlots > div.hovered {
+  background: #fff0cf;
+  border-color: var(--zatam-gold);
+}
+
+.zatam-ordering-game #cardSlots > div[aria-disabled="true"] {
+  border-style: solid;
+  opacity: 0.7;
+}
+
+.zatam-ordering-game #cardPile > div.correct {
+  color: var(--zatam-heading);
+  background: var(--zatam-gold);
+  border-color: var(--zatam-gold);
+  text-shadow: none;
+}
+
+.zatam-ordering-game #cardSlots > div.matched {
+  padding: 0.35rem;
+  border-style: solid;
+  border-color: var(--zatam-gold);
+  background: #fff8e9;
+}
+
+.zatam-ordering-game #cardSlots > div.matched > .ordering-number-card {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  min-height: 4rem;
+  margin: 0;
+  padding: 0.75rem;
+  color: var(--zatam-heading);
+  background: var(--zatam-gold);
+  border: 1.5px solid var(--zatam-gold);
+  border-radius: calc(var(--zatam-radius-sm) - 0.15rem);
+  box-shadow: none;
+  font-family: var(--zatam-font);
+  font-size: 0.96rem;
+  line-height: 1.45;
+  text-align: center;
+  text-shadow: none;
+}
+
+.zatam-ordering-game #cardPile > div.ui-draggable-dragging {
+  z-index: 2;
+  box-shadow: var(--zatam-shadow-lg);
+}
+
+.zatam-ordering-game #successMessage.ordering-result {
+  position: static;
+  width: min(100%, 700px);
+  height: auto;
+  margin: 1.5rem auto 0;
+  padding: 1.25rem;
+  background: var(--zatam-success-soft);
+  border: 1px solid #c9ead5;
+  border-top: 5px solid var(--zatam-gold);
+  border-radius: var(--zatam-radius-lg);
+  box-shadow: var(--zatam-shadow);
+  color: var(--zatam-success);
+  text-align: center;
+}
+
+.zatam-ordering-game #successMessage.ordering-result h2 {
+  margin: 0;
+  color: var(--zatam-heading);
+  font-size: 1.35rem;
+}
+
+.zatam-ordering-game #successMessage.ordering-result .completion-reference {
+  margin: 0.85rem 0 0;
+  color: var(--zatam-text);
+  line-height: 1.65;
+}
+
+.zatam-ordering-game #successMessage.ordering-result .zatam-game-btn {
+  margin-top: 1rem;
+}
+
+.ordering-selection-status {
+  margin: 0 auto 1rem;
+  color: var(--zatam-muted);
+  font-size: var(--font-size-lead);
+  line-height: 1.45;
+  text-align: center;
+}
+
+.ordering-footer {
+  margin: 1.5rem 0 0;
+  color: var(--zatam-muted);
+  font-size: 0.85rem;
+  line-height: 1.55;
+  text-align: center;
+}
+
+.ordering-footer a {
+  color: var(--zatam-navy);
+}
+
+@media (max-width: 760px) {
+  .ordering-game-shell {
+    padding-top: 1rem;
+  }
+
+  .ordering-game-header {
+    margin-bottom: 0.9rem;
+  }
+
+  .ordering-game-instructions {
+    padding: 0.8rem 0.9rem;
+  }
+
+  .ordering-game-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.7rem;
+  }
+
+  .zatam-ordering-game #content.ordering-game-board {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 0.7rem;
+  }
+
+  .zatam-ordering-game #cardPile,
+  .zatam-ordering-game #cardSlots {
+    min-height: 0;
+  }
+}
+
+@media (max-width: 600px) {
+  .zatam-ordering-game #cardPile {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .zatam-ordering-game #cardPile > div {
+    min-height: 3.35rem;
+    padding: 0.55rem 0.25rem;
+    font-size: var(--font-size-stat);
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 760px) and (min-height: 600px) and (pointer: coarse) {
+  .zatam-ordering-game #cardPile {
+    position: sticky;
+    top: 0.65rem;
+    z-index: 1;
+    box-shadow: var(--zatam-shadow);
+  }
+}
+
+@media (max-width: 430px) {
+  .ordering-game-shell {
+    width: min(calc(100% - 1rem), 1100px);
+  }
+
+  .zatam-ordering-game #cardSlots {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 0.65rem;
+  }
+
+  .zatam-ordering-game #cardPile > div,
+  .zatam-ordering-game #cardSlots > div {
+    min-height: 3.75rem;
+    padding: 0.65rem;
+    font-size: var(--font-size-lead);
+  }
+
+  .ordering-game-stats .zatam-game-stat {
+    padding: 0.7rem 0.45rem;
+  }
+
+  .ordering-game-stats .zatam-game-stat-value {
+    font-size: 1.1rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .zatam-ordering-game * {
+    scroll-behavior: auto !important;
   }
 }

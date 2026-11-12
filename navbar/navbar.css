@@ -56,13 +56,13 @@
   align-items: center;
   justify-content: space-between;
 
-  gap: 24px;
+  gap: var(--space-6);
 
-  padding: 0 32px;
+  padding: 0 var(--space-8);
 
-  background: #ffffff;
+  background: var(--white);
 
-  border-bottom: 1px solid #eadfce;
+  border-bottom: 1px solid var(--border);
 
   font-family: Arial, Helvetica, sans-serif;
 
@@ -79,7 +79,7 @@
 
   flex-shrink: 0;
 
-  gap: 12px;
+  gap: var(--space-3);
 
   color: inherit;
 
@@ -90,7 +90,7 @@
 
 .zatam-logo-mark {
   width: 58px;
-  height: 42px;
+  height: var(--control-height-md);
 
   position: relative;
 }
@@ -103,7 +103,7 @@
 
   border: 2px solid;
 
-  border-radius: 50%;
+  border-radius: var(--radius-circle);
 
   opacity: 0.75;
 }
@@ -112,7 +112,7 @@
   left: 0;
   top: 5px;
 
-  border-color: #f6b23b;
+  border-color: var(--gold);
 }
 
 .zc2 {
@@ -132,7 +132,7 @@
 .zatam-logo-text h1 {
   margin: 0;
 
-  color: #09264a;
+  color: var(--navy-dark);
 
   font-family: Arial, Helvetica, sans-serif;
 
@@ -146,11 +146,11 @@
 }
 
 .zatam-logo-text h1 span:nth-child(1) {
-  color: #f16945;
+  color: var(--zatam-coral);
 }
 
 .zatam-logo-text h1 span:nth-child(2) {
-  color: #2f6dff;
+  color: var(--zatam-blue);
 }
 
 .zatam-logo-text h1 span:nth-child(3) {
@@ -158,11 +158,11 @@
 }
 
 .zatam-logo-text p {
-  margin: 4px 0 0;
+  margin: var(--space-1) 0 0;
 
   color: #39415c;
 
-  font-size: 12px;
+  font-size: var(--font-size-sm);
 
   line-height: normal;
 }
@@ -179,9 +179,9 @@
 
   gap: 38px;
 
-  color: #18284a;
+  color: var(--zatam-text);
 
-  font-size: 16px;
+  font-size: var(--font-size-body);
   font-weight: 600;
 }
 
@@ -205,7 +205,7 @@
 }
 
 .zatam-nav a:hover {
-  color: #0b2b4f;
+  color: var(--navy);
 }
 
 .zatam-nav a.active::after {
@@ -219,9 +219,9 @@
 
   height: 3px;
 
-  background: #f6b23b;
+  background: var(--gold);
 
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
 }
 
 /* =====================================================
@@ -234,7 +234,7 @@
 
   flex-shrink: 0;
 
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 /* =====================================================
@@ -242,23 +242,23 @@
 ===================================================== */
 
 .zatam-lang-btn {
-  height: 40px;
+  height: var(--button-height-sm);
 
   display: flex;
   align-items: center;
   justify-content: center;
 
-  padding: 0 18px;
+  padding: 0 var(--space-4-5);
 
-  background: white;
+  background: var(--white);
 
   color: #111;
 
   border: 1.5px solid #222;
 
-  border-radius: 14px;
+  border-radius: var(--radius-control);
 
-  font-size: 15px;
+  font-size: var(--font-size-compact);
   font-weight: 700;
 
   cursor: pointer;
@@ -272,7 +272,7 @@
 .zatam-lang-btn:hover {
   transform: translateY(-2px);
 
-  background: #fffaf2;
+  background: var(--cream);
 
   box-shadow: 0 8px 18px rgba(11, 43, 79, 0.14);
 }
@@ -285,18 +285,18 @@
   display: flex;
   align-items: center;
 
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .zatam-login-btn,
 .zatam-signup-btn {
-  height: 40px;
+  height: var(--button-height-sm);
 
-  padding: 0 16px;
+  padding: var(--button-padding-compact);
 
-  border-radius: 14px;
+  border-radius: var(--radius-control);
 
-  font-size: 14px;
+  font-size: var(--font-size-base);
   font-weight: 700;
 
   cursor: pointer;
@@ -309,19 +309,19 @@
 }
 
 .zatam-login-btn {
-  background: #0b2b4f;
+  background: var(--navy);
 
-  color: white;
+  color: var(--white);
 
-  border: 1.5px solid #0b2b4f;
+  border: 1.5px solid var(--navy);
 }
 
 .zatam-signup-btn {
-  background: white;
+  background: var(--white);
 
-  color: #0b2b4f;
+  color: var(--navy);
 
-  border: 1.5px solid #0b2b4f;
+  border: 1.5px solid var(--navy);
 }
 
 .zatam-login-btn:hover,
@@ -332,9 +332,9 @@
 }
 
 .zatam-signup-btn:hover {
-  background: #0b2b4f;
+  background: var(--navy);
 
-  color: white;
+  color: var(--white);
 }
 
 /* =====================================================
@@ -353,15 +353,15 @@
 
   gap: 9px;
 
-  padding: 4px 10px 4px 5px;
+  padding: var(--space-1) var(--space-2-5) var(--space-1) 5px;
 
-  background: white;
+  background: var(--white);
 
-  border: 1.5px solid #0b2b4f;
+  border: 1.5px solid var(--navy);
 
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
 
-  color: #0b2b4f;
+  color: var(--navy);
 
   cursor: pointer;
 
@@ -385,9 +385,9 @@
 
   overflow: hidden;
 
-  border: 2px solid #f6b23b;
+  border: 2px solid var(--gold);
 
-  border-radius: 50%;
+  border-radius: var(--radius-circle);
 
   background: #ffe1a5;
 }
@@ -406,9 +406,9 @@
 
   overflow: hidden;
 
-  color: #0b2b4f;
+  color: var(--navy);
 
-  font-size: 14px;
+  font-size: var(--font-size-base);
   font-weight: 700;
 
   text-overflow: ellipsis;
@@ -417,13 +417,13 @@
 }
 
 .zatam-profile-chevron {
-  color: #687789;
+  color: var(--muted);
 
-  font-size: 11px;
+  font-size: var(--font-size-caption);
 }
 
 .zatam-profile-fallback {
-  font-size: 18px;
+  font-size: var(--font-size-lg);
 }
 
 .zatam-profile-fallback.large {
@@ -444,13 +444,13 @@
 
   overflow: visible;
 
-  padding: 12px 0;
+  padding: var(--space-3) 0;
 
-  background: #ffffff;
+  background: var(--white);
 
-  border: 1px solid #eadfce;
+  border: 1px solid var(--border);
 
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
 
   box-shadow: 0 18px 40px rgba(11, 43, 79, 0.2);
 
@@ -468,26 +468,26 @@
   top: -8px;
   right: 20px;
 
-  background: white;
+  background: var(--white);
 
-  border-left: 1px solid #eadfce;
-  border-top: 1px solid #eadfce;
+  border-left: 1px solid var(--border);
+  border-top: 1px solid var(--border);
 
   transform: rotate(45deg);
 }
 
 .zatam-dropdown-header {
-  padding: 8px 16px 14px;
+  padding: var(--space-2) var(--space-4) var(--space-3-5);
 
   text-align: center;
 }
 
 .zatam-user-email {
-  margin: 0 0 10px;
+  margin: 0 0 var(--space-2-5);
 
-  color: #687789;
+  color: var(--muted);
 
-  font-size: 12px;
+  font-size: var(--font-size-sm);
   font-weight: 600;
 
   word-break: break-all;
@@ -502,13 +502,13 @@
 
   overflow: hidden;
 
-  margin: 6px auto 9px;
+  margin: var(--space-1-5) auto 9px;
 
   background: #ffe1a5;
 
-  border: 3px solid #f6b23b;
+  border: 3px solid var(--gold);
 
-  border-radius: 50%;
+  border-radius: var(--radius-circle);
 }
 
 .zatam-dropdown-avatar img {
@@ -525,9 +525,9 @@
 
   margin-top: 7px;
 
-  color: #0b2b4f;
+  color: var(--navy);
 
-  font-size: 16px;
+  font-size: var(--font-size-body);
   font-weight: 800;
 }
 
@@ -536,24 +536,24 @@
 
   margin-top: 5px;
 
-  color: #687789;
+  color: var(--muted);
 
-  font-size: 13px;
+  font-size: var(--font-size-label);
 }
 
 #streak {
-  margin: 10px 0 0;
+  margin: var(--space-2-5) 0 0;
 
-  color: #24394f;
+  color: var(--text-secondary);
 
-  font-size: 14px;
+  font-size: var(--font-size-base);
   font-weight: 700;
 }
 
 .zatam-dropdown-divider {
   height: 1px;
 
-  background: #eadfce;
+  background: var(--border);
 }
 
 .zatam-dropdown a,
@@ -562,17 +562,17 @@
 
   display: block;
 
-  padding: 12px 18px;
+  padding: var(--space-3) var(--space-4-5);
 
   background: transparent;
 
   border: none;
 
-  color: #24394f;
+  color: var(--text-secondary);
 
   font-family: Arial, Helvetica, sans-serif;
 
-  font-size: 14px;
+  font-size: var(--font-size-base);
   font-weight: 700;
 
   text-align: left;
@@ -591,9 +591,9 @@
 .zatam-dropdown-logout:hover {
   padding-left: 22px;
 
-  background: #fff7e8;
+  background: var(--cream-dark);
 
-  color: #0b2b4f;
+  color: var(--navy);
 }
 
 /* =====================================================
@@ -610,13 +610,13 @@
 
 @media (max-width: 1000px) {
   .zatam-header {
-    padding: 0 18px;
+    padding: 0 var(--space-4-5);
   }
 
   .zatam-nav {
-    gap: 20px;
+    gap: var(--space-5);
 
-    font-size: 14px;
+    font-size: var(--font-size-base);
   }
 
   #navbar-user-name {
@@ -633,11 +633,11 @@
     min-height: 68px;
     height: auto;
 
-    padding: 12px 14px;
+    padding: var(--space-3) var(--space-3-5);
 
     flex-wrap: wrap;
 
-    gap: 10px;
+    gap: var(--space-2-5);
   }
 
   .zatam-logo-mark {
@@ -645,7 +645,7 @@
   }
 
   .zatam-logo-text h1 {
-    font-size: 24px;
+    font-size: var(--font-size-2xl);
   }
 
   .zatam-logo-text p {
@@ -677,13 +677,13 @@
   .zatam-signup-btn {
     height: 36px;
 
-    padding: 0 10px;
+    padding: 0 var(--space-2-5);
 
-    font-size: 12px;
+    font-size: var(--font-size-sm);
   }
 
   .zatam-user-profile {
-    min-height: 40px;
+    min-height: var(--control-height-sm);
   }
 
   #navbar-profile-avatar {
@@ -698,13 +698,13 @@
 
 @media (max-width: 480px) {
   .zatam-nav {
-    gap: 14px;
+    gap: var(--space-3-5);
 
-    font-size: 12px;
+    font-size: var(--font-size-sm);
   }
 
   .zatam-header-actions {
-    gap: 6px;
+    gap: var(--space-1-5);
   }
 
   .zatam-signup-btn {
@@ -727,7 +727,7 @@
 body.zatam-game-page {
   padding-top: calc(
     var(--zatam-original-body-padding-top, 0px) +
-      var(--zatam-navbar-height, 76px) + 14px
+      var(--zatam-navbar-height, 76px) + var(--space-3-5)
   ) !important;
 }
 

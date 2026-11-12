@@ -20,7 +20,7 @@ body {
 #fwGameShell {
   width: 90vw;
   max-width: 1600px;
-  margin: 16px auto;
+  margin: var(--space-4) auto;
 }
 
 .mangalam {
@@ -29,7 +29,7 @@ body {
 
 #lead {
   text-align: center;
-  padding-bottom: 8px;
+  padding-bottom: var(--space-2);
   font-size: 1.4em;
   line-height: 1.5;
 }
@@ -37,7 +37,7 @@ body {
 #statusMessage {
   text-align: center;
   display: none;
-  margin: 6px 0;
+  margin: var(--space-1-5) 0;
 }
 
 #finishMessage {
@@ -46,16 +46,16 @@ body {
   color: #ff5555;
   font-size: 2em;
   font-weight: bold;
-  margin: 8px 0;
+  margin: var(--space-2) 0;
 }
 
 #level {
   position: absolute;
   right: 4%;
   top: 35%;
-  padding: 8px 10px;
-  background: #fff;
-  border-radius: 8px;
+  padding: var(--space-2) var(--space-2-5);
+  background: var(--white);
+  border-radius: var(--radius-sm);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
@@ -74,9 +74,9 @@ body {
   left: 3%;
   font-size: 1.2em;
   font-weight: 700;
-  padding: 8px 10px;
-  background: #fff;
-  border-radius: 8px;
+  padding: var(--space-2) var(--space-2-5);
+  background: var(--white);
+  border-radius: var(--radius-sm);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
@@ -86,9 +86,9 @@ body {
   top: 30%;
   font-size: 1.2em;
   font-weight: 700;
-  padding: 8px 10px;
-  background: #fff;
-  border-radius: 8px;
+  padding: var(--space-2) var(--space-2-5);
+  background: var(--white);
+  border-radius: var(--radius-sm);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
@@ -107,7 +107,7 @@ body {
   background-color: rgba(77, 185, 228, 0.986);
   transform: translateX(25%) translateY(25%);
   width: 50%;
-  padding: 10px;
+  padding: var(--space-2-5);
 }
 
 #finishMessage {
@@ -247,12 +247,12 @@ body {
 }
 
 .dropdown {
-  margin: 10px;
+  margin: var(--space-2-5);
 }
 
 .gameTitle {
   text-align: center;
-  margin: 12px 0 6px;
+  margin: var(--space-3) 0 var(--space-1-5);
 }
 
 .header-divider {
@@ -260,7 +260,7 @@ body {
   width: 90%;
   height: 4px;
   background-color: #ca9e0d;
-  margin: 0 auto 16px auto;
+  margin: 0 auto var(--space-4) auto;
 }
 
 #hintLink a {
@@ -291,13 +291,13 @@ body {
     width: 100%;
     height: auto;
     margin: 0;
-    padding: 10% 5px 20px;
+    padding: 10% 5px var(--space-5);
     overflow-x: hidden;
   }
 
   #lead {
     font-size: 1.2em;
-    padding: 8px 10px;
+    padding: var(--space-2) var(--space-2-5);
   }
 
   #level {
@@ -307,14 +307,14 @@ body {
     gap: 15px;
     justify-content: center;
     width: 95%;
-    margin: 10px auto;
-    padding: 8px 15px;
+    margin: var(--space-2-5) auto;
+    padding: var(--space-2) 15px;
   }
 
   #level ul {
     display: flex;
     flex-direction: row;
-    gap: 10px;
+    gap: var(--space-2-5);
     list-style: none;
     padding: 0;
     margin: 0;
@@ -328,7 +328,7 @@ body {
     font-size: 1em;
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: var(--space-2-5);
     flex-wrap: wrap;
     justify-content: center;
   }
@@ -339,8 +339,8 @@ body {
     gap: 15px;
     justify-content: center;
     width: 95%;
-    margin: 10px auto;
-    padding: 8px 15px;
+    margin: var(--space-2-5) auto;
+    padding: var(--space-2) 15px;
   }
 
   #hintLink > div:first-child {
@@ -360,13 +360,13 @@ body {
     display: flex;
     justify-content: center;
     width: 95%;
-    margin: 10px auto;
-    padding: 8px 15px;
+    margin: var(--space-2-5) auto;
+    padding: var(--space-2) 15px;
   }
 
   #gridParent {
     width: 100%;
-    padding: 10px 0;
+    padding: var(--space-2-5) 0;
   }
 
   #grid {
@@ -389,32 +389,32 @@ body {
 
 @media (max-width: 768px) {
   #fwGameShell {
-    padding: 14% 0 20px;
+    padding: 14% 0 var(--space-5);
   }
 
   #lead {
     font-size: 1em;
-    padding: 6px 5px;
+    padding: var(--space-1-5) 5px;
   }
 
   #liveScore {
-    font-size: 14px;
+    font-size: var(--font-size-base);
   }
 
   #level {
     width: 100%;
-    margin: 8px 0;
+    margin: var(--space-2) 0;
   }
 
   #hintLink {
     width: 100%;
-    margin: 8px 0;
+    margin: var(--space-2) 0;
     font-size: 1em;
   }
 
   #refreshLink {
     width: 100%;
-    margin: 8px 0;
+    margin: var(--space-2) 0;
     font-size: 1em;
   }
 
@@ -502,7 +502,7 @@ body {
   width: 26px;
   left: 4px;
   bottom: 4px;
-  background-color: white;
+  background-color: var(--white);
   -webkit-transition: 0.4s;
   transition: 0.4s;
 }
@@ -526,7 +526,7 @@ input:checked + .slider:before {
 }
 
 .slider.round:before {
-  border-radius: 50%;
+  border-radius: var(--radius-circle);
 }
 
 /* =====================================================
@@ -541,16 +541,16 @@ input:checked + .slider:before {
   justify-content: center;
   background: rgba(0, 0, 0, 0.35);
   z-index: 10000;
-  padding: 20px;
+  padding: var(--space-5);
   border: none;
 }
 
 .bp26CelebrateBox {
   position: relative;
   width: min(460px, 92vw);
-  background: #fff;
-  border-radius: 18px;
-  padding: 18px;
+  background: var(--white);
+  border-radius: var(--radius-large);
+  padding: var(--space-4-5);
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
   text-align: center;
   font-family: system-ui, Arial, sans-serif;
@@ -560,7 +560,7 @@ input:checked + .slider:before {
 .bp26Sparkles {
   font-size: 54px;
   line-height: 1.1;
-  margin: 8px 0 6px;
+  margin: var(--space-2) 0 var(--space-1-5);
   animation: bp26Pop 600ms ease-out both;
 }
 
@@ -577,9 +577,9 @@ input:checked + .slider:before {
 }
 
 .bp26Btn {
-  margin-top: 12px;
-  padding: 10px 14px;
-  border-radius: 12px;
+  margin-top: var(--space-3);
+  padding: var(--space-2-5) var(--space-3-5);
+  border-radius: var(--radius);
   border: 1px solid #ddd;
   background: #f9fafb;
   cursor: pointer;

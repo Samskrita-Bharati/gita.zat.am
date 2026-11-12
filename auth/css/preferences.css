@@ -17,37 +17,37 @@ body {
   width: 100%;
   max-width: 430px;
   margin: 0 auto;
-  padding: 20px;
+  padding: var(--space-5);
   box-sizing: border-box;
 }
 
 .form-box {
-  background-color: white;
-  border-radius: 10px;
-  padding: 32px;
+  background-color: var(--white);
+  border-radius: var(--radius-compact);
+  padding: var(--space-8);
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
   margin-top: 60px;
 }
 
 h2 {
   text-align: center;
-  margin-bottom: 10px;
+  margin-bottom: var(--space-2-5);
 }
 
 .header-divider {
   width: 60px;
   height: 3px;
   background-color: goldenrod;
-  margin: 10px auto 25px;
+  margin: var(--space-2-5) auto 25px;
 }
 
 .form-group {
-  margin-bottom: 20px;
+  margin-bottom: var(--space-5);
 }
 
 .form-group label {
   display: block;
-  margin-bottom: 8px;
+  margin-bottom: var(--space-2);
   color: #333;
   font-weight: 600;
   font-size: 1.1em;
@@ -55,10 +55,10 @@ h2 {
 
 .form-input {
   width: 100%;
-  padding: 10px;
+  padding: var(--space-2-5);
   border: 1px solid #aec6e6;
-  border-radius: 4px;
-  font-size: 14px;
+  border-radius: var(--radius-xs);
+  font-size: var(--font-size-base);
   background-color: #e7ebf0;
   color: #666;
   font-family: Arial, Helvetica, sans-serif;
@@ -67,22 +67,22 @@ h2 {
 .form-input:focus {
   outline: none;
   border-color: #64a2dd;
-  background-color: white;
+  background-color: var(--white);
   box-shadow: 0 0 0 2px rgba(100, 162, 221, 0.1);
 }
 
 .button-group {
   display: flex;
-  gap: 10px;
+  gap: var(--space-2-5);
   margin-top: 25px;
 }
 
 .btn {
   flex: 1;
-  padding: 10px;
+  padding: var(--space-2-5);
   border: none;
-  border-radius: 4px;
-  font-size: 16px;
+  border-radius: var(--radius-xs);
+  font-size: var(--font-size-body);
   font-weight: 700;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -91,7 +91,7 @@ h2 {
 
 .btn-primary {
   background-color: #64a2dd;
-  color: white;
+  color: var(--white);
 }
 
 .btn-primary:hover {
@@ -99,7 +99,7 @@ h2 {
 }
 
 .btn-secondary {
-  background-color: white;
+  background-color: var(--white);
   color: #64a2dd;
   border: 2px solid #64a2dd;
 }
@@ -110,10 +110,10 @@ h2 {
 
 #message {
   margin-top: 15px;
-  padding: 10px;
+  padding: var(--space-2-5);
   text-align: center;
-  border-radius: 4px;
-  font-size: 14px;
+  border-radius: var(--radius-xs);
+  font-size: var(--font-size-base);
   min-height: 20px;
 }
 

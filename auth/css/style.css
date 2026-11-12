@@ -16,19 +16,19 @@ body {
 .container {
   width: 100%;
   max-width: 400px;
-  padding: 20px;
+  padding: var(--space-5);
 }
 
 .form-box {
-  background: white;
+  background: var(--white);
   padding: 30px;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 h2 {
   text-align: center;
-  margin-bottom: 10px;
+  margin-bottom: var(--space-2-5);
   /*color: #333;*/
   font-weight: 600;
   font-size: 1.5em;
@@ -61,17 +61,17 @@ h2 {
 
 .option-text {
   display: flex;
-  font-size: 14px;
+  font-size: var(--font-size-base);
   color: #333;
   text-align: center;
-  margin: 20px;
+  margin: var(--space-5);
   color: #666;
 }
 
 .option-text::before,
 .option-text::after {
   flex: 1;
-  margin: 12px;
+  margin: var(--space-3);
   content: "";
   height: 1px;
   background-color: #333;
@@ -80,12 +80,12 @@ h2 {
 .social-login {
   display: flex;
   justify-content: center;
-  gap: 10px;
+  gap: var(--space-2-5);
   margin-bottom: 15px;
 }
 
 .social-login button {
-  background-color: white;
+  background-color: var(--white);
   border: #aec6e6 1px solid;
   color:  #666;
   display: flex;
@@ -99,13 +99,13 @@ h2 {
 i {
   color: #666;
   font-size: 1.2em;
-  margin-right: 8px;
-  
+  margin-right: var(--space-2);
+
 }
 
 .google-icon {
   font-size: 1.6em;
-  
+
 }
 .social-login button:hover {
   background-color: #f0f0f0;
@@ -120,23 +120,23 @@ i {
   flex: 1;
   height: 1px;
   background-color: #0f0d0d;
-  margin: 0 10px;
+  margin: 0 var(--space-2-5);
 }
 .header-divider {
   content: "";
   flex: 1;
   height: 3px;
   background-color: #ca9e0d;
-  margin: 20px 50px;
+  margin: var(--space-5) 50px;
 }
 
 input {
   width: 100%;
-  padding: 10px;
+  padding: var(--space-2-5);
   margin-bottom: 15px;
   border: 1px solid #aec6e6;
-  border-radius: 4px;
-  font-size: 14px;
+  border-radius: var(--radius-xs);
+  font-size: var(--font-size-base);
   background-color: #e7ebf0;
 }
 
@@ -147,12 +147,12 @@ input::placeholder {
 
 button {
   width: 100%;
-  padding: 10px;
+  padding: var(--space-2-5);
   background: #007bff;
-  color: white;
+  color: var(--white);
   border: none;
-  border-radius: 4px;
-  font-size: 16px;
+  border-radius: var(--radius-xs);
+  font-size: var(--font-size-body);
   cursor: pointer;
 }
 
@@ -177,10 +177,10 @@ a:hover {
 
 #message {
   margin-top: 15px;
-  padding: 10px;
+  padding: var(--space-2-5);
   text-align: center;
-  border-radius: 4px;
-  font-size: 14px;
+  border-radius: var(--radius-xs);
+  font-size: var(--font-size-base);
 }
 
 #auth {
@@ -195,6 +195,6 @@ a:hover {
 
 @media (max-width: 500px) {
   .container {
-    padding: 10px;
+    padding: var(--space-2-5);
   }
 }
