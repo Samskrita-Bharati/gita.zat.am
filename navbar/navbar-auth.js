@@ -31,8 +31,8 @@ const languageNames = {
 
 const navbarTranslations = {
   en: {
-    navGames: "Games",
-    navContest: "Daily Challenges",
+    navGames: "Daily Challenge",
+    navContest: "Calendar",
     navLeaderboard: "Leaderboard",
 
     login: "↪ Login",
@@ -47,8 +47,8 @@ const navbarTranslations = {
   },
 
   sa: {
-    navGames: "क्रीडाः",
-    navContest: "Daily Challenges",
+    navGames: "Daily Challenge",
+    navContest: "Calendar",
     navLeaderboard: "श्रेष्ठसूची",
 
     login: "↪ प्रवेशः",
