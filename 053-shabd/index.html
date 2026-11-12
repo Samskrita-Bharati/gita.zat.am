@@ -33,7 +33,6 @@
       Start Game 
     </button>
     <div class="shabd-stats" aria-label="Round statistics">
-      <div>Time <strong id="shabd-time">0:00</strong></div>
       <div>Score <strong id="shabd-score">100/100</strong></div>
     </div>
     <p id="Title"></p>
@@ -42,6 +41,7 @@
     
     <p id="details" role="status"></p>
     
+    <p class="tile-help">Drag a raised word tile onto another tile to swap them. Dotted grips mark movable tiles.</p>
     <div class="shabd-grid-scroll" tabindex="0" role="region" aria-label="Declension table — scroll horizontally on small screens">
     <div class="drag-list" id="grid" oncontextmenu="return false;">
       <template id="tile"> <div class="drag-item" draggable="true"> </div> </template>
@@ -121,7 +121,7 @@
             <div class="shabd-instructions" tabindex="0">
               <ol>
                 <li>Press <strong>Start Game</strong> to begin.</li>
-                <li>Drag the noun forms into their correct case and number: Singular, Dual, or Plural.</li>
+                <li>Drag the raised noun tiles onto one another to swap them into the correct case and number: Singular, Dual, or Plural.</li>
                 <li>Select a case button to check that row, or <strong>Check All</strong> to check the whole table.</li>
                 <li>Use the gender selector to choose a noun or pronoun group.</li>
                 <li>Each new misplaced form in a checked cell costs 2 points. Correct forms turn green.</li>

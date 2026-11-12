@@ -8,7 +8,7 @@ const message = document.getElementById("message");
 const details = document.getElementById("details");
 const settings = document.getElementById("settings1");
 
-let noun, nouns, startTime, index, is_playing;
+let noun, nouns, index, is_playing;
 
 fetch('/053-shabd/declensions.txt')
   .then(responses => responses.json())
@@ -48,7 +48,7 @@ DragNSort.prototype.onDragStart = function (_this, event) {
 };
 
 DragNSort.prototype.onDragEnd = function (_this) {
-	this.classList.remove(_this.dragStartClass);
+	_this.removeClasses();
 };
 
 DragNSort.prototype.onDragEnter = function (_this) {
@@ -254,7 +254,6 @@ function startGame() {
     
   }
 
-  startTime = Date.now();
   beginScoring();
   
 //  document.body.className = "";
@@ -371,7 +370,6 @@ function checkMatrix(check_case_no, penalize = true) {
 }
 }
 
-let elapsedTime;
 
 function gameOver() {
   if (is_playing == false) {
@@ -379,9 +377,7 @@ function gameOver() {
   } else {
     is_playing = false;
   }
-  elapsedTime = Date.now() - startTime;
-  clearInterval(timerId);
-  renderStats(elapsedTime);
+  renderStats();
   
   for(var i=0; i<24; i++) {
     // for(var j=0; j<3; j++) {
@@ -395,7 +391,7 @@ function gameOver() {
   
   message.innerHTML = `
     <span class="congrats">Congrats!</span>
-    <br> Score: ${roundScore}/100 · Time: ${formatTime(elapsedTime)}
+    <br> Score: ${roundScore}/100
     `;
   
   details.innerHTML = ` `;
@@ -405,7 +401,7 @@ function gameOver() {
   
   
   check.style.display = "none";
-  saveRound(elapsedTime);
+  saveRound();
 
 //  document.body.className = "winner";
 }
@@ -441,7 +437,7 @@ const levelIds = {
 };
 const chargedMistakes = new Set();
 const bestKey = "zatam:053-shabd:personal-best:";
-let roundScore = 100, timerId, roundLevel, scorerReady, savingScore = false;
+let roundScore = 100, roundLevel, scorerReady, savingScore = false;
 
 function selectedLevel() {
   return {
@@ -450,20 +446,14 @@ function selectedLevel() {
   };
 }
 
-function formatTime(ms) {
-  const seconds = Math.floor(ms / 1000);
-  return Math.floor(seconds / 60) + ":" + String(seconds % 60).padStart(2, "0");
-}
-
-function renderStats(ms = Date.now() - startTime) {
-  document.getElementById("shabd-time").textContent = formatTime(ms);
+function renderStats() {
   document.getElementById("shabd-score").textContent = roundScore + "/100";
 }
 
 function readBest(level) {
   try {
     const best = JSON.parse(localStorage.getItem(bestKey + level.levelId));
-    return Number.isFinite(best?.score) && Number.isFinite(best?.ms) ? best : null;
+    return Number.isFinite(best?.score) && best.score >= 0 && best.score <= 100 ? best : null;
   } catch {
     return null;
   }
@@ -472,18 +462,16 @@ function readBest(level) {
 function renderBest(level, best = readBest(level)) {
   document.getElementById("shabd-best-level").textContent = level.levelName;
   document.getElementById("shabd-best").textContent = best
-    ? best.score + "/100 · " + formatTime(best.ms)
+    ? best.score + "/100"
     : "No completed rounds yet.";
 }
 
 function beginScoring() {
-  clearInterval(timerId);
   chargedMistakes.clear();
   roundScore = 100;
   roundLevel = selectedLevel();
-  renderStats(0);
+  renderStats();
   renderBest(roundLevel);
-  timerId = setInterval(renderStats, 250);
   const level = roundLevel;
   scorerReady = import("../js/game-score.js").then((scorer) => {
     if (roundLevel !== level) return null;
@@ -498,12 +486,12 @@ function beginScoring() {
   });
 }
 
-async function saveRound(ms) {
+async function saveRound() {
   const level = roundLevel;
   const score = roundScore;
   const stored = readBest(level);
-  const improved = !stored || score > stored.score || (score === stored.score && ms < stored.ms);
-  const best = improved ? { score, ms } : stored;
+  const improved = !stored || score > stored.score;
+  const best = improved ? { score } : stored;
   if (improved) {
     try { localStorage.setItem(bestKey + level.levelId, JSON.stringify(best)); } catch {}
   }
@@ -516,7 +504,7 @@ async function saveRound(ms) {
     if (!scorer) throw new Error("Leaderboard scorer unavailable.");
     const saved = await scorer.submitGameScore(score, {
       result: "completed", ...level,
-      metrics: { elapsedSeconds: Math.floor(ms / 1000), mistakes: chargedMistakes.size },
+      metrics: { mistakes: chargedMistakes.size },
     });
     details.textContent = saved?.ok ? "Score saved to the leaderboard."
       : saved?.reason === "not-signed-in" ? "Sign in to save scores to the leaderboard."
@@ -530,4 +518,32 @@ async function saveRound(ms) {
   }
 }
 
-renderBest(selectedLevel());
+renderBest(selectedLevel());const categoryKey = "zatam:053-shabd:selected-category";
+
+function restoreCategoryAndBest() {
+  try {
+    const saved = localStorage.getItem(categoryKey);
+
+    if (
+      saved !== null &&
+      Array.from(settings.options).some(option => option.value === saved)
+    ) {
+      settings.value = saved;
+    }
+  } catch {
+    // Continue playing if browser storage is unavailable.
+  }
+
+  renderBest(selectedLevel());
+}
+
+settings.addEventListener("change", () => {
+  try {
+    localStorage.setItem(categoryKey, settings.value);
+  } catch {}
+
+  renderBest(selectedLevel());
+});
+
+restoreCategoryAndBest();
+window.addEventListener("pageshow", restoreCategoryAndBest);

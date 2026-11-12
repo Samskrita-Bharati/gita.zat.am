@@ -1,4 +1,4 @@
-/* Shabd Puzzle UI only. All game and shared-navbar scripts are unchanged. */
+/* Shabd Puzzle: game-scoped layout and draggable tiles. */
 body.shabd-page {
   margin: 0;
   min-width: 0;
@@ -201,3 +201,78 @@ body.shabd-page {
 .shabd-game #shabd-best { font-weight: 700; }
 .shabd-game button:disabled,
 .shabd-game select:disabled { opacity: .65; cursor: wait; }
+
+
+/* Raised cards distinguish movable forms from fixed row and column labels. */
+.shabd-game .tile-help {
+  margin: 12px 0 6px;
+  color: #52667b;
+  font-size: .9rem;
+}
+.shabd-game .drag-item {
+  position: relative;
+  padding: 6px;
+  background: #edf2f7;
+  transition: background-color .15s;
+}
+.shabd-game .drag-item > span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  padding: 3px 16px 3px 6px;
+  border: 1px solid #90aac7;
+  border-bottom-width: 3px;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 2px 3px #0b2b4f18;
+  transition: transform .15s, box-shadow .15s;
+}
+.shabd-game .drag-item[draggable="true"]:not(.solved)::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: 11px;
+  width: 7px;
+  height: 15px;
+  transform: translateY(-50%);
+  background: radial-gradient(circle, #687e96 1px, transparent 1.4px) 0 0 / 4px 5px;
+  pointer-events: none;
+}
+.shabd-game .drag-item[draggable="true"]:not(.solved):hover > span {
+  transform: translateY(-2px);
+  border-color: #355f8a;
+  box-shadow: 0 4px 6px #0b2b4f25;
+}
+.shabd-game .drag-item.drag-start {
+  opacity: .55;
+  cursor: grabbing;
+}
+.shabd-game .drag-item.drag-enter {
+  opacity: 1;
+  transform: none;
+  background: #fff0cf;
+  outline: 2px dashed #9c6014;
+  outline-offset: -3px;
+}
+.shabd-game .drag-item.checked-correct,
+.shabd-game .drag-item.solved {
+  background: #edf2f7;
+  box-shadow: none;
+}
+.shabd-game .drag-item.checked-correct > span,
+.shabd-game .drag-item.solved > span {
+  background: #e4f5e9;
+  border-color: #82b99a;
+  color: #145c36;
+}
+.shabd-game .drag-item.solved > span {
+  padding-right: 6px;
+  border-bottom-width: 1px;
+  box-shadow: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .shabd-game .drag-item > span { transition: none; }
+  .shabd-game .drag-item[draggable="true"]:hover > span { transform: none; }
+}
