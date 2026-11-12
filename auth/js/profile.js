@@ -390,10 +390,10 @@ if (backLink) {
   const urlParams = new URLSearchParams(window.location.search);
   const origin = urlParams.get("from");
 
-  if (origin === "bp26") {
-    backLink.href = "../bp26/index.html";
+  if (origin === "games") {
+    backLink.href = "../daily-challenges/index.html";
     backLink.innerHTML =
-      '<span aria-hidden="true">🏁</span> Back to Competition';
+      '<span aria-hidden="true">🎮</span> Back to Games';
   } else {
     backLink.href = "../index.html";
     backLink.innerHTML = '<span aria-hidden="true">🎮</span> Back to Games';

@@ -633,79 +633,6 @@ CATEGORY BAR
 =================================================
 */
 
-.category-bar {
-  padding: 18px 32px;
-
-  background: var(--cream-dark);
-
-  border-top: 1px solid var(--border);
-
-  border-bottom: 1px solid var(--border);
-}
-
-.category-bar .btn-container {
-  width: min(1180px, 100%);
-
-  margin: 0 auto;
-
-  display: flex;
-
-  flex-wrap: wrap;
-
-  align-items: center;
-  justify-content: center;
-
-  gap: 14px;
-}
-
-.category-bar .filter-btn {
-  min-height: 52px;
-
-  display: inline-flex;
-
-  align-items: center;
-  justify-content: center;
-
-  padding: 0 20px;
-
-  background: rgba(255, 255, 255, 0.8);
-
-  color: var(--navy);
-
-  border: 1.5px solid rgba(11, 43, 79, 0.26);
-
-  border-radius: 999px;
-
-  font-size: 15px;
-  font-weight: 800;
-
-  cursor: pointer;
-
-  box-shadow: 0 8px 18px rgba(143, 93, 20, 0.08);
-
-  transition:
-    transform var(--transition),
-    background var(--transition),
-    color var(--transition),
-    box-shadow var(--transition);
-}
-
-.category-bar .filter-btn:hover {
-  transform: translateY(-3px);
-
-  box-shadow: 0 8px 18px rgba(11, 43, 79, 0.16);
-}
-
-.category-bar .filter-btn.active {
-  background: var(--navy);
-
-  color: white;
-
-  border-color: var(--navy);
-
-  box-shadow: 0 10px 24px rgba(11, 43, 79, 0.18);
-}
-
 /*
 =================================================
 GAMES SECTION
@@ -716,47 +643,6 @@ GAMES SECTION
   padding: 48px 0 80px;
 
   background: var(--cream);
-}
-
-.games-heading {
-  margin-bottom: 36px;
-
-  padding: 0 20px;
-
-  text-align: center;
-}
-
-.games-heading h2 {
-  margin-bottom: 12px;
-
-  color: var(--navy);
-
-  font-family: Georgia, serif;
-
-  font-size: 36px;
-
-  letter-spacing: normal;
-
-  text-transform: none;
-}
-
-.games-heading-underline {
-  width: 68px;
-  height: 5px;
-
-  margin: 0 auto 12px;
-
-  background: var(--gold);
-
-  border-radius: 999px;
-}
-
-.games-heading p {
-  margin: 0;
-
-  color: var(--muted);
-
-  font-size: 15px;
 }
 
 /*
@@ -1506,29 +1392,13 @@ MOBILE
     height: 310px;
   }
 
-  .category-bar {
-    padding: 14px 16px;
-  }
 
-  .category-bar .filter-btn {
-    min-height: 42px;
-
-    padding: 0 14px;
-
-    font-size: 13px;
-  }
 
   .menu {
     padding-top: 36px;
   }
 
-  .games-heading {
-    margin-bottom: 28px;
-  }
 
-  .games-heading h2 {
-    font-size: 32px;
-  }
 
   .section-center {
     width: calc(100% - 30px);
@@ -1603,11 +1473,6 @@ SMALL MOBILE
     right: 20px;
   }
 
-  .category-bar .filter-btn {
-    padding: 0 12px;
-
-    font-size: 12px;
-  }
 
   .section-center {
     width: calc(100% - 24px);

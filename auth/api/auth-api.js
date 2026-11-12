@@ -139,13 +139,6 @@ export const getCurrentUserProfile = async () => {
   };
 };
 
-// Convenience helper for other teams (e.g., leaderboards)
-// to quickly check if the logged-in user is an admin.
-export const isCurrentUserAdmin = async () => {
-  const profile = await getCurrentUserProfile();
-  return !!(profile && profile.isAdmin === true);
-};
-
 // Change Password Method
 export const changePassword = async (currentPassword, newPassword) => {
   const user = auth.currentUser;

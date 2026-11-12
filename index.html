@@ -23,8 +23,7 @@
     <section class="hero">
       <div class="hero-text">
         <h2>
-          Learn Sanskrit<br />
-          Through Games
+          Games for Today
         </h2>
 
         <div class="hero-underline"></div>
@@ -42,6 +41,7 @@
           <button class="secondary-btn" id="howItWorksBtn" type="button">
             📖 How It Works
           </button>
+
         </div>
       </div>
 
@@ -94,26 +94,10 @@
     </section>
 
     <!-- =========================
-     GAME CATEGORIES
-========================= -->
-
-    <section class="category-bar" id="gamesSection">
-      <!-- app.js still generates ALL category buttons -->
-      <div class="btn-container"></div>
-    </section>
-
-    <!-- =========================
      GAMES
 ========================= -->
 
     <section class="menu">
-      <div class="games-heading">
-        <h2>संस्कृतभारती</h2>
-        <div class="games-heading-underline"></div>
-
-        <p>Choose a game and start learning Sanskrit through play.</p>
-      </div>
-
       <!-- app.js still generates ALL games -->
       <div class="section-center"></div>
     </section>
@@ -129,7 +113,7 @@
         <h3>How It Works</h3>
 
         <p>
-          Choose a game category, select a game, and click Play Now to begin.
+          Browse the games below and click Play Now to begin.
         </p>
 
         <button class="zatam-modal-btn" id="zatamModalOk" type="button">
@@ -143,59 +127,6 @@
     </footer>
     <!-- javascript -->
     <script type="module" src="./app.js"></script>
-    <script type="module" src="./js/navbar-loader.js"></script>
-    <script>
-      window.addEventListener("DOMContentLoaded", () => {
-        const setInitialActiveButton = () => {
-          const firstButton = document.querySelector(
-            ".btn-container button.filter-btn",
-          );
-
-          if (firstButton) {
-            firstButton.classList.add("active");
-          }
-        };
-
-        setInitialActiveButton();
-
-        document.addEventListener("click", (event) => {
-          const button = event.target.closest("button.filter-btn");
-
-          if (!button) return;
-
-          document
-            .querySelectorAll(".btn-container button.filter-btn")
-            .forEach((btn) => {
-              btn.classList.remove("active");
-            });
-
-          button.classList.add("active");
-        });
-      });
-    </script>
-
-    <!-- ✅ inject Scoring + Contest buttons -->
-    <script>
-      window.addEventListener("DOMContentLoaded", () => {
-        setTimeout(() => {
-          const btnContainer = document.querySelector(".btn-container");
-          if (!btnContainer) return;
-
-          function addTab(id, text, href) {
-            if (btnContainer.querySelector(`[data-id="${id}"]`)) return;
-            const a = document.createElement("a");
-            a.className = "filter-btn";
-            a.setAttribute("data-id", id);
-            a.href = href;
-            a.target = "_blank";
-            a.rel = "noopener noreferrer";
-            a.textContent = text;
-            btnContainer.appendChild(a);
-          }
-
-          addTab("contest", "🏆 Contest ", "./bp26/index.html");
-        }, 0);
-      });
-    </script>
+    <script type="module" src="./navbar/navbar-loader.js"></script>
   </body>
 </html>
