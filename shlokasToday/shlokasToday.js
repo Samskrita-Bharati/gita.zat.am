@@ -29,15 +29,15 @@ function createVerseCard(verse) {
 
   const reference = document.createElement("p");
   reference.className = "today-verse-reference";
-  reference.textContent = `Chapter ${verse.chapter_number}, Verse ${verse.verse_number}`;
+  reference.textContent = `Chapter ${verse.ch}, Verse ${verse.vn}`;
 
   const text = document.createElement("p");
   text.className = "today-verse-text";
-  text.textContent = verse.text?.trim() || "";
+  text.textContent = verse.txt?.trim() || "";
 
   const transliteration = document.createElement("p");
   transliteration.className = "today-verse-transliteration";
-  transliteration.textContent = verse.transliteration?.trim() || "";
+  transliteration.textContent = verse.trans?.trim() || "";
 
   card.append(reference, text, transliteration);
   return card;
