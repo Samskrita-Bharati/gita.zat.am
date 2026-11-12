@@ -1,3 +1,5 @@
+import { initializeShlokasToday } from "./shlokasToday/shlokasToday.js";
+
 export const menu = [
   {
     id: 18,
@@ -72,10 +74,7 @@ window.addEventListener("DOMContentLoaded", function () {
   }
 
   diplayMenuItems(menu);
-
-  initFeaturedSlider();
-  initHeroButtons();
-  initHowItWorksModal();
+  initializeShlokasToday();
 });
 
 // =====================================================

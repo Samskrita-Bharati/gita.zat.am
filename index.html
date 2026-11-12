@@ -11,6 +11,7 @@
     />
     <!-- styles -->
     <link rel="stylesheet" href="./css/styles.css" />
+    <link rel="stylesheet" href="./shlokasToday/shlokasToday.css" />
   </head>
 
   <body data-page="games">
@@ -22,74 +23,12 @@
 
     <section class="hero">
       <div class="hero-text">
-        <h2>
-          Games for Today
-        </h2>
-
+        <h2>Shlokas for Today</h2>
         <div class="hero-underline"></div>
-
-        <p>
-          Making Sanskrit learning fun through interactive play, clever puzzles,
-          engaging games, and exciting challenges.
-        </p>
-
-        <div class="hero-buttons">
-          <button class="primary-btn" id="startPlayingBtn" type="button">
-            🎮 Start Playing
-          </button>
-
-          <button class="secondary-btn" id="howItWorksBtn" type="button">
-            📖 How It Works
-          </button>
-
-        </div>
       </div>
 
-      <!-- =========================
-       DYNAMIC SLIDER
-  ========================= -->
-
-      <div class="hero-art">
-        <div class="hero-sun"></div>
-        <div class="hero-mountain"></div>
-
-        <div class="floating-letter letter-1">क</div>
-        <div class="floating-letter letter-2">अ</div>
-        <div class="floating-letter letter-3">म</div>
-
-        <div
-          class="game-slideshow"
-          id="gameSlideshow"
-          aria-label="Featured Sanskrit games"
-        >
-          <!-- app.js inserts slides here -->
-          <div id="featuredSlides"></div>
-
-          <!-- app.js inserts dots here -->
-          <div class="slide-dots" id="featuredSlideDots"></div>
-
-          <button
-            class="slide-arrow slide-prev"
-            id="featuredSlidePrev"
-            type="button"
-            aria-label="Previous slide"
-          >
-            &lsaquo;
-          </button>
-
-          <button
-            class="slide-arrow slide-next"
-            id="featuredSlideNext"
-            type="button"
-            aria-label="Next slide"
-          >
-            &rsaquo;
-          </button>
-
-          <button class="slide-toggle" id="featuredSlideToggle" type="button">
-            Pause
-          </button>
-        </div>
+      <div class="today-verses" id="todayVerses" aria-live="polite">
+        <p class="verses-loading">Loading today's shlokas…</p>
       </div>
     </section>
 
@@ -101,26 +40,6 @@
       <!-- app.js still generates ALL games -->
       <div class="section-center"></div>
     </section>
-
-    <!-- =========================
-     HOW IT WORKS MODAL
-========================= -->
-
-    <div class="zatam-overlay" id="zatamOverlay">
-      <div class="zatam-modal">
-        <div class="zatam-modal-icon">💡</div>
-
-        <h3>How It Works</h3>
-
-        <p>
-          Browse the games below and click Play Now to begin.
-        </p>
-
-        <button class="zatam-modal-btn" id="zatamModalOk" type="button">
-          OK
-        </button>
-      </div>
-    </div>
 
     <footer style="text-align: center; padding: 20px">
       <a href="./legal/privacy.html" target="_blank">Privacy Policy</a>
