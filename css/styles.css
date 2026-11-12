@@ -189,7 +189,7 @@ HERO
 */
 
 .hero {
-  min-height: clamp(500px, 62vh, 640px);
+  min-height: 0;
 
   position: relative;
 

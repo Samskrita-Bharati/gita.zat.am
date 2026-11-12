@@ -1,0 +1,43 @@
+.today-verses {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.today-verse-card {
+  padding: 16px clamp(var(--space-4), 2.4vw, var(--space-6));
+  background: rgba(255, 250, 242, 0.9);
+  border: 1px solid var(--border);
+  border-left: 5px solid var(--gold);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+}
+
+.today-verse-reference {
+  margin-bottom: var(--space-1-5);
+  color: var(--muted);
+  font-size: var(--font-size-label);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.today-verse-text {
+  color: var(--navy);
+  font-family: Georgia, serif;
+  font-size: clamp(1.05rem, 1.7vw, 1.35rem);
+  font-weight: 600;
+  line-height: 1.45;
+  white-space: pre-line;
+}
+
+.today-verse-transliteration {
+  margin-top: var(--space-2);
+  color: var(--text-secondary);
+  font-size: var(--font-size-base);
+  line-height: 1.45;
+  white-space: pre-line;
+}
+
+.verses-loading {
+  color: var(--muted);
+}
