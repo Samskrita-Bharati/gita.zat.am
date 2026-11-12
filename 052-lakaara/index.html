@@ -12,6 +12,75 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" >
     <script src="/052-lakaara/DragDropTouch.js" defer></script>
     <script src="/052-lakaara/script.js" defer></script>
+  <style>
+  /* Movable word tiles in 052 and 053 */
+  #grid .drag-item {
+    position: relative;
+    padding: 6px;
+    background: #eaf0f6;
+  }
+
+  #grid .drag-item > span {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    padding: 4px 22px 4px 6px;
+    border: 2px solid #52779f;
+    border-bottom-width: 4px;
+    border-radius: 9px;
+    background: white;
+    box-shadow: 0 3px 5px #0b2b4f25;
+  }
+
+  /* Visible grip on every movable tile */
+  #grid .drag-item[draggable="true"]:not(.solved)::after {
+    content: "⠿";
+    position: absolute;
+    top: 50%;
+    right: 12px;
+    transform: translateY(-50%);
+    color: #52779f;
+    font: 22px Arial, sans-serif;
+    pointer-events: none;
+  }
+
+  #grid .drag-item[draggable="true"]:not(.solved) {
+    cursor: grab;
+  }
+
+  #grid .drag-item[draggable="true"]:not(.solved):hover > span {
+    background: #fff6df;
+    border-color: #a46b13;
+  }
+
+  #grid .drag-item.drag-start {
+    opacity: .5;
+    cursor: grabbing;
+  }
+
+  #grid .drag-item.drag-enter {
+    opacity: 1;
+    transform: none;
+    outline: 3px dashed #a46b13;
+    outline-offset: -4px;
+    background: #ffe7ae;
+  }
+
+  #grid .drag-item.checked-correct > span,
+  #grid .drag-item.solved > span {
+    background: #e4f5e9;
+    border-color: #579471;
+    color: #145c36;
+  }
+
+  #grid .drag-item.solved > span {
+    padding-right: 6px;
+    border-bottom-width: 2px;
+    box-shadow: none;
+  }
+</style>
   </head>
   <body data-page="games" class="lakaara-page">
 
@@ -33,7 +102,6 @@
             Start Game
           </button>
           <div class="lakaara-stats" aria-label="Round statistics">
-            <div>Time <strong id="lakaara-time">0:00</strong></div>
             <div>Score <strong id="lakaara-score">100/100</strong></div>
           </div>
           <p id="Title"></p>
@@ -42,7 +110,8 @@
 
           <p id="details" role="status"></p>
 
-          <div class="lakaara-grid-scroll" tabindex="0" role="region" aria-label="Conjugation table — scroll horizontally on small screens">
+          <p class="tile-help">Drag a raised word tile onto another tile to swap them. Dotted grips mark movable tiles.</p>
+    <div class="lakaara-grid-scroll" tabindex="0" role="region" aria-label="Conjugation table — scroll horizontally on small screens">
             <div class="drag-list" id="grid" oncontextmenu="return false;">
               <div class="legend-item" id="Hd">Check for:</div>
               <div class="legend-item" id="Role">Purusha</div>
@@ -104,7 +173,7 @@
             <div class="lakaara-instructions" tabindex="0">
               <ol>
                 <li>Press <strong>Start Game</strong> to begin.</li>
-                <li>Drag the verb forms into their correct person and number: Singular, Dual, or Plural.</li>
+                <li>Drag the raised verb tiles onto one another to swap them into the correct person and number: Singular, Dual, or Plural.</li>
                 <li>Select a person button to check that row, or <strong>Check All</strong> to check the whole table.</li>
                 <li>Choose a lakaara to practice a specific tense or mood.</li>
                 <li>Start with 100 points. Each new wrong form in a checked cell costs 2 points. Rechecking it costs nothing. Correct forms turn green.</li>

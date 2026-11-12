@@ -8,7 +8,7 @@ const message = document.getElementById("message");
 const details = document.getElementById("details");
 const settings = document.getElementById("settings");
 
-let verb, verbs, startTime, index = 0, is_playing;
+let verb, verbs, index = 0, is_playing;
 
 fetch('/052-lakaara/conjugations.txt')
   .then(responses => responses.json())
@@ -47,7 +47,7 @@ DragNSort.prototype.onDragStart = function (_this, event) {
 };
 
 DragNSort.prototype.onDragEnd = function (_this) {
-	this.classList.remove(_this.dragStartClass);
+	_this.removeClasses();
 };
 
 DragNSort.prototype.onDragEnter = function (_this) {
@@ -187,7 +187,6 @@ function startGame() {
     
   }
 
-  startTime = Date.now();
   beginScoring();
   
 //  document.body.className = "";
@@ -317,7 +316,6 @@ function checkMatrix(check_person_no) {
 }
 }
 
-let elapsedTime;
 
 function gameOver(testRound = false) {
   if (!is_playing) {
@@ -325,9 +323,7 @@ function gameOver(testRound = false) {
   } else {
     is_playing = false;
   }
-  elapsedTime = Date.now() - startTime;
-  clearInterval(timerId);
-  renderStats(elapsedTime);
+  renderStats();
   
   for(var i=0; i<9; i++) {
     // for(var j=0; j<3; j++) {
@@ -341,7 +337,7 @@ function gameOver(testRound = false) {
   
   message.innerHTML = `
     <span class="congrats">Congrats!</span>
-    <br> Score: ${roundScore}/100 · Time: ${formatTime(elapsedTime)}
+    <br> Score: ${roundScore}/100
     `;
   
   details.innerHTML = ` `;
@@ -354,7 +350,7 @@ function gameOver(testRound = false) {
   if (testRound) {
     details.textContent = "Test round. Score not saved.";
   } else {
-    saveRound(elapsedTime);
+    saveRound();
   }
 }
 
@@ -414,7 +410,7 @@ const levelIds = {
 };
 const chargedMistakes = new Set();
 const bestKey = "zatam:052-lakaara:personal-best:";
-let roundScore = 100, timerId, roundLevel, scorerReady, savingScore = false;
+let roundScore = 100, roundLevel, scorerReady, savingScore = false;
 
 function selectedLevel() {
   return {
@@ -423,20 +419,14 @@ function selectedLevel() {
   };
 }
 
-function formatTime(ms) {
-  const seconds = Math.floor(ms / 1000);
-  return Math.floor(seconds / 60) + ":" + String(seconds % 60).padStart(2, "0");
-}
-
-function renderStats(ms = Date.now() - startTime) {
-  document.getElementById("lakaara-time").textContent = formatTime(ms);
+function renderStats() {
   document.getElementById("lakaara-score").textContent = roundScore + "/100";
 }
 
 function readBest(level) {
   try {
     const best = JSON.parse(localStorage.getItem(bestKey + level.levelId));
-    return Number.isFinite(best?.score) && Number.isFinite(best?.ms) ? best : null;
+    return Number.isFinite(best?.score) && best.score >= 0 && best.score <= 100 ? best : null;
   } catch {
     return null;
   }
@@ -445,18 +435,16 @@ function readBest(level) {
 function renderBest(level, best = readBest(level)) {
   document.getElementById("lakaara-best-level").textContent = level.levelName;
   document.getElementById("lakaara-best").textContent = best
-    ? best.score + "/100 · " + formatTime(best.ms)
+    ? best.score + "/100"
     : "No completed rounds yet.";
 }
 
 function beginScoring() {
-  clearInterval(timerId);
   chargedMistakes.clear();
   roundScore = 100;
   roundLevel = selectedLevel();
-  renderStats(0);
+  renderStats();
   renderBest(roundLevel);
-  timerId = setInterval(renderStats, 250);
   const level = roundLevel;
   scorerReady = import("../js/game-score.js").then((scorer) => {
     if (roundLevel !== level) return null;
@@ -471,12 +459,12 @@ function beginScoring() {
   });
 }
 
-async function saveRound(ms) {
+async function saveRound() {
   const level = roundLevel;
   const score = roundScore;
   const stored = readBest(level);
-  const improved = !stored || score > stored.score || (score === stored.score && ms < stored.ms);
-  const best = improved ? { score, ms } : stored;
+  const improved = !stored || score > stored.score;
+  const best = improved ? { score } : stored;
   if (improved) {
     try { localStorage.setItem(bestKey + level.levelId, JSON.stringify(best)); } catch {}
   }
@@ -489,7 +477,7 @@ async function saveRound(ms) {
     if (!scorer) throw new Error("Leaderboard scorer unavailable.");
     const saved = await scorer.submitGameScore(score, {
       result: "completed", ...level,
-      metrics: { elapsedSeconds: Math.floor(ms / 1000), mistakes: chargedMistakes.size },
+      metrics: { mistakes: chargedMistakes.size },
     });
     details.textContent = saved?.ok ? "Score saved to the leaderboard."
       : saved?.reason === "not-signed-in" ? "Sign in to save scores to the leaderboard."
