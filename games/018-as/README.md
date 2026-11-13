@@ -38,9 +38,9 @@ Open the URL printed by Vite, then visit `/games/018-as/`.
 
 - `index.html` contains the game, sayings, interaction logic, scoring, and
   leaderboard integration.
-- `../../css/styles.css` provides the shared design tokens and ordering-game
-  styling.
-- `../../css/game-theme.css` provides the shared Zat.am game shell.
+- `../../css/global.css` provides shared design tokens and base styles.
+- `../shared/game-theme.css` provides the shared Zat.am game shell.
+- `ordering-game.css` provides the game-specific board layout and styling.
 - `../shared/game-score.js` handles score submission and leaderboard status.
 - `../../navbar/navbar-loader.js` loads the shared navigation.
 

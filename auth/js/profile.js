@@ -391,7 +391,7 @@ if (backLink) {
   const origin = urlParams.get("from");
 
   if (origin === "games") {
-    backLink.href = "../daily-challenges/index.html";
+    backLink.href = "../calendar/index.html";
     backLink.innerHTML =
       '<span aria-hidden="true">🎮</span> Back to Games';
   } else {

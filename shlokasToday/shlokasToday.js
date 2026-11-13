@@ -24,8 +24,8 @@ function getTodayVerses(verses) {
 }
 
 function createVerseCard(verse) {
-  const card = document.createElement("article");
-  card.className = "today-verse-card";
+  const verseElement = document.createElement("article");
+  verseElement.className = "today-verse";
 
   const reference = document.createElement("p");
   reference.className = "today-verse-reference";
@@ -33,12 +33,12 @@ function createVerseCard(verse) {
 
   const text = document.createElement("p");
   text.className = "today-verse-text";
-  text.textContent = verse.txt?.trim() || "";
+  text.textContent = verse.txt?.trim().replace(/\n\s*\n/g, "\n") || "";
 
   const transliteration = document.createElement("p");
   transliteration.className = "today-verse-transliteration";
   transliteration.textContent = verse.trans?.trim() || "";
 
-  card.append(reference, text, transliteration);
-  return card;
+  verseElement.append(reference, text, transliteration);
+  return verseElement;
 }
