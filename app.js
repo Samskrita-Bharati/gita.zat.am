@@ -4,28 +4,24 @@ export const menu = [
   {
     id: 18,
     title: "Arrange सुभाषितम्  ",
-    category: "RG",
     dir: "games/018-as",
     desc: ` Order the words of a सुभाषितम्  in correct sequence! <pre>subhaaShitam</pre>`,
   },
   {
     id: 50,
     title: "Auto श्लोकपाठक:",
-    category: "TA",
     dir: "games/050-asp",
     desc: `Auto Reader for Shloka from श्रीमद् भगवद्गीता `,
   },
   {
     id: 57,
     title: "Gita Typing Game",
-    category: "RG",
     dir: "games/057-gita-typing",
     desc: `Practice typing on English (Harvard-Kyoto) transliteration of the shlokas from Bhagavad Gita`,
   },
   {
     id: 61,
     title: "Word Search",
-    category: "RG",
     dir: "games/fw/index.html",
     cover: "./games/assets/bp26c.png",
     desc: `Find Sanskrit words in the grid.`,
@@ -33,7 +29,6 @@ export const menu = [
   {
     id: 62,
     title: "Audio Match",
-    category: "RG",
     dir: "games/ma/index.html",
     cover: "./games/assets/bp26c.png",
     desc: `Match Sanskrit words with their sounds.`,
@@ -137,10 +132,6 @@ function diplayMenuItems(menuItems) {
                 this.src='./assets/शत.म्.png';
               "
             />
-
-            <span class="game-category-tag">
-              ${item.category}
-            </span>
 
           </div>
         </a>
@@ -258,10 +249,6 @@ function renderFeaturedSlider() {
             <div class="slide-caption">
 
               ${item.title}
-
-              <span>
-                ${item.category}
-              </span>
 
             </div>
 

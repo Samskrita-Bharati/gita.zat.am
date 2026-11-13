@@ -1,43 +1,113 @@
-.today-verses {
+.shlokas-today {
+  min-height: clamp(28rem, 64vh, 40rem);
   display: grid;
-  gap: var(--space-4);
+  align-items: center;
+  padding: clamp(1rem, 2vw, 1.75rem) clamp(1.25rem, 4vw, 3rem);
+  background:
+    radial-gradient(circle at 24% 72%, transparent 0 46px, color-mix(in srgb, var(--gold-light) 38%, transparent) 47px 50px, transparent 51px),
+    radial-gradient(circle at 86% 18%, color-mix(in srgb, var(--gold) 34%, transparent) 0 72px, transparent 74px),
+    radial-gradient(circle at 52% 92%, color-mix(in srgb, var(--gold) 20%, transparent) 0 120px, transparent 122px),
+    radial-gradient(circle at 10% 24%, color-mix(in srgb, var(--gold-light) 24%, transparent) 0 38px, transparent 40px),
+    radial-gradient(circle at 76% 76%, color-mix(in srgb, var(--navy-light) 8%, transparent) 0 54px, transparent 56px),
+    linear-gradient(120deg, var(--cream-dark) 0%, var(--cream) 48%, color-mix(in srgb, var(--gold-light) 30%, var(--cream)) 100%);
 }
 
-.today-verse-card {
-  padding: 16px clamp(var(--space-4), 2.4vw, var(--space-6));
-  background: rgba(255, 250, 242, 0.9);
-  border: 1px solid var(--border);
-  border-left: 5px solid var(--gold);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow-sm);
+.shlokas-layout {
+  width: min(75rem, 100%);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+  align-items: center;
+  gap: clamp(2rem, 5vw, 5rem);
+}
+
+.shlokas-heading {
+  margin: 0;
+  text-align: left;
+}
+
+.shlokas-title {
+  color: var(--navy-dark);
+  font-family: Georgia, var(--zatam-font);
+  font-size: var(--font-size-display);
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  line-height: 1.05;
+}
+
+.shlokas-accent {
+  width: 4.25rem;
+  height: 0.3rem;
+  margin-top: 1.25rem;
+  background: var(--gold);
+  border-radius: var(--radius-pill);
+}
+
+.today-verses {
+  display: grid;
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+}
+
+.today-verse {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 1.25rem clamp(0.25rem, 2vw, 2rem);
+  text-align: left;
+}
+
+.today-verse + .today-verse {
+  border-top: 1px solid;
+  border-color: var(--border);
 }
 
 .today-verse-reference {
-  margin-bottom: var(--space-1-5);
-  color: var(--muted);
-  font-size: var(--font-size-label);
+  margin: 0 0 0.75rem;
+  color: var(--navy-light);
+  font-family: var(--zatam-font);
+  font-size: var(--font-size-sm);
   font-weight: 700;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
 }
 
 .today-verse-text {
-  color: var(--navy);
-  font-family: Georgia, serif;
-  font-size: clamp(1.05rem, 1.7vw, 1.35rem);
-  font-weight: 600;
-  line-height: 1.45;
+  color: var(--navy-dark);
+  font-family: var(--zatam-font);
+  font-size: var(--font-size-verse);
+  line-height: 1.4;
   white-space: pre-line;
 }
 
 .today-verse-transliteration {
-  margin-top: var(--space-2);
-  color: var(--text-secondary);
+  margin: 0.85rem 0 0;
+  color: var(--muted);
+  font-family: var(--zatam-font);
   font-size: var(--font-size-base);
-  line-height: 1.45;
+  line-height: 1.4;
   white-space: pre-line;
 }
 
 .verses-loading {
+  grid-column: 1 / -1;
   color: var(--muted);
+  text-align: center;
+}
+
+@media (max-width: 760px) {
+  .shlokas-today {
+    min-height: 0;
+    padding: 3rem 1.25rem;
+  }
+
+  .shlokas-layout {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  .today-verse {
+    padding: 1.25rem 0;
+  }
 }

@@ -1,15 +1,5 @@
-/* Basic page style resets */
-* {
-  box-sizing: border-box;
-}
-
-html {
-    scroll-behavior: smooth;
-}
-
 body {
-  font-family: arial, helvetica, sans-serif;
-  background-color: #5595dd;
+  background-color: var(--accent-blue);
   color: var(--white);
 }
 
@@ -25,23 +15,23 @@ h1 {
   text-align: center;
   font-style: normal;
   font-weight: bold;
-  font-size: 4em;
+  font-size: var(--font-size-display);
   line-height: 105%;
   color: var(--white);
 }
 
 p {
   text-align: center;
-  font-size: 1.6em;
+  font-size: var(--font-size-xl);
 
 }
 
 .error {
-  background-color: #ea2027;
+  background-color: var(--danger);
 }
 
 .highlight {
-  color: #ffc312;
+  color: var(--gold-light);
   text-decoration: underline;
 }
 
@@ -74,10 +64,10 @@ span:after {
 button {
   display: flex;
   margin: 0 auto;
-  padding: var(--space-5);
+  padding: 1.25rem;
   border: 0;
   border-radius: 50px;
-  font-size: 1.6em;
+  font-size: var(--font-size-xl);
   background-color: var(--white);
   cursor: pointer;
   overflow: hidden;
@@ -87,19 +77,9 @@ button {
   display: block;
   width: 60px;
   height: 34px;
-  margin-left: var(--space-5);
+  margin-left: 1.25rem;
   background: url(https://cdn.glitch.global/4adcabc2-60b0-4638-899f-af1599e3ba61/rocket.png?v=1695663248265) right center no-repeat;
   background-size: 60px;
-}
-
-.started .rocket {
-  animation: zoomOutRight 1s;
-  animation-iteration-count: 1;
-  transform-origin: right center;
-}
-
-.started button:before {
-  content: "re";
 }
 
 .button:hover .rocket {
@@ -111,10 +91,10 @@ button {
   width: 360px;
   display: block;
   margin: 0 auto;
-  padding: var(--space-5);
-  font-size: 2em;
+  padding: 1.25rem;
+  font-size: var(--font-size-2xl);
   border: 0;
-  border-radius: var(--radius-compact);
+  border-radius: var(--radius-sm);
   box-shadow: inset 1px 0px 5px 4px rgba(0,0,0,0.2);
 }
 
@@ -122,7 +102,7 @@ button {
   text-transform: uppercase;
   font-size: 1.5em;
   font-weight: bold;
-  color: #ffc312;
+  color: var(--gold-light);
 }
 
 @keyframes shake {
@@ -139,14 +119,6 @@ button {
   100% { transform: translate(1px, -2px) rotate(-1deg); }
 }
 
-@keyframes zoomOutRight {
-  100% {
-    opacity: 0;
-    transform: scale(0.1) translate(500px, 0);
-  }
-}
-
-
 
 /*  Glitch remix button styles*/
 /* Navigation grid */
@@ -157,14 +129,14 @@ button {
 
 .btn--remix {
   background: var(--white);
-  padding: var(--space-2-5);
+  padding: 0.625rem;
   border-radius: 30px;
   text-decoration: none;
-  color: #333333;
+  color: var(--text);
 }
 
 .btn--remix:hover {
-  background: #ffc312;
+  background: var(--gold-light);
 }
 
 .winner {
@@ -176,7 +148,7 @@ button {
   align-items: center;
   place-items: center;
   margin: 0 auto;
-  padding: var(--space-5);
+  padding: 1.25rem;
   filter: grayscale(0%);
   max-width: 350px;
 }
@@ -201,10 +173,10 @@ footer {
 .tooltip .tooltiptext {
   visibility: hidden;
   width: 140px;
-  background-color: #555555;
+  background-color: var(--muted);
   color: var(--white);
   text-align: center;
-  border-radius: var(--radius-control-sm);
+  border-radius: var(--radius-sm);
   padding: 5px;
   position: absolute;
   z-index: 1;
@@ -223,7 +195,7 @@ footer {
   margin-left: -5px;
   border-width: 5px;
   border-style: solid;
-  border-color: #555555 transparent transparent transparent;
+  border-color: var(--muted) transparent transparent transparent;
 }
 
 .tooltip:hover .tooltiptext {
