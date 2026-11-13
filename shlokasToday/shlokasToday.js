@@ -14,13 +14,15 @@ export async function initializeShlokasToday(games = []) {
     }
 
     function renderToday() {
-      const schedule = getDailySchedule(verses);
+      const today = new Date();
+      const dateParam = [today.getFullYear(), String(today.getMonth() + 1).padStart(2, "0"), String(today.getDate()).padStart(2, "0")].join("-");
+      const schedule = getDailySchedule(verses, today);
       if (schedule.status === "upcoming") {
         container.replaceChildren(createUpcomingNotice());
       } else if (schedule.status === "complete") {
         container.textContent = "The daily shloka schedule is complete.";
       } else {
-        container.replaceChildren(...schedule.verses.map((verse) => createVerseCard(verse, games)));
+        container.replaceChildren(...schedule.verses.map((verse) => createVerseCard(verse, games, dateParam)));
       }
     }
 
@@ -85,7 +87,7 @@ export function cleanShlokaText(value = "") {
     .trim();
 }
 
-function createVerseCard(verse, games) {
+function createVerseCard(verse, games, dateParam) {
   const verseElement = document.createElement("article");
   verseElement.className = "today-verse";
 
@@ -101,21 +103,21 @@ function createVerseCard(verse, games) {
   transliteration.className = "today-verse-transliteration";
   transliteration.textContent = cleanShlokaText(verse.trans);
 
-  const gamesPrompt = document.createElement("p");
-  gamesPrompt.className = "today-verse-games-prompt";
-  gamesPrompt.textContent = "Play games with this verse";
-
-  const gamesLinks = document.createElement("div");
-  gamesLinks.className = "today-verse-games";
+  const gamesRow = document.createElement("p");
+  gamesRow.className = "today-verse-games-row";
+  gamesRow.append("Play in games: ");
   for (const game of games) {
     const link = document.createElement("a");
     link.href = /^https?:\/\//i.test(game.dir)
       ? game.dir
       : `./${game.dir}${game.dir.endsWith(".html") ? "" : "/"}`;
+    const gameUrl = new URL(link.href, document.baseURI);
+    gameUrl.searchParams.set("date", dateParam);
+    link.href = gameUrl.href;
     link.textContent = game.title.trim();
-    gamesLinks.append(link);
+    gamesRow.append(" ", link);
   }
 
-  verseElement.append(reference, text, transliteration, gamesPrompt, gamesLinks);
+  verseElement.append(reference, text, transliteration, gamesRow);
   return verseElement;
 }

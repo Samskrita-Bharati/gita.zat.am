@@ -148,20 +148,17 @@
   white-space: pre-line;
 }
 
-.today-verse-games-prompt {
-  margin: 1rem 0 0.45rem;
+.today-verse-games-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 1rem 0 0;
   color: var(--navy-dark);
   font-size: var(--font-size-sm);
   font-weight: 700;
 }
 
-.today-verse-games {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem 0.9rem;
-}
-
-.today-verse-games a {
+.today-verse-games-row a {
   color: #906015;
   font-size: var(--font-size-sm);
   font-weight: 700;
