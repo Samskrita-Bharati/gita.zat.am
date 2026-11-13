@@ -1,6 +1,6 @@
 import { getDailySchedule, SCHEDULE_START } from "./daily-schedule.mjs";
 
-export async function initializeShlokasToday() {
+export async function initializeShlokasToday(games = []) {
   const container = document.getElementById("todayVerses");
   if (!container) return;
 
@@ -14,13 +14,15 @@ export async function initializeShlokasToday() {
     }
 
     function renderToday() {
-      const schedule = getDailySchedule(verses);
+      const today = new Date();
+      const dateParam = [today.getFullYear(), String(today.getMonth() + 1).padStart(2, "0"), String(today.getDate()).padStart(2, "0")].join("-");
+      const schedule = getDailySchedule(verses, today);
       if (schedule.status === "upcoming") {
         container.replaceChildren(createUpcomingNotice());
       } else if (schedule.status === "complete") {
         container.textContent = "The daily shloka schedule is complete.";
       } else {
-        container.replaceChildren(...schedule.verses.map(createVerseCard));
+        container.replaceChildren(...schedule.verses.map((verse) => createVerseCard(verse, games, dateParam)));
       }
     }
 
@@ -79,7 +81,13 @@ function createUpcomingNotice() {
   return notice;
 }
 
-function createVerseCard(verse) {
+export function cleanShlokaText(value = "") {
+  return value
+    .replace(/(?:॥|।।)?\s*\d+\.\d+\s*(?:॥|।।)\s*$/u, "")
+    .trim();
+}
+
+function createVerseCard(verse, games, dateParam) {
   const verseElement = document.createElement("article");
   verseElement.className = "today-verse";
 
@@ -89,12 +97,27 @@ function createVerseCard(verse) {
 
   const text = document.createElement("p");
   text.className = "today-verse-text";
-  text.textContent = verse.txt?.trim().replace(/\n\s*\n/g, "\n") || "";
+  text.textContent = cleanShlokaText(verse.txt).replace(/\n\s*\n/g, "\n");
 
   const transliteration = document.createElement("p");
   transliteration.className = "today-verse-transliteration";
-  transliteration.textContent = verse.trans?.trim() || "";
+  transliteration.textContent = cleanShlokaText(verse.trans);
 
-  verseElement.append(reference, text, transliteration);
+  const gamesRow = document.createElement("p");
+  gamesRow.className = "today-verse-games-row";
+  gamesRow.append("Play in games: ");
+  for (const game of games) {
+    const link = document.createElement("a");
+    link.href = /^https?:\/\//i.test(game.dir)
+      ? game.dir
+      : `./${game.dir}${game.dir.endsWith(".html") ? "" : "/"}`;
+    const gameUrl = new URL(link.href, document.baseURI);
+    gameUrl.searchParams.set("date", dateParam);
+    link.href = gameUrl.href;
+    link.textContent = game.title.trim();
+    gamesRow.append(" ", link);
+  }
+
+  verseElement.append(reference, text, transliteration, gamesRow);
   return verseElement;
 }

@@ -69,7 +69,7 @@ window.addEventListener("DOMContentLoaded", function () {
   }
 
   diplayMenuItems(menu);
-  initializeShlokasToday();
+  initializeShlokasToday(menu);
 });
 
 // =====================================================

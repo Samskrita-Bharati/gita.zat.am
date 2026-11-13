@@ -148,6 +148,23 @@
   white-space: pre-line;
 }
 
+.today-verse-games-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 1rem 0 0;
+  color: var(--navy-dark);
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+}
+
+.today-verse-games-row a {
+  color: #906015;
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  text-underline-offset: 0.2em;
+}
+
 .verses-loading {
   grid-column: 1 / -1;
   color: var(--muted);
