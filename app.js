@@ -1,39 +1,8 @@
+import { loadSchedule, getScheduleForDate } from "./dailyChallenge/dailyChallenge.js";
 import { initializeShlokasToday } from "./shlokasToday/shlokasToday.js";
+import { menu } from "./games/shared/gamesList.js";
 
-export const menu = [
-  {
-    id: 18,
-    title: "Arrange सुभाषितम्  ",
-    dir: "games/018-as",
-    desc: ` Order the words of a सुभाषितम्  in correct sequence! <pre>subhaaShitam</pre>`,
-  },
-  {
-    id: 50,
-    title: "Auto श्लोकपाठक:",
-    dir: "games/050-asp",
-    desc: `Auto Reader for Shloka from श्रीमद् भगवद्गीता `,
-  },
-  {
-    id: 57,
-    title: "Gita Typing Game",
-    dir: "games/057-gita-typing",
-    desc: `Practice typing on English (Harvard-Kyoto) transliteration of the shlokas from Bhagavad Gita`,
-  },
-  {
-    id: 61,
-    title: "Word Search",
-    dir: "games/fw/index.html",
-    cover: "./games/assets/bp26c.png",
-    desc: `Find Sanskrit words in the grid.`,
-  },
-  {
-    id: 62,
-    title: "Audio Match",
-    dir: "games/ma/index.html",
-    cover: "./games/assets/bp26c.png",
-    desc: `Match Sanskrit words with their sounds.`,
-  },
-];
+export { menu };
 
 // =====================================================
 // MAIN ELEMENTS
@@ -57,19 +26,31 @@ const featuredGameIds = [18, 50, 57, 61, 62];
 let featuredSlideIndex = 0;
 let featuredSlideTimer = null;
 let featuredPaused = false;
+let scheduledMenu = [];
 
 // =====================================================
 // PAGE LOAD
 // =====================================================
 
-window.addEventListener("DOMContentLoaded", function () {
+window.addEventListener("DOMContentLoaded", async function () {
   // Only run homepage UI code when the homepage elements exist.
   if (!sectionCenter) {
     return;
   }
 
-  diplayMenuItems(menu);
-  initializeShlokasToday();
+  try {
+    const schedule = await loadSchedule();
+    const today = getScheduleForDate(schedule);
+    const gameIds = new Set((today?.gameIds || []).map(Number));
+    scheduledMenu = menu.filter((game) => gameIds.has(Number(game.id)));
+    diplayMenuItems(scheduledMenu);
+    await initializeShlokasToday(today);
+  } catch (error) {
+    console.error("Unable to load today's schedule:", error);
+    scheduledMenu = [];
+    diplayMenuItems(scheduledMenu);
+    await initializeShlokasToday(null);
+  }
 });
 
 // =====================================================
@@ -182,7 +163,7 @@ function diplayMenuItems(menuItems) {
 
 if (typeof window !== "undefined") {
   window.zatRefreshMenu = function () {
-    diplayMenuItems(menu);
+    diplayMenuItems(scheduledMenu);
   };
 }
 

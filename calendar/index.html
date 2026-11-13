@@ -25,9 +25,18 @@
       </section>
     </main>
     <script type="module" src="../navbar/navbar-loader.js"></script>
-    <script>
+    <script type="module">
+      import {
+        getDateKey,
+        getMonthKey,
+        getScheduleForDate,
+        loadSchedule,
+        loadVerses,
+      } from "../dailyChallenge/dailyChallenge.js";
+      import { menu } from "../games/shared/gamesList.js";
+
       const today = new Date();
-      const todayKey = `${today.getFullYear()}-${today.getMonth()}-${today.getDate()}`;
+      const todayKey = getDateKey(today);
       const params = new URLSearchParams(window.location.search);
       const requestedMonth = params.get("month");
       const monthMatch = requestedMonth?.match(/^(\d{4})-(\d{2})$/);
@@ -36,6 +45,17 @@
         : new Date(today.getFullYear(), today.getMonth(), 1);
       const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
       const grid = document.getElementById("calendarGrid");
+      let schedule = [];
+      let versesById = new Map();
+
+      try {
+        [schedule, versesById] = await Promise.all([
+          loadSchedule(),
+          loadVerses().then((verses) => new Map(verses.map((verse) => [String(verse.id), verse]))),
+        ]);
+      } catch (error) {
+        console.error("Unable to load calendar schedule:", error);
+      }
 
       weekdays.forEach((weekday) => {
         const label = document.createElement("div");
@@ -47,8 +67,44 @@
 
       function monthUrl(date) {
         const params = new URLSearchParams(window.location.search);
-        params.set("month", `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`);
+        params.set("month", getMonthKey(date));
         return `${window.location.pathname}?${params.toString()}`;
+      }
+
+      function gameUrl(game, dateKey, shlokaId) {
+        const suffix = game.dir.endsWith(".html") ? "" : "/";
+        const url = new URL(`../${game.dir}${suffix}`, window.location.href);
+        url.searchParams.set("challengeDate", dateKey);
+        url.searchParams.set("shlokaId", String(shlokaId));
+        return url.href;
+      }
+
+      function renderDayEvents(cell, dateKey) {
+        if (dateKey > todayKey) return;
+
+        const entry = getScheduleForDate(schedule, dateKey);
+        if (!entry) return;
+
+        const events = document.createElement("div");
+        events.className = "day-events";
+
+        entry.gameIds.forEach((gameId, index) => {
+          const game = menu.find((item) => Number(item.id) === Number(gameId));
+          const verse = versesById.get(String(entry.shlokaIds[index]));
+          if (!game || !verse) return;
+
+          const event = document.createElement("a");
+          event.className = "day-event";
+          event.href = gameUrl(game, dateKey, verse.id);
+          event.title = `${game.title.trim()}: ${verse.ch}.${verse.vn}`;
+          event.textContent = event.title;
+          events.appendChild(event);
+        });
+
+        if (events.childElementCount) {
+          cell.classList.add("has-events");
+          cell.appendChild(events);
+        }
       }
 
       function renderCalendar() {
@@ -75,8 +131,10 @@
             const date = document.createElement("span");
             date.className = "day-number";
             date.textContent = dateNumber;
-            if (`${year}-${month}-${dateNumber}` === todayKey) cell.classList.add("today");
+            const dateKey = `${year}-${String(month + 1).padStart(2, "0")}-${String(dateNumber).padStart(2, "0")}`;
+            if (dateKey === todayKey) cell.classList.add("today");
             cell.appendChild(date);
+            renderDayEvents(cell, dateKey);
           }
           grid.appendChild(cell);
         }

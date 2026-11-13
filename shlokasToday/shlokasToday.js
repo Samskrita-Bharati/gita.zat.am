@@ -1,26 +1,27 @@
-// Daily shloka display. Replace getTodayVerses when date based selection is ready.
-export async function initializeShlokasToday() {
+import { loadVerses } from "../dailyChallenge/dailyChallenge.js";
+
+export async function initializeShlokasToday(scheduleEntry) {
   const container = document.getElementById("todayVerses");
   if (!container) return;
 
   try {
-    const response = await fetch(new URL("../assets/verse.json", import.meta.url));
-    if (!response.ok) throw new Error(`Verse data request failed: ${response.status}`);
-
-    const verses = await response.json();
-    if (!Array.isArray(verses) || verses.length < 2) {
-      throw new Error("Verse data must contain at least two verses.");
+    if (!Array.isArray(scheduleEntry?.shlokaIds) || scheduleEntry.shlokaIds.length < 2) {
+      throw new Error("Today's schedule does not contain two shloka IDs.");
     }
 
-    container.replaceChildren(...getTodayVerses(verses).map(createVerseCard));
+    const verses = await loadVerses();
+    const versesById = new Map(verses.map((verse) => [String(verse.id), verse]));
+    const todayVerses = scheduleEntry.shlokaIds.map((id) => versesById.get(String(id)));
+
+    if (todayVerses.some((verse) => !verse)) {
+      throw new Error("Today's schedule references a shloka missing from verse.json.");
+    }
+
+    container.replaceChildren(...todayVerses.map(createVerseCard));
   } catch (error) {
-    container.textContent = "Today's shlokas could not be loaded.";
+    container.textContent = "Today's shlokas are not available.";
     console.error(error);
   }
-}
-
-function getTodayVerses(verses) {
-  return verses.slice(0, 2);
 }
 
 function createVerseCard(verse) {
