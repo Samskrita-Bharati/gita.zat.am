@@ -103,20 +103,71 @@ function createVerseCard(verse, games, dateParam) {
   transliteration.className = "today-verse-transliteration";
   transliteration.textContent = cleanShlokaText(verse.trans);
 
-  const gamesRow = document.createElement("p");
+  const gamesRow = document.createElement("div");
   gamesRow.className = "today-verse-games-row";
-  gamesRow.append("Play in games: ");
-  for (const game of games) {
-    const link = document.createElement("a");
-    link.href = /^https?:\/\//i.test(game.dir)
+  const label = document.createElement("span");
+  label.className = "today-verse-games-label";
+  label.textContent = "Play in game:";
+
+  let selectedGame = 0;
+  const chooser = document.createElement("div");
+  chooser.className = "game-picker";
+  chooser.setAttribute("role", "group");
+  chooser.setAttribute("aria-label", "Choose a game");
+
+  const previous = document.createElement("button");
+  previous.type = "button";
+  previous.className = "game-picker-arrow";
+  previous.setAttribute("aria-label", "Previous game");
+  previous.textContent = "‹";
+
+  const viewport = document.createElement("div");
+  viewport.className = "game-picker-viewport";
+  const track = document.createElement("div");
+  track.className = "game-picker-track";
+  const options = games.map((game, index) => {
+    const option = document.createElement("button");
+    option.type = "button";
+    option.className = "game-picker-option";
+    option.textContent = game.title.trim();
+    option.setAttribute("aria-pressed", String(index === selectedGame));
+    option.addEventListener("click", () => selectGame(index));
+    track.append(option);
+    return option;
+  });
+  viewport.append(track);
+
+  const next = document.createElement("button");
+  next.type = "button";
+  next.className = "game-picker-arrow";
+  next.setAttribute("aria-label", "Next game");
+  next.textContent = "›";
+
+  const play = document.createElement("a");
+  play.className = "play-btn game-picker-play";
+  play.textContent = "▶";
+  play.setAttribute("aria-label", "Play selected game");
+
+  function selectGame(index) {
+    selectedGame = (index + games.length) % games.length;
+    options.forEach((option, optionIndex) => {
+      option.setAttribute("aria-pressed", String(optionIndex === selectedGame));
+    });
+    track.style.transform = `translateX(-${selectedGame * 100}%)`;
+    const game = games[selectedGame];
+    const href = /^https?:\/\//i.test(game.dir)
       ? game.dir
       : `./${game.dir}${game.dir.endsWith(".html") ? "" : "/"}`;
-    const gameUrl = new URL(link.href, document.baseURI);
+    const gameUrl = new URL(href, document.baseURI);
     gameUrl.searchParams.set("date", dateParam);
-    link.href = gameUrl.href;
-    link.textContent = game.title.trim();
-    gamesRow.append(" ", link);
+    play.href = gameUrl.href;
   }
+  previous.addEventListener("click", () => selectGame(selectedGame - 1));
+  next.addEventListener("click", () => selectGame(selectedGame + 1));
+  selectGame(selectedGame);
+
+  chooser.append(previous, viewport, next);
+  gamesRow.append(label, chooser, play);
 
   verseElement.append(reference, text, transliteration, gamesRow);
   return verseElement;
