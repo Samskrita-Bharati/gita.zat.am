@@ -150,19 +150,60 @@
 
 .today-verse-games-row {
   display: flex;
-  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-start;
   gap: 0.4rem;
+  width: min(100%, 42rem);
   margin: 1rem 0 0;
   color: var(--navy-dark);
   font-size: var(--font-size-sm);
   font-weight: 700;
 }
 
-.today-verse-games-row a {
-  color: #906015;
-  font-size: var(--font-size-sm);
-  font-weight: 700;
-  text-underline-offset: 0.2em;
+.game-picker {
+  display: grid;
+  grid-template-columns: 1.5rem minmax(0, 9rem) 1.5rem;
+  align-items: center;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
+.game-picker-viewport {
+  overflow: hidden;
+  min-width: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xs);
+  background: var(--white);
+}
+
+.game-picker-track {
+  display: flex;
+  width: 100%;
+  transition: transform 220ms ease;
+}
+
+.game-picker-option {
+  flex: 0 0 100%;
+  min-width: 0;
+  min-height: var(--button-height-sm);
+  padding: 0 0.8rem;
+  overflow: hidden;
+  border: 0;
+  background: transparent;
+  color: var(--navy-dark);
+  font: inherit;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.game-picker-arrow {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--navy);
+  font-size: 1.5rem;
+  line-height: 1;
 }
 
 .verses-loading {
