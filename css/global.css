@@ -163,6 +163,49 @@ textarea:disabled {
   color: var(--navy-dark);
 }
 
+/* General purpose page content layout */
+.page-content {
+  width: min(var(--zatam-content-width), calc(100% - 2rem));
+  margin: 0 auto;
+  padding: 2rem 0 3rem;
+}
+
+.page-content > nav {
+  margin-bottom: 1rem;
+}
+
+.page-content > article {
+  padding: clamp(1.25rem, 4vw, 2rem);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--white);
+  box-shadow: var(--shadow-sm);
+}
+
+.page-content > article > * + * {
+  margin-top: 0.9rem;
+}
+
+.page-content > article > h2 {
+  margin-top: 1.8rem;
+}
+
+.page-content > article > h3,
+.page-content > article > h4 {
+  margin-top: 1.3rem;
+}
+
+.page-content li + li {
+  margin-top: 0.4rem;
+}
+
+.page-content footer {
+  margin-top: 1.75rem;
+  color: var(--muted);
+  font-size: var(--font-size-sm);
+  text-align: center;
+}
+
 /* Game catalog layout and cards */
 .menu {
   padding: 3rem 0 5rem;
