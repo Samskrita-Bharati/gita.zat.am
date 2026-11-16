@@ -10,13 +10,19 @@ export function getDailySchedule(verses, date = new Date()) {
   const dayIndex = Math.floor((today - start) / 86_400_000);
 
   if (dayIndex < 0) return { status: "upcoming", verses: [] };
+  if (!Array.isArray(verses) || verses.length === 0) {
+    return { status: "active", day: dayIndex + 1, verses: [] };
+  }
 
-  const firstIndex = dayIndex * VERSES_PER_DAY;
-  if (firstIndex >= verses.length) return { status: "complete", verses: [] };
+  const firstIndex = (dayIndex * VERSES_PER_DAY) % verses.length;
+  const scheduledVerses = Array.from(
+    { length: Math.min(VERSES_PER_DAY, verses.length) },
+    (_, offset) => verses[(firstIndex + offset) % verses.length],
+  );
 
   return {
     status: "active",
     day: dayIndex + 1,
-    verses: verses.slice(firstIndex, firstIndex + VERSES_PER_DAY),
+    verses: scheduledVerses,
   };
 }

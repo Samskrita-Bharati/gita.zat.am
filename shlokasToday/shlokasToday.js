@@ -2,7 +2,10 @@ import { getDailySchedule, SCHEDULE_START } from "./daily-schedule.mjs";
 
 export async function initializeShlokasToday(games = []) {
   const container = document.getElementById("todayVerses");
-  if (!container) return;
+  const dateValue = document.getElementById("shlokasDateValue");
+  const previousButton = document.getElementById("previousShlokaDay");
+  const nextButton = document.getElementById("nextShlokaDay");
+  if (!container || !dateValue || !previousButton || !nextButton) return;
 
   try {
     const response = await fetch(new URL("../assets/bhagavad-gita-verses.json", import.meta.url));
@@ -13,19 +16,44 @@ export async function initializeShlokasToday(games = []) {
       throw new Error("Verse data must contain at least two verses.");
     }
 
-    function renderToday() {
+    let viewedDate = new Date();
+    viewedDate.setHours(0, 0, 0, 0);
+
+    function renderDay() {
       const today = new Date();
-      const schedule = getDailySchedule(verses, today);
+      today.setHours(0, 0, 0, 0);
+      const startDate = new Date(SCHEDULE_START.year, SCHEDULE_START.month - 1, SCHEDULE_START.day);
+      const selectedDate = new Date(viewedDate);
+
+      dateValue.textContent = new Intl.DateTimeFormat("en", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      }).format(selectedDate);
+      setDateLinkAvailability(previousButton, selectedDate > startDate);
+      setDateLinkAvailability(nextButton, selectedDate < today);
+
+      const schedule = getDailySchedule(verses, selectedDate);
       if (schedule.status === "upcoming") {
         container.replaceChildren(createUpcomingNotice());
-      } else if (schedule.status === "complete") {
-        container.textContent = "The daily shloka schedule is complete.";
       } else {
         container.replaceChildren(...schedule.verses.map((verse) => createVerseCard(verse, games)));
       }
     }
 
-    renderToday();
+    previousButton.addEventListener("click", (event) => {
+      event.preventDefault();
+      if (previousButton.getAttribute("aria-disabled") === "true") return;
+      viewedDate.setDate(viewedDate.getDate() - 1);
+      renderDay();
+    });
+    nextButton.addEventListener("click", (event) => {
+      event.preventDefault();
+      if (nextButton.getAttribute("aria-disabled") === "true") return;
+      viewedDate.setDate(viewedDate.getDate() + 1);
+      renderDay();
+    });
+    renderDay();
 
     // Refresh at local midnight and when returning to a previously hidden tab.
     let refreshTimer;
@@ -34,13 +62,20 @@ export async function initializeShlokasToday(games = []) {
       const tomorrow = new Date();
       tomorrow.setHours(24, 0, 0, 0);
       refreshTimer = setTimeout(() => {
-        renderToday();
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        yesterday.setHours(0, 0, 0, 0);
+        if (viewedDate.getTime() === yesterday.getTime()) {
+          viewedDate = new Date();
+          viewedDate.setHours(0, 0, 0, 0);
+        }
+        renderDay();
         scheduleRefresh();
       }, Math.max(1, tomorrow.getTime() - Date.now()));
     }
     document.addEventListener("visibilitychange", () => {
       if (!document.hidden) {
-        renderToday();
+        renderDay();
         scheduleRefresh();
       }
     });
@@ -48,6 +83,18 @@ export async function initializeShlokasToday(games = []) {
   } catch (error) {
     container.textContent = "Today's shlokas could not be loaded.";
     console.error(error);
+  }
+}
+
+function setDateLinkAvailability(link, isAvailable) {
+  if (isAvailable) {
+    link.href = "#";
+    link.removeAttribute("aria-disabled");
+    link.removeAttribute("tabindex");
+  } else {
+    link.removeAttribute("href");
+    link.setAttribute("aria-disabled", "true");
+    link.tabIndex = -1;
   }
 }
 
@@ -80,9 +127,9 @@ function createUpcomingNotice() {
   return notice;
 }
 
-export function cleanShlokaText(value = "") {
+function cleanShlokaText(value = "") {
   return value
-    .replace(/(?:॥|।।)?\s*\d+\.\d+\s*(?:॥|।।)\s*$/u, "")
+    .replace(/(?:॥|।{1,2})?\s*\d+\.\d+\s*(?:॥|।{1,2})?\s*$/u, "")
     .trim();
 }
 
@@ -105,7 +152,6 @@ function createVerseCard(verse, games) {
   const gamesRow = document.createElement("div");
   gamesRow.className = "today-verse-games-row";
   const label = document.createElement("span");
-  label.className = "today-verse-games-label";
   label.textContent = "Play in game:";
 
   const chooser = document.createElement("div");
