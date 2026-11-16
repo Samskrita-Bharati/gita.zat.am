@@ -24,13 +24,21 @@
     <section class="shlokas-today">
       <div class="shlokas-layout">
         <div class="shlokas-heading">
-          <h2 class="shlokas-title">Shlokas for Today</h2>
+          <h2 class="shlokas-title">
+            <span class="shlokas-title-line">Shlokas for</span>
+            <span class="shlokas-title-line" id="shlokasDateValue">Today</span>
+          </h2>
           <div class="shlokas-accent" aria-hidden="true"></div>
         </div>
 
         <div class="today-verses" id="todayVerses" aria-live="polite">
           <p class="verses-loading">Loading today's shlokas…</p>
         </div>
+
+        <nav class="shlokas-date-navigation" aria-label="Choose a date">
+          <a id="previousShlokaDay" href="#" aria-label="Previous day">&lt;- Previous</a>
+          <a id="nextShlokaDay" href="#" aria-label="Next day">next -&gt;</a>
+        </nav>
       </div>
     </section>
 
