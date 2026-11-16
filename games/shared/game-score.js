@@ -483,6 +483,7 @@ export async function submitGameScore(
     ...cleanMetrics,
     gameId: state.gameId,
     gameName: state.gameName,
+    uid: user.uid,
     levelId: resolvedLevelId,
     levelName: resolvedLevelName,
     result: String(result || "completed").slice(0, 40),
@@ -519,6 +520,8 @@ export async function submitGameScore(
       [entryKey]: attemptMeta,
     },
 
+    // Firestore rules verify that only this new entry was appended.
+    lastEntryKey: entryKey,
     updatedAt: serverTimestamp(),
   };
 

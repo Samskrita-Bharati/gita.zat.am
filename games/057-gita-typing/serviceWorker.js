@@ -1,25 +1,8 @@
-const staticDev = "gita_typing_game"
-const service_worker_version = "v1.01"
-const assets = [
-  "/",
-  "index.html",
-  "style.css",
-  "bhagavadgita.txt",
-  "script.js"
-]
-
-self.addEventListener("install", installEvent => {
-  installEvent.waitUntil(
-    caches.open(staticDev).then(cache => {
-      cache.addAll(assets)
-    })
-  )
-})
-
-self.addEventListener("fetch", fetchEvent => {
-  fetchEvent.respondWith(
-    caches.match(fetchEvent.request).then(res => {
-      return res || fetch(fetchEvent.request)
-    })
-  )
-})
+// Offline caching was removed because cached public game HTML bypassed
+// the new client-side login gate. This update evicts the legacy cache.
+self.addEventListener("install", () => self.skipWaiting());
+self.addEventListener("activate", (event) => {
+  event.waitUntil(
+    caches.delete("gita_typing_game").then(() => self.clients.claim()),
+  );
+});

@@ -1,6 +1,9 @@
 <!doctype html>
 <html lang="en">
   <head>
+    <!-- Hidden before first paint; authentication guard reveals authorized pages. -->
+    <style>html:not(.gg-authenticated) { visibility: hidden !important; }</style>
+    <script type="module" src="../games/shared/auth-guard.js"></script>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
