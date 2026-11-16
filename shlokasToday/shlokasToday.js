@@ -127,7 +127,7 @@ function createUpcomingNotice() {
   return notice;
 }
 
-function cleanShlokaText(value = "") {
+export function cleanShlokaText(value = "") {
   return value
     .replace(/(?:॥|।{1,2})?\s*\d+\.\d+\s*(?:॥|।{1,2})?\s*$/u, "")
     .trim();
