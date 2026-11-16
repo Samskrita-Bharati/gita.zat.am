@@ -24,19 +24,32 @@ import {
   serverTimestamp,
 } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
 
+import {
+  getAnalytics,
+  isSupported,
+} from "https://www.gstatic.com/firebasejs/12.8.0/firebase-analytics.js";
+
 const firebaseConfig = {
-  apiKey: "AIzaSyC8nm8zQR6fiC_3mTQ3hURXNJPR6faKYOU",
-  authDomain: "zat-am-main.firebaseapp.com",
-  projectId: "zat-am-main",
-  storageBucket: "zat-am-main.firebasestorage.app",
-  messagingSenderId: "1071341524876",
-  appId: "1:1071341524876:web:1908319951cd8f50b2e8a9",
+  apiKey: "AIzaSyDSWtsf3Cj06lZh5f4XX2wiuZtLMxm1IPw",
+  authDomain: "gg-zatam.firebaseapp.com",
+  projectId: "gg-zatam",
+  storageBucket: "gg-zatam.firebasestorage.app",
+  messagingSenderId: "577534973660",
+  appId: "1:577534973660:web:808367eb6054c735920619",
+  measurementId: "G-0GFMCFG25N",
 };
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
+
+// Analytics is optional, and must never block Authentication/Firestore.
+isSupported()
+  .then((supported) => {
+    if (supported) getAnalytics(app);
+  })
+  .catch((error) => console.warn("Firebase Analytics unavailable:", error));
 
 export {
   auth,

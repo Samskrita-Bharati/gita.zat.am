@@ -1,4 +1,5 @@
 import { getCurrentUser, updateUserPreferences } from "../api/auth-api.js";
+import { getDestination } from "./safe-redirect.js";
 
 const languageSelect = document.getElementById("language");
 const countrySelect = document.getElementById("country");
@@ -88,7 +89,7 @@ countrySelect.addEventListener("change", async () => {
 });
 
 // Handle form submit
-form.addEventListener("submit", (e) => {
+form.addEventListener("submit", async (e) => {
   e.preventDefault();
 
   const language = languageSelect.value;
@@ -124,7 +125,7 @@ form.addEventListener("submit", (e) => {
       showMessage("No logged in user found. Please log in again.", "red");
       return;
     }
-    updateUserPreferences(user, {
+    await updateUserPreferences(user, {
       language: language,
       country: country,
       region: region,
@@ -139,7 +140,7 @@ form.addEventListener("submit", (e) => {
   showMessage("Preferences saved! Redirecting...", "green");
 
   setTimeout(() => {
-    window.location.href = "../index.html";
+    window.location.href = getDestination();
   }, 1200);
 });
 
@@ -148,7 +149,7 @@ document.getElementById("skip-btn").addEventListener("click", () => {
   showMessage("Skipping... Redirecting...", "green");
 
   setTimeout(() => {
-    window.location.href = "../index.html";
+    window.location.href = getDestination();
   }, 1000);
 });
 
