@@ -4,4 +4,6 @@ import App from './App';
 import './styles/global.css';
 import './styles/game.css';
 import './styles/responsive.css';
+import './styles/portal.css';
 createRoot(document.getElementById('root')!).render(<StrictMode><App/></StrictMode>);
+

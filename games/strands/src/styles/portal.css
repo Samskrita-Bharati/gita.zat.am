@@ -1,0 +1,105 @@
+/* Strands UI integration only. Shared navbar and portal files stay unchanged. */
+body.gita-strands-page { background: var(--cream); }
+body.gita-strands-page .strands-page-header {
+  width: min(1100px, calc(100% - 32px));
+  margin: 20px auto 28px;
+  text-align: center;
+}
+body.gita-strands-page .strands-page-header h1 {
+  display: table;
+  margin: 0 auto;
+  padding-bottom: 12px;
+  border-bottom: 2px solid var(--gold);
+  color: var(--navy-dark);
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(2.4rem, 5vw, 4.5rem);
+  line-height: 1.15;
+}
+body.gita-strands-page .strands-page-header p {
+  margin-top: 10px;
+  color: var(--muted);
+}
+#root {
+  --ink: var(--navy-dark);
+  --ink-soft: var(--muted);
+  --paper: var(--cream);
+  --paper-2: var(--cream);
+  --line: var(--border);
+  --gold-soft: var(--cream-dark);
+  --gold: #f6b23b;
+  --terracotta: var(--accent-coral);
+  --body: Arial, Helvetica, sans-serif;
+  --display: Georgia, 'Times New Roman', serif;
+  --shadow: var(--shadow-sm);
+  width: min(1280px, calc(100% - 32px));
+  margin: 0 auto 40px;
+  min-width: 0;
+  font-family: var(--body);
+}
+#root .portal-game-shell { height: auto; min-height: 0; overflow: visible; background: transparent; gap: 16px; }
+#root .portal-body { grid-template-columns: 230px minmax(0, 1fr); gap: 16px; align-items: start; }
+#root .theme-sidebar {
+  width: 100%; min-width: 0; max-width: none;
+  max-height: 760px;
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  box-shadow: var(--shadow-sm);
+}
+#root .theme-scroll { padding: 10px; }
+#root .theme-card { grid-template-columns: 34px minmax(0, 1fr) 18px; gap: 8px; padding: 10px; border-radius: 10px; background: var(--cream); }
+#root .theme-number { display: none; }
+#root .theme-icon { width: 34px; height: 34px; border-radius: 8px; }
+#root .theme-card.active { border-color: var(--gold); box-shadow: inset 3px 0 0 var(--gold); background: var(--cream-dark); }
+#root .game-main { min-width: 0; padding: 0; overflow: visible; background: transparent !important; }
+#root .theme-banner { background: white; border: 1px solid var(--line); border-radius: 16px; box-shadow: var(--shadow-sm); }
+#root .theme-eyebrow { color: var(--terracotta); }
+#root .game-grid { grid-template-columns: minmax(0, 1fr) 250px; align-items: start; gap: 16px; }
+#root .board-card, #root .word-panel { background: white; border: 1px solid var(--line); border-radius: 16px; box-shadow: var(--shadow-sm); }
+#root .word-panel { min-height: 0; max-height: none; overflow: visible; }
+#root .timer-card, #root .hint-panel { background: var(--cream); border-color: var(--line); border-radius: 10px; }
+#root .start-button, #root .hint-btn, #root .tutorial-start, #root .answer-mode-bar button, #root .result-actions .primary {
+  background: var(--navy); color: white; border-color: var(--navy); border-radius: 9px;
+}
+#root .answer-btn { background: white; color: var(--navy); border-color: var(--navy); border-radius: 9px; }
+#root .letter-cell { color: var(--navy-dark); }
+#root .modal-backdrop { z-index: 2147483100; overflow-y: auto; }
+#root .load-state { min-height: 260px; background: transparent; }
+#root .tutorial-card, #root .result-card, #root .exit-card { background: white; border-radius: 16px; }
+@media (max-width: 1120px) {
+  #root .game-grid { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 760px) {
+  #root { width: calc(100% - 20px); }
+  #root .portal-body { display: flex; flex-direction: column; }
+  #root .theme-sidebar { height: auto; flex: none; max-height: none; }
+  #root .theme-scroll { display: flex; overflow-x: auto; }
+  #root .theme-card { min-width: 190px; }
+  #root .word-panel { margin-top: 14px; }
+}
+
+/* One shared navbar; game statistics live beside the board. */
+#root .strands-right-sidebar { display: grid; gap: 16px; min-width: 0; align-content: start; }
+#root .strands-score-panel {
+  min-width: 0;
+  padding: 16px;
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  box-shadow: var(--shadow-sm);
+}
+#root .strands-score-panel h2 {
+  margin: 0 0 12px;
+  font: 700 1.1rem var(--body);
+  color: var(--navy-dark);
+}
+#root .strands-score-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin: 0; }
+#root .strands-score-list > div { min-width: 0; padding: 10px 8px; border: 1px solid var(--line); border-radius: 9px; background: var(--cream); }
+#root .strands-score-list dt { margin: 0 0 5px; font-size: .7rem; font-weight: 700; color: var(--muted); overflow-wrap: anywhere; }
+#root .strands-score-list dd { margin: 0; font-size: 1.1rem; font-weight: 800; color: var(--navy-dark); font-variant-numeric: tabular-nums; }
+@media (max-width: 1120px) {
+  #root .strands-right-sidebar { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 760px) {
+  #root .strands-right-sidebar .word-panel { margin-top: 0; }
+}

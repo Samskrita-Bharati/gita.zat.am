@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from 'react';
 
 import type {
   Cell,
-  Language,
   ScoreBreakdown,
   Theme,
   ThemeData,
@@ -11,15 +10,10 @@ import { loadThemes } from './services/themeService';
 
 import { pathText, targetForPath } from './utils/board';
 
-import { postScore } from './services/leaderboardService';
-
-import { loadCloudProgress, saveCloudProgress } from './services/progressService';
-
 import { playWordAudio } from './services/audioService';
 
-import { useAuth } from './hooks/useAuth';
-
 import { tr } from './i18n';
+import { usePortalLanguage } from './hooks/usePortalLanguage';
 
 import GameHeader from './components/GameHeader';
 
@@ -43,22 +37,15 @@ import ShowAnswerModal from './components/ShowAnswerModal';
 
 import { generateBoard } from './utils/generateBoard';
 
-
-
 const COMPLETED_KEY =
   'sanskrit-strands-completed';
 
 const BEST_SCORES_KEY =
   'sanskrit-strands-best-scores';
 
-const LANGUAGE_KEY =
-  'sanskrit-strands-language';
-
 const TUTORIAL_KEY =
   'sanskrit-strands-tutorial-seen';
 type PendingExit = { type:'back' } | { type:'theme'; index:number } | null;
-
-
 
 function loadCompleted() {
 
@@ -83,14 +70,6 @@ function loadBestScores() {
   } catch { return {}; }
 
 }
-
-function loadLanguage(): Language {
-
-  return localStorage.getItem(LANGUAGE_KEY) === 'sa' ? 'sa' : 'en';
-
-}
-
-
 
 export default function App() {
 
@@ -130,7 +109,7 @@ export default function App() {
 
   const [pendingExit,setPendingExit] = useState<PendingExit>(null);
 
-  const [language,setLanguage] = useState<Language>(() => loadLanguage());
+  const language = usePortalLanguage();
 
   const [tutorialOpen,setTutorialOpen] = useState(() => localStorage.getItem(TUTORIAL_KEY) !== '1');
 
@@ -139,12 +118,6 @@ export default function App() {
   const [showAnswerConfirm,setShowAnswerConfirm] = useState(false);
 
   const [answerMode,setAnswerMode] = useState(false);
-
-
-
-  const { user,loading,signingIn,login,logout } = useAuth();
-
-
 
   const sourceTheme = themes[active];
   const [boardVersion,setBoardVersion] = useState(0);
@@ -171,8 +144,6 @@ export default function App() {
 
 );
 
-
-
 const foundRequiredCount = useMemo(
 
   () =>
@@ -187,8 +158,6 @@ const foundRequiredCount = useMemo(
 
 );
 
-
-
   useEffect(() => {
 
     loadThemes()
@@ -199,57 +168,15 @@ const foundRequiredCount = useMemo(
 
   }, []);
 
-
-
   useEffect(() => { localStorage.setItem(COMPLETED_KEY,JSON.stringify([...completed])); }, [completed]);
 
   useEffect(() => { localStorage.setItem(BEST_SCORES_KEY,JSON.stringify(bestScores)); }, [bestScores]);
-
-  useEffect(() => { localStorage.setItem(LANGUAGE_KEY,language); }, [language]);
-
-
-
-  useEffect(() => {
-
-    if (!user) return;
-
-    let live = true;
-
-    loadCloudProgress(user).then((cloud) => {
-
-      if (!live || !cloud) return;
-
-      setCompleted((local) => new Set([...local,...cloud.completedThemeIds]));
-
-      setBestScores((local) => {
-
-        const merged = {...local};
-
-        for (const [id,score] of Object.entries(cloud.bestScores)) {
-
-          merged[id] = Math.max(merged[id] ?? 0, Number(score) || 0);
-
-        }
-
-        return merged;
-
-      });
-
-    }).catch((error) => console.warn('Cloud progress unavailable; local progress remains.',error));
-
-    return () => { live = false; };
-
-  }, [user]);
-
-
 
   function readyMessage() {
 
     return language === 'sa' ? 'सिद्धे सति “आरभताम्” नुदतु।' : 'Press Start Puzzle when you are ready.';
 
   }
-
-
 
   function resetRun(nextTheme = theme) {
 
@@ -289,8 +216,6 @@ const foundRequiredCount = useMemo(
     setBoardVersion((version) => version + 1);
   }
 
-
-
   useEffect(() => {
 
     if (theme) resetRun(theme);
@@ -301,8 +226,6 @@ const foundRequiredCount = useMemo(
 
   }, [active, boardVersion, sourceTheme?.id]);
 
-
-
   useEffect(() => {
 
     if (!started && !done) setMessage(readyMessage());
@@ -310,8 +233,6 @@ const foundRequiredCount = useMemo(
     // eslint-disable-next-line react-hooks/exhaustive-deps
 
   }, [language]);
-
-
 
   useEffect(() => {
 
@@ -322,8 +243,6 @@ const foundRequiredCount = useMemo(
     return () => window.clearInterval(timer);
 
   }, [started,done]);
-
-
 
 const hasInProgressRun = Boolean(
 
@@ -357,8 +276,6 @@ const hasInProgressRun = Boolean(
 
   }, [hasInProgressRun]);
 
-
-
   const totalBestPoints = useMemo(
 
     () => Object.values(bestScores).reduce((sum,score) => sum + (Number(score)||0),0),
@@ -368,8 +285,6 @@ const hasInProgressRun = Boolean(
   );
 
   const runDisplayPoints = breakdown?.total ?? wordPoints;
-
-
 
   function flashBoard(type:'correct'|'wrong') {
 
@@ -385,8 +300,6 @@ const hasInProgressRun = Boolean(
 
   }
 
-
-
   function closeTutorial() {
 
     setTutorialOpen(false);
@@ -394,8 +307,6 @@ const hasInProgressRun = Boolean(
     localStorage.setItem(TUTORIAL_KEY,'1');
 
   }
-
-
 
   function startPuzzle() {
 
@@ -410,8 +321,6 @@ const hasInProgressRun = Boolean(
       : 'Find all theme words. The timer is running!');
 
   }
-
-
 
   function calculateBreakdown(
     activeTheme: Theme,
@@ -463,8 +372,6 @@ const hasInProgressRun = Boolean(
 
   }
 
-
-
   async function submit(path:Cell[]) {
 
     if (!theme || path.length === 0 || !started || done) {
@@ -475,13 +382,9 @@ const hasInProgressRun = Boolean(
 
     }
 
-
-
     const target = targetForPath(theme,path);
 
     const selectedText = pathText(theme,path).trim();
-
-
 
     if (target && !found.has(target.id)) {
 
@@ -501,8 +404,6 @@ const hasInProgressRun = Boolean(
 
       const nextWordPoints = wordPoints + gained;
 
-
-
       setFound(nextFound);
 
       setWordPoints(nextWordPoints);
@@ -517,13 +418,9 @@ const hasInProgressRun = Boolean(
 
       });
 
-
-
       // Finding a word is a user-initiated pointer action, so pronunciation is attempted immediately.
 
       playWordAudio(target.audioPath,target.word).catch(() => undefined);
-
-
 
       setMessage(
 
@@ -563,15 +460,11 @@ const hasInProgressRun = Boolean(
 
 );
 
-
-
       const nextRequiredCount = requiredTargets.filter(
 
         (item) => nextFound.has(item.id),
 
       ).length;
-
-
 
       if (nextRequiredCount === requiredTargets.length) {
 
@@ -581,13 +474,9 @@ const hasInProgressRun = Boolean(
 
         setDone(true);
 
-
-
         const nextCompleted = new Set(completed).add(theme.id);
 
         setCompleted(nextCompleted);
-
-
 
         const previousBest = bestScores[theme.id] ?? 0;
 
@@ -595,40 +484,7 @@ const hasInProgressRun = Boolean(
 
         setBestScores(nextBestScores);
 
-
-
-        if (user) {
-
-          saveCloudProgress(user,[...nextCompleted],nextBestScores)
-
-            .catch((error) => console.warn('Could not sync completed progress; local progress is saved.',error));
-
-
-
-          const overallBest = Object.values(nextBestScores)
-
-            .reduce((sum,score) => sum + (Number(score)||0),0);
-
-          try {
-
-            const saved = await postScore(user,overallBest);
-
-            setLeaderboard(saved
-
-              ? 'Leaderboard updated with your best total.'
-
-              : 'Your existing daily leaderboard score is higher.');
-
-          } catch (error) {
-
-            console.error('Could not submit Strands score:',error);
-
-            setLeaderboard('Puzzle completed. Leaderboard submission could not be completed.');
-
-          }
-
-        }
-
+        setLeaderboard('');
       }
 
     } else if (target) {
@@ -652,8 +508,6 @@ const hasInProgressRun = Boolean(
     setSelection([]);
 
   }
-
-
 
   function useHint() {
 
@@ -697,8 +551,6 @@ const hasInProgressRun = Boolean(
 
   }
 
-
-
   function requestShowAnswer() {
 
     if (done || answerMode) return;
@@ -706,8 +558,6 @@ const hasInProgressRun = Boolean(
     setShowAnswerConfirm(true);
 
   }
-
-
 
   function confirmShowAnswer() {
 
@@ -745,8 +595,6 @@ const hasInProgressRun = Boolean(
 
   }
 
-
-
   function requestBack() {
 
     if (hasInProgressRun) setPendingExit({type:'back'});
@@ -779,41 +627,13 @@ const hasInProgressRun = Boolean(
 
   }
 
-
-
   if (loadError) return <main className="load-state"><h1>Sanskrit Strands</h1><p>{loadError}</p></main>;
 
   if (!theme) return <main className="load-state"><h1>Sanskrit Strands</h1><p>Loading puzzle data…</p></main>;
 
-
-
   return (
 
     <div className="portal-game-shell">
-
-      <GameHeader
-
-        totalPoints={totalBestPoints}
-
-        runPoints={runDisplayPoints}
-
-        user={user}
-
-        onLogin={login}
-
-        onLogout={logout}
-
-        signingIn={signingIn || loading}
-
-        onBack={requestBack}
-
-        language={language}
-
-        onLanguageToggle={() => setLanguage((value) => value === 'en' ? 'sa' : 'en')}
-
-      />
-
-
 
       <div className="portal-body">
 
@@ -832,8 +652,6 @@ const hasInProgressRun = Boolean(
           language={language}
 
         />
-
-
 
         <main className="game-main" style={{background:theme.background}}>
 
@@ -862,8 +680,6 @@ const hasInProgressRun = Boolean(
             </div>
 
           </section>
-
-
 
           <div className="game-grid">
 
@@ -917,8 +733,6 @@ const hasInProgressRun = Boolean(
 
 )}
 
-
-
               <TimerCard
 
                 elapsedSeconds={elapsedSeconds}
@@ -932,8 +746,6 @@ const hasInProgressRun = Boolean(
                 theme={theme}
 
               />
-
-
 
               <StrandBoard
 
@@ -959,8 +771,6 @@ const hasInProgressRun = Boolean(
 
               />
 
-
-
               <HintPanel
 
                 hintsRemaining={hintsRemaining}
@@ -980,8 +790,6 @@ const hasInProgressRun = Boolean(
                 canShowAnswer={!done && !answerMode}
 
               />
-
-
 
               {answerMode && (
 
@@ -1003,17 +811,23 @@ const hasInProgressRun = Boolean(
 
             </section>
 
-
-
-            <WordPanel theme={theme} found={found} revealed={revealed} language={language} showAnswers={answerMode} />
+            <aside className="strands-right-sidebar" aria-label={language === 'sa' ? 'प्रगतिः शब्दाश्च' : 'Progress and words'}>
+              <GameHeader
+                totalPoints={totalBestPoints}
+                runPoints={runDisplayPoints}
+                bestScore={bestScores[theme.id] ?? 0}
+                foundCount={foundRequiredCount}
+                requiredCount={requiredTargets.length}
+                language={language}
+              />
+              <WordPanel theme={theme} found={found} revealed={revealed} language={language} showAnswers={answerMode} />
+            </aside>
 
           </div>
 
         </main>
 
       </div>
-
-
 
       <ResultsModal
 
@@ -1039,11 +853,7 @@ const hasInProgressRun = Boolean(
 
       />
 
-
-
       <TutorialOverlay open={tutorialOpen && !started && !answerMode && !showAnswerConfirm} language={language} onClose={closeTutorial} />
-
-
 
       <ShowAnswerModal
 
@@ -1056,8 +866,6 @@ const hasInProgressRun = Boolean(
         onConfirm={confirmShowAnswer}
 
       />
-
-
 
       <ExitConfirmModal
 
@@ -1076,3 +884,4 @@ const hasInProgressRun = Boolean(
   );
 
 }
+

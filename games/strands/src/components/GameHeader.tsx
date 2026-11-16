@@ -1,4 +1,27 @@
-import type { User } from 'firebase/auth';
-import type { Language } from '../types/gameTypes'; import { tr } from '../i18n';
-type Props={totalPoints:number;runPoints:number;user:User|null;onLogin:()=>void;onLogout:()=>void;signingIn:boolean;onBack:()=>void;language:Language;onLanguageToggle:()=>void};
-export default function GameHeader({totalPoints,runPoints,user,onLogin,onLogout,signingIn,onBack,language,onLanguageToggle}:Props){return <header className="portal-topbar"><div className="brand-row"><button className="back-btn" onClick={onBack}>← <span>{tr(language,'games')}</span></button><div className="strand-logo"><span>सं</span></div><div className="brand-copy"><small>{tr(language,'brandKicker')}</small><strong>{tr(language,'brandLine')}</strong></div></div><div className="top-stats"><button className="language-btn" onClick={onLanguageToggle}><span className="language-globe">अ</span><b>{tr(language,'language')}</b></button><div className="stat total-stat"><small>{tr(language,'bestTotal')}</small><b>{totalPoints}</b></div><div className="stat run-stat"><small>{tr(language,'thisRun')}</small><b>{runPoints}</b></div>{user?<button className="login-btn" onClick={onLogout}>{language==='sa'?tr(language,'signOut'):(user.displayName?.split(' ')[0]||tr(language,'signOut'))}</button>:<button className="login-btn" onClick={onLogin} disabled={signingIn}>{signingIn?tr(language,'signingIn'):tr(language,'login')}</button>}</div></header>;}
+import type { Language } from '../types/gameTypes';
+import { tr } from '../i18n';
+
+type Props = {
+  totalPoints: number;
+  runPoints: number;
+  bestScore: number;
+  foundCount: number;
+  requiredCount: number;
+  language: Language;
+};
+
+// Game statistics only. Navigation, language and login belong to the portal navbar.
+export default function GameHeader({ totalPoints, runPoints, bestScore, foundCount, requiredCount, language }: Props) {
+  const title = language === 'sa' ? 'प्रगतिः' : 'Your progress';
+  return (
+    <section className="strands-score-panel" aria-label={title}>
+      <h2>{title}</h2>
+      <dl className="strands-score-list">
+        <div><dt>{tr(language, 'thisRun')}</dt><dd>{runPoints}</dd></div>
+        <div><dt>{tr(language, 'bestTheme')}</dt><dd>{bestScore}</dd></div>
+        <div><dt>{tr(language, 'bestTotal')}</dt><dd>{totalPoints}</dd></div>
+        <div><dt>{language === 'sa' ? 'लब्धाः शब्दाः' : 'Words found'}</dt><dd>{foundCount} / {requiredCount}</dd></div>
+      </dl>
+    </section>
+  );
+}
