@@ -15,14 +15,13 @@ export async function initializeShlokasToday(games = []) {
 
     function renderToday() {
       const today = new Date();
-      const dateParam = [today.getFullYear(), String(today.getMonth() + 1).padStart(2, "0"), String(today.getDate()).padStart(2, "0")].join("-");
       const schedule = getDailySchedule(verses, today);
       if (schedule.status === "upcoming") {
         container.replaceChildren(createUpcomingNotice());
       } else if (schedule.status === "complete") {
         container.textContent = "The daily shloka schedule is complete.";
       } else {
-        container.replaceChildren(...schedule.verses.map((verse) => createVerseCard(verse, games, dateParam)));
+        container.replaceChildren(...schedule.verses.map((verse) => createVerseCard(verse, games)));
       }
     }
 
@@ -87,7 +86,7 @@ export function cleanShlokaText(value = "") {
     .trim();
 }
 
-function createVerseCard(verse, games, dateParam) {
+function createVerseCard(verse, games) {
   const verseElement = document.createElement("article");
   verseElement.className = "today-verse";
 
@@ -109,65 +108,26 @@ function createVerseCard(verse, games, dateParam) {
   label.className = "today-verse-games-label";
   label.textContent = "Play in game:";
 
-  let selectedGame = 0;
   const chooser = document.createElement("div");
   chooser.className = "game-picker";
   chooser.setAttribute("role", "group");
   chooser.setAttribute("aria-label", "Choose a game");
 
-  const previous = document.createElement("button");
-  previous.type = "button";
-  previous.className = "game-picker-arrow";
-  previous.setAttribute("aria-label", "Previous game");
-  previous.textContent = "‹";
-
-  const viewport = document.createElement("div");
-  viewport.className = "game-picker-viewport";
-  const track = document.createElement("div");
-  track.className = "game-picker-track";
-  const options = games.map((game, index) => {
-    const option = document.createElement("button");
-    option.type = "button";
+  games.slice(0, 5).forEach((game) => {
+    const option = document.createElement("a");
     option.className = "game-picker-option";
-    option.textContent = game.title.trim();
-    option.setAttribute("aria-pressed", String(index === selectedGame));
-    option.addEventListener("click", () => selectGame(index));
-    track.append(option);
-    return option;
-  });
-  viewport.append(track);
-
-  const next = document.createElement("button");
-  next.type = "button";
-  next.className = "game-picker-arrow";
-  next.setAttribute("aria-label", "Next game");
-  next.textContent = "›";
-
-  const play = document.createElement("a");
-  play.className = "play-btn game-picker-play";
-  play.textContent = "▶";
-  play.setAttribute("aria-label", "Play selected game");
-
-  function selectGame(index) {
-    selectedGame = (index + games.length) % games.length;
-    options.forEach((option, optionIndex) => {
-      option.setAttribute("aria-pressed", String(optionIndex === selectedGame));
-    });
-    track.style.transform = `translateX(-${selectedGame * 100}%)`;
-    const game = games[selectedGame];
+    option.setAttribute("aria-label", game.title.trim());
+    option.title = game.title.trim();
     const href = /^https?:\/\//i.test(game.dir)
       ? game.dir
       : `./${game.dir}${game.dir.endsWith(".html") ? "" : "/"}`;
     const gameUrl = new URL(href, document.baseURI);
-    gameUrl.searchParams.set("date", dateParam);
-    play.href = gameUrl.href;
-  }
-  previous.addEventListener("click", () => selectGame(selectedGame - 1));
-  next.addEventListener("click", () => selectGame(selectedGame + 1));
-  selectGame(selectedGame);
+    gameUrl.searchParams.set("id", verse.id);
+    option.href = gameUrl.href;
+    chooser.append(option);
+  });
 
-  chooser.append(previous, viewport, next);
-  gamesRow.append(label, chooser, play);
+  gamesRow.append(label, chooser);
 
   verseElement.append(reference, text, transliteration, gamesRow);
   return verseElement;
