@@ -1,6 +1,9 @@
 <!doctype html>
 <html lang="en">
   <head>
+    <!-- Hidden before first paint; authentication guard reveals authorized pages. -->
+    <style>html:not(.gg-authenticated) { visibility: hidden !important; }</style>
+    <script type="module" src="../shared/auth-guard.js"></script>
     <!-- NOTE THIS DOES NOT WORK WITH .htm ONLY .html -->
 
     <meta charset="utf-8" />
