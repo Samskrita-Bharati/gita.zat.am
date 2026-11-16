@@ -152,7 +152,7 @@
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  gap: 0.4rem;
+  gap: 0.65rem;
   width: min(100%, 42rem);
   margin: 1rem 0 0;
   color: var(--navy-dark);
@@ -161,49 +161,30 @@
 }
 
 .game-picker {
-  display: grid;
-  grid-template-columns: 1.5rem minmax(0, 9rem) 1.5rem;
-  align-items: center;
-  gap: 0.1rem;
-  min-width: 0;
-}
-
-.game-picker-viewport {
-  overflow: hidden;
-  min-width: 0;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-xs);
-  background: var(--white);
-}
-
-.game-picker-track {
   display: flex;
-  width: 100%;
-  transition: transform 220ms ease;
+  align-items: center;
+  gap: 0.45rem;
+  min-width: 0;
 }
 
 .game-picker-option {
-  flex: 0 0 100%;
-  min-width: 0;
-  min-height: var(--button-height-sm);
-  padding: 0 0.8rem;
-  overflow: hidden;
-  border: 0;
-  background: transparent;
+  display: block;
+  flex: 0 0 2.4rem;
+  width: 2.4rem;
+  height: 2.4rem;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: var(--white);
   color: var(--navy-dark);
-  font: inherit;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  text-decoration: none;
   cursor: pointer;
+  transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
 }
 
-.game-picker-arrow {
-  padding: 0;
-  border: 0;
-  background: transparent;
-  color: var(--navy);
-  font-size: 1.5rem;
-  line-height: 1;
+.game-picker-option:hover {
+  transform: translateY(-1px);
+  border-color: var(--gold);
 }
 
 .verses-loading {
