@@ -3,24 +3,30 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Privacy Policy | Zat.am</title>
-    <!-- Main website CSS -->
+    <meta name="theme-color" content="#fffaf2" />
+    <!-- Shared GG website styles -->
     <link rel="stylesheet" href="../css/global.css" />
+
+    <title>Privacy Policy | Zat.am</title>
     <link rel="stylesheet" href="./privacy.css" />
   </head>
 
-  <body>
-    <div class="page-wrap">
-      <!-- ✅ Back button -->
-      <div class="top-actions">
-        <a class="back-btn" href="../index.html">← Back to Home</a>
-      </div>
+  <body class="legal-page" data-page="privacy">
+    <!-- Uses the same shared navbar loader as other Zat.am pages. -->
+    <div id="navbar-mount"></div>
 
-      <!-- ✅ Privacy content -->
-      <div class="policy-card">
-        <h1>Privacy Policy</h1>
-        <p>Last updated: January 23, 2026</p>
+    <main class="legal-page-shell">
+      <header class="legal-hero" aria-labelledby="privacy-title">
+        <p class="legal-eyebrow">ZAT.AM · LEGAL</p>
+        <h1 id="privacy-title">Privacy Policy</h1>
+        <div class="legal-heading-underline" aria-hidden="true"></div>
+        <p class="legal-hero-copy">
+          How we collect, use, and protect information when you use Zat.am.
+        </p>
+        <p class="legal-updated">Last updated: November 17, 2026</p>
+      </header>
 
+      <article class="policy-card" aria-label="Zat.am Privacy Policy">
         <p>
           This Privacy Policy describes Our policies and procedures on the
           collection, use and disclosure of Your information when You use the
@@ -29,17 +35,17 @@
         </p>
 
         <p>
-          We use Your Personal Data to provide and improve the Service. By using
-          the Service, You agree to the collection and use of information in
-          accordance with this Privacy Policy. This Privacy Policy has been
-          created with the help of the
+          We use Your Personal Data to provide, maintain, secure, and improve
+          the Service. This Privacy Policy explains what information We collect,
+          how it is used, and the choices available to You. This Privacy Policy
+          has been created with the help of the
           <a
             href="https://www.termsfeed.com/privacy-policy-generator/"
             target="_blank"
             rel="noopener noreferrer"
+            >Privacy Policy Generator</a
           >
-            Privacy Policy Generator </a
-          >.
+          and has been updated to describe the features used by Zat.am.
         </p>
 
         <h2>Interpretation and Definitions</h2>
@@ -62,7 +68,6 @@
               access our Service or parts of our Service.
             </p>
           </li>
-
           <li>
             <p>
               <strong>Affiliate</strong> means an entity that controls, is
@@ -72,34 +77,29 @@
               directors or other managing authority.
             </p>
           </li>
-
           <li>
             <p>
               <strong>Company</strong> (referred to as either "the Company",
               "We", "Us" or "Our" in this Privacy Policy) refers to Zat.am.
             </p>
           </li>
-
           <li>
             <p>
               <strong>Cookies</strong> are small files that are placed on Your
               computer, mobile device or any other device by a website,
-              containing the details of Your browsing history on that website
-              among its many uses.
+              containing information that may help remember preferences,
+              maintain sessions, or measure website activity.
             </p>
           </li>
-
           <li>
             <p><strong>Country</strong> refers to: Ontario, Canada</p>
           </li>
-
           <li>
             <p>
               <strong>Device</strong> means any device that can access the
               Service such as a computer, a cell phone or a digital tablet.
             </p>
           </li>
-
           <li>
             <p>
               <strong>Personal Data</strong> (or "Personal Information") is any
@@ -111,11 +111,9 @@
               unless a law uses a specific term.
             </p>
           </li>
-
           <li>
             <p><strong>Service</strong> refers to the Website.</p>
           </li>
-
           <li>
             <p>
               <strong>Service Provider</strong> means any natural or legal
@@ -126,7 +124,6 @@
               the Company in analyzing how the Service is used.
             </p>
           </li>
-
           <li>
             <p>
               <strong>Usage Data</strong> refers to data collected
@@ -135,11 +132,12 @@
               page visit).
             </p>
           </li>
-
           <li>
-            <p><strong>Website</strong> refers to Zat.am.</p>
+            <p>
+              <strong>Website</strong> refers to Zat.am, including its
+              educational games and related account features.
+            </p>
           </li>
-
           <li>
             <p>
               <strong>You</strong> means the individual accessing or using the
@@ -164,6 +162,10 @@
         <ul>
           <li>Email address</li>
           <li>First name and last name</li>
+          <li>Account identifier</li>
+          <li>Language and learning preferences</li>
+          <li>Country, region, and location information You provide</li>
+          <li>Account creation and recent login information</li>
         </ul>
 
         <h4>Usage Data</h4>
@@ -194,8 +196,8 @@
 
         <h4>Tracking Technologies and Cookies</h4>
         <p>
-          We use Cookies and similar tracking technologies to track the activity
-          on Our Service and store certain information.
+          We use Cookies and similar tracking technologies to support certain
+          features of Our Service and to understand website activity.
         </p>
 
         <ul>
@@ -206,7 +208,6 @@
             being sent. However, if You do not accept Cookies, You may not be
             able to use some parts of our Service.
           </li>
-
           <li>
             <strong>Web Beacons.</strong>
             Certain sections of our Service and our emails may contain small
@@ -225,10 +226,156 @@
         </p>
 
         <p>
-          Where required by law, we use non-essential cookies (such as
-          analytics, advertising, and remarketing cookies) only with Your
-          consent. You can withdraw or change Your consent at any time through
-          your browser/device settings.
+          Authentication and other essential technologies may be used to provide
+          account-related functionality. Analytics technologies may also be used
+          when enabled on the Website. You can manage cookies through Your
+          browser or device settings. For questions about analytics tracking,
+          consent, or available privacy choices, please contact Us using the
+          information provided below.
+        </p>
+
+        <h3>Firebase Authentication and User Accounts</h3>
+
+        <p>
+          We use Google Firebase Authentication to manage user registration,
+          sign-in, and account security. Users may create an Account using an
+          email address and password or sign in using a supported Google
+          account.
+        </p>
+
+        <p>
+          Depending on Your sign-in method, Firebase Authentication may process
+          information such as Your email address, display name, authentication
+          provider, and a unique user identifier.
+        </p>
+
+        <p>
+          We use Google Cloud Firestore to store information associated with
+          registered Accounts. This may include profile information, selected
+          preferences, account creation dates, recent login timestamps, and
+          login streak information.
+        </p>
+
+        <p>
+          We use this information to provide personalized account features,
+          maintain user preferences, manage access to the Service, and support
+          the functionality of Our educational games.
+        </p>
+
+        <h3>Game Activity, Scores, and Learning Progress</h3>
+
+        <p>
+          When You use games on Zat.am, We may collect and store information
+          about Your game activity. Depending on the game and its supported
+          features, this information may include game identifiers, game names,
+          level information, scores, results, elapsed time, completion
+          timestamps, and recorded attempts.
+        </p>
+
+        <p>
+          We use this information to provide leaderboards, display achievements,
+          maintain game-related records, and help improve Our educational games.
+        </p>
+
+        <p>
+          Certain games may also save learning progress, such as completed
+          shlokas, to help maintain progress-related features.
+        </p>
+
+        <p>
+          Some leaderboard information, including display names and recorded
+          scores, may be visible to other signed-in users of the Service.
+        </p>
+
+        <h3>Game Page Visits and Activity Tracking</h3>
+
+        <p>
+          We use a game-visit tracking feature to understand which educational
+          games are visited and how frequently they are accessed.
+        </p>
+
+        <p>
+          For eligible signed-in users visiting supported game pages, We may
+          record a Firebase user identifier, game identifier, game name, page
+          path, and visit timestamp in Cloud Firestore.
+        </p>
+
+        <p>
+          This information helps Us understand game popularity, monitor
+          participation, and improve the learning experience. Visit records may
+          be subject to limits intended to avoid counting repeated page
+          refreshes as separate visits.
+        </p>
+
+        <p>
+          A recorded game page visit does not necessarily mean that the game was
+          started, completed, or scored.
+        </p>
+
+        <h3>Administrator Dashboard and Reporting</h3>
+
+        <p>
+          Zat.am provides a restricted administration dashboard for authorized
+          administrators.
+        </p>
+
+        <p>
+          Administrators may access reports based on information stored in Cloud
+          Firestore, including registered profiles, registration activity, login
+          activity, recorded streaks, game page visits, leaderboard records, and
+          game performance statistics.
+        </p>
+
+        <p>
+          Administrative access is controlled through account permissions and
+          database security rules. These reports are used to understand how the
+          Service is used, support its operation, and identify areas for
+          improvement.
+        </p>
+
+        <p>
+          Reports generated from Firestore are separate from Google Analytics
+          website traffic reports. Because they use different collection
+          methods, their statistics may not always match.
+        </p>
+
+        <h3>Google Analytics</h3>
+
+        <p>
+          We use Google Analytics 4, a web analytics service provided by Google,
+          to understand how visitors interact with Our Website.
+        </p>
+
+        <p>
+          Google Analytics may collect information about page views, website
+          interactions, approximate location, browser and device
+          characteristics, and other website usage information.
+        </p>
+
+        <p>
+          Google Analytics may use cookies and similar technologies to measure
+          website activity. Analytics information is used to understand traffic
+          patterns, identify popular content, evaluate website performance, and
+          improve the Service.
+        </p>
+
+        <p>
+          Information collected through Google Analytics is processed according
+          to Google's applicable terms and privacy practices. For additional
+          information, please review
+          <a
+            href="https://policies.google.com/privacy"
+            target="_blank"
+            rel="noopener noreferrer"
+            >Google's Privacy Policy</a
+          >
+          and
+          <a
+            href="https://support.google.com/analytics/answer/6004245"
+            target="_blank"
+            rel="noopener noreferrer"
+            >Google Analytics Data Safeguards</a
+          >.
         </p>
 
         <h3>Use of Your Personal Data</h3>
@@ -242,6 +389,14 @@
           <li>
             <strong>To manage Your Account</strong>: to manage Your registration
             as a user of the Service.
+          </li>
+          <li>
+            <strong>To maintain learning progress</strong>: to provide
+            game-related features, scores, leaderboards, and streaks.
+          </li>
+          <li>
+            <strong>To improve our educational games</strong>: to understand
+            game activity, participation, and website usage.
           </li>
           <li>
             <strong>For the performance of a contract</strong>: the development,
@@ -273,6 +428,13 @@
           and policies.
         </p>
 
+        <p>
+          Information stored through Firebase Authentication, Cloud Firestore,
+          and Google Analytics may have different retention settings.
+          Account-related records and game activity may remain stored according
+          to Our operational needs and applicable requirements.
+        </p>
+
         <h3>Transfer of Your Personal Data</h3>
         <p>
           Your information, including Personal Data, may be processed at the
@@ -281,11 +443,24 @@
           transferring data outside of Your jurisdiction.
         </p>
 
+        <p>
+          We use third-party services, including Google Firebase and Google
+          Analytics, which may process information using infrastructure located
+          outside Your province or country.
+        </p>
+
         <h3>Delete Your Personal Data</h3>
         <p>
           You have the right to delete or request that We assist in deleting the
           Personal Data that We have collected about You. You may also contact
           Us to request access to, correct, or delete any Personal Data.
+        </p>
+
+        <p>
+          If You wish to request deletion of Account information, profile
+          records, or game-related Personal Data, You may contact Us using the
+          email address provided below. Requests will be reviewed in accordance
+          with applicable requirements.
         </p>
 
         <h3>Disclosure of Your Personal Data</h3>
@@ -335,9 +510,17 @@
 
         <h2>Children's Privacy</h2>
         <p>
-          Our Service does not address anyone under the age of 16. We do not
-          knowingly collect personally identifiable information from anyone
-          under the age of 16.
+          Zat.am provides educational games that may be of interest to younger
+          learners. Certain Account features involve collecting personal
+          information, including profile details and game activity, as described
+          in this Privacy Policy.
+        </p>
+
+        <p>
+          Parents or guardians who have questions about a child's use of the
+          Service, or who wish to request access to, correction of, or deletion
+          of information associated with a child's Account, may contact Us using
+          the information below.
         </p>
 
         <h2>Links to Other Websites</h2>
@@ -375,7 +558,9 @@
         </p>
 
         <div class="footer-note">© 2026 Zat.am — Privacy Policy</div>
-      </div>
-    </div>
+      </article>
+    </main>
+
+    <script type="module" src="../navbar/navbar-loader.js"></script>
   </body>
 </html>

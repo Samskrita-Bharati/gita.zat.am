@@ -1,3 +1,5 @@
+import "../analytics/site-analytics.js";
+
 // =====================================================
 // SHARED NAVBAR LOADER
 // =====================================================
@@ -238,6 +240,16 @@ export async function loadNavbar() {
     const { initNavbarAuth } = await import("./navbar-auth.js");
 
     await initNavbarAuth();
+
+    // Optional first-party, authenticated game-page visits. Never block
+    // navigation or the games if analytics is unavailable.
+    if (gamePage) {
+      import("../analytics/game-visits.js")
+        .then(({ recordGameVisit }) => recordGameVisit())
+        .catch((error) =>
+          console.warn("Game visit tracking unavailable:", error),
+        );
+    }
 
     // Auth state or translated labels can slightly affect layout.
     if (gamePage) {
