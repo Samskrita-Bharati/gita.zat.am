@@ -23,66 +23,13 @@
         </div>
         <div class="calendar-grid" id="calendarGrid" role="grid"></div>
       </section>
+      <section class="calendar-details" aria-labelledby="selectedDateHeading">
+        <h2 id="selectedDateHeading">Shlokas</h2>
+        <p class="completion-note">Complete a shloka in the typing game to earn a tick. Progress is saved in this browser.</p>
+        <div id="selectedDateVerses" aria-live="polite">Loading shlokas…</div>
+      </section>
     </main>
     <script type="module" src="../navbar/navbar-loader.js"></script>
-    <script>
-      const today = new Date();
-      const todayKey = `${today.getFullYear()}-${today.getMonth()}-${today.getDate()}`;
-      const params = new URLSearchParams(window.location.search);
-      const requestedMonth = params.get("month");
-      const monthMatch = requestedMonth?.match(/^(\d{4})-(\d{2})$/);
-      let visibleMonth = monthMatch
-        ? new Date(Number(monthMatch[1]), Number(monthMatch[2]) - 1, 1)
-        : new Date(today.getFullYear(), today.getMonth(), 1);
-      const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-      const grid = document.getElementById("calendarGrid");
-
-      weekdays.forEach((weekday) => {
-        const label = document.createElement("div");
-        label.className = "weekday";
-        label.textContent = weekday;
-        label.setAttribute("role", "columnheader");
-        grid.appendChild(label);
-      });
-
-      function monthUrl(date) {
-        const params = new URLSearchParams(window.location.search);
-        params.set("month", `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`);
-        return `${window.location.pathname}?${params.toString()}`;
-      }
-
-      function renderCalendar() {
-        const year = visibleMonth.getFullYear();
-        const month = visibleMonth.getMonth();
-        const firstDay = new Date(year, month, 1).getDay();
-        const daysInMonth = new Date(year, month + 1, 0).getDate();
-        const cellCount = Math.ceil((firstDay + daysInMonth) / 7) * 7;
-        document.getElementById("monthHeading").textContent = new Intl.DateTimeFormat("en", {
-          month: "long",
-          year: "numeric",
-        }).format(visibleMonth);
-        document.getElementById("previousMonth").href = monthUrl(new Date(year, month - 1, 1));
-        document.getElementById("nextMonth").href = monthUrl(new Date(year, month + 1, 1));
-        grid.replaceChildren(...grid.querySelectorAll(".weekday"));
-
-        for (let cellIndex = 0; cellIndex < cellCount; cellIndex += 1) {
-          const dateNumber = cellIndex - firstDay + 1;
-          const isInMonth = dateNumber >= 1 && dateNumber <= daysInMonth;
-          const cell = document.createElement("div");
-          cell.className = "day";
-          cell.setAttribute("role", "gridcell");
-          if (isInMonth) {
-            const date = document.createElement("span");
-            date.className = "day-number";
-            date.textContent = dateNumber;
-            if (`${year}-${month}-${dateNumber}` === todayKey) cell.classList.add("today");
-            cell.appendChild(date);
-          }
-          grid.appendChild(cell);
-        }
-      }
-
-      renderCalendar();
-    </script>
+    <script type="module" src="./calendar.js"></script>
   </body>
 </html>
