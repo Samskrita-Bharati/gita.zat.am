@@ -21,9 +21,10 @@
           <h2 id="monthHeading" aria-live="polite"></h2>
           <a class="calendar-nav" id="nextMonth" aria-label="Next month">&rarr;</a>
         </div>
+        <p id="calendarLoadStatus" class="calendar-load-status" role="status"></p>
         <div class="calendar-grid" id="calendarGrid" role="grid"></div>
       </section>
-      <section class="calendar-details" aria-labelledby="selectedDateHeading">
+      <section class="calendar-details" aria-labelledby="selectedDateHeading" hidden>
         <h2 id="selectedDateHeading">Shlokas</h2>
         <p class="completion-note">Completion marks are saved in this browser.</p>
         <div id="selectedDateVerses" aria-live="polite">Loading shlokas…</div>

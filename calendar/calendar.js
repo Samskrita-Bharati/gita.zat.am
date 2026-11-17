@@ -144,7 +144,7 @@ try {
   renderCalendar(verses);
   renderDetails(verses);
 } catch (error) {
-  details.textContent = "Shlokas could not be loaded. Please refresh the page to try again.";
+  document.getElementById("calendarLoadStatus").textContent = "Shlokas could not be loaded. Please refresh the page to try again.";
   console.error(error);
 }
 
