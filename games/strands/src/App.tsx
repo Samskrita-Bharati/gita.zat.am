@@ -4,20 +4,20 @@ import type {
   Cell,
   ScoreBreakdown,
   Theme,
-  ThemeData,
 } from './types/gameTypes';
-import { loadThemes } from './services/themeService';
+import { loadPreviewPuzzles, previewIndex } from './services/gitaContentService';
+import type { GitaPuzzle } from './services/gitaContentService';
 
 import { pathText, targetForPath } from './utils/board';
 
-import { playWordAudio } from './services/audioService';
+
 
 import { tr } from './i18n';
 import { usePortalLanguage } from './hooks/usePortalLanguage';
 
 import GameHeader from './components/GameHeader';
 
-import ThemeSidebar from './components/ThemeSidebar';
+import ShlokaSidebar from './components/ShlokaSidebar';
 
 import StrandBoard from './components/StrandBoard';
 
@@ -38,13 +38,13 @@ import ShowAnswerModal from './components/ShowAnswerModal';
 import { generateBoard } from './utils/generateBoard';
 
 const COMPLETED_KEY =
-  'sanskrit-strands-completed';
+  'gita-strands:completed:v1';
 
 const BEST_SCORES_KEY =
-  'sanskrit-strands-best-scores';
+  'gita-strands:best:v1';
 
 const TUTORIAL_KEY =
-  'sanskrit-strands-tutorial-seen';
+  'gita-strands:tutorial-seen:v1';
 type PendingExit = { type:'back' } | { type:'theme'; index:number } | null;
 
 function loadCompleted() {
@@ -74,10 +74,10 @@ function loadBestScores() {
 export default function App() {
 
   const [themes,setThemes] =
-  useState<ThemeData[]>([]);
+  useState<GitaPuzzle[]>([]);
   const [loadError,setLoadError] = useState('');
 
-  const [active,setActive] = useState(0);
+  const [active,setActive] = useState(() => previewIndex(window.location.search));
 
   const [selection,setSelection] = useState<Cell[]>([]);
 
@@ -127,12 +127,6 @@ export default function App() {
 
     const generated = generateBoard(sourceTheme);
 
-    console.log(
-      'NEW RANDOM BOARD:',
-      generated.id,
-      generated.grid,
-    );
-
     return generated;
   }, [sourceTheme, boardVersion]);
 
@@ -160,9 +154,9 @@ const foundRequiredCount = useMemo(
 
   useEffect(() => {
 
-    loadThemes()
+    loadPreviewPuzzles()
 
-      .then(({themes:loaded}) => setThemes(loaded))
+      .then(setThemes)
 
       .catch((error) => setLoadError(error instanceof Error ? error.message : String(error)));
 
@@ -171,6 +165,13 @@ const foundRequiredCount = useMemo(
   useEffect(() => { localStorage.setItem(COMPLETED_KEY,JSON.stringify([...completed])); }, [completed]);
 
   useEffect(() => { localStorage.setItem(BEST_SCORES_KEY,JSON.stringify(bestScores)); }, [bestScores]);
+
+  useEffect(() => {
+    if (!sourceTheme) return;
+    const url = new URL(window.location.href);
+    url.searchParams.set('id', String(sourceTheme.verseId));
+    window.history.replaceState(null, '', url);
+  }, [sourceTheme]);
 
   function readyMessage() {
 
@@ -242,7 +243,7 @@ const foundRequiredCount = useMemo(
 
     return () => window.clearInterval(timer);
 
-  }, [started,done]);
+  }, [started,done,answerMode]);
 
 const hasInProgressRun = Boolean(
 
@@ -318,7 +319,7 @@ const hasInProgressRun = Boolean(
 
       ? 'सर्वान् विषयशब्दान् अन्वेषयतु। समयगणना आरब्धा!'
 
-      : 'Find all theme words. The timer is running!');
+      : 'Find the shloka words. The timer is running!');
 
   }
 
@@ -418,10 +419,6 @@ const hasInProgressRun = Boolean(
 
       });
 
-      // Finding a word is a user-initiated pointer action, so pronunciation is attempted immediately.
-
-      playWordAudio(target.audioPath,target.word).catch(() => undefined);
-
       setMessage(
 
   target.bonus
@@ -501,7 +498,7 @@ const hasInProgressRun = Boolean(
 
         ? (selectedText ? `“${selectedText}” अस्य विषयस्य शब्दः नास्ति।` : 'अन्यं पन्थानं प्रयतताम्।')
 
-        : (selectedText ? `“${selectedText}” is not one of this puzzle's theme words.` : 'Try another path.'));
+        : (selectedText ? `“${selectedText}” is not one of this shloka's target words.` : 'Try another path.'));
 
     }
 
@@ -627,9 +624,9 @@ const hasInProgressRun = Boolean(
 
   }
 
-  if (loadError) return <main className="load-state"><h1>Sanskrit Strands</h1><p>{loadError}</p></main>;
+  if (loadError) return <main className="load-state"><h1>Gita Strands</h1><p>{loadError}</p></main>;
 
-  if (!theme) return <main className="load-state"><h1>Sanskrit Strands</h1><p>Loading puzzle data…</p></main>;
+  if (!theme) return <main className="load-state"><h1>Gita Strands</h1><p>Loading puzzle data…</p></main>;
 
   return (
 
@@ -637,21 +634,7 @@ const hasInProgressRun = Boolean(
 
       <div className="portal-body">
 
-        <ThemeSidebar
-
-          themes={themes}
-
-          active={active}
-
-          completed={completed}
-
-          bestScores={bestScores}
-
-          onSelect={requestThemeChange}
-
-          language={language}
-
-        />
+        <ShlokaSidebar puzzles={themes} active={active} completed={completed} onSelect={requestThemeChange} language={language} />
 
         <main className="game-main" style={{background:theme.background}}>
 
@@ -659,7 +642,7 @@ const hasInProgressRun = Boolean(
 
             <div className="theme-heading">
 
-              <div className="theme-eyebrow">{tr(language,'todaysTheme')}</div>
+              <div className="theme-eyebrow">{language === 'sa' ? 'भगवद्गीता' : 'BHAGAVAD GITA'}</div>
 
               <h1>{theme.titleSanskrit} {language === 'en' && <span>{theme.titleEnglish}</span>}</h1>
 
@@ -669,11 +652,11 @@ const hasInProgressRun = Boolean(
 
             <div className="theme-meta">
 
-              <span>{language === 'sa' ? (theme.difficultySanskrit || theme.difficulty) : theme.difficulty}</span>
+              <span>{language === 'sa' ? 'श्लोकः' : 'Shared shloka'}</span>
 
               <b>{theme.rows} × {theme.cols}</b>
 
-              <b>{theme.targets.length} words</b>
+              <b>{theme.targets.length} {tr(language, 'words')}</b>
 
               <button className="tutorial-help-btn" onClick={() => setTutorialOpen(true)} aria-label="How to play">?</button>
 
@@ -681,6 +664,10 @@ const hasInProgressRun = Boolean(
 
           </section>
 
+          <details className="shloka-text-card">
+            <summary>{language === 'sa' ? 'श्लोकं पठतु' : 'Read the shloka'}</summary>
+            <p lang="sa">{sourceTheme.text}</p>
+          </details>
           <div className="game-grid">
 
             <section className="board-card">
@@ -803,7 +790,7 @@ const hasInProgressRun = Boolean(
 
                   </div>
 
-                  <button onClick={restartCurrentTheme}>{language === 'sa' ? 'स्तरं पुनः आरभताम्' : 'Restart Level'}</button>
+                  <button onClick={restartCurrentTheme}>{language === 'sa' ? 'पुनः आरभताम्' : 'Restart Puzzle'}</button>
 
                 </div>
 

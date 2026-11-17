@@ -103,3 +103,20 @@ body.gita-strands-page .strands-page-header p {
 @media (max-width: 760px) {
   #root .strands-right-sidebar .word-panel { margin-top: 0; }
 }
+
+/* Temporary Gita content preview; replaces the legacy theme journey. */
+#root .portal-body { grid-template-columns: 190px minmax(0, 1fr); }
+#root .shloka-sidebar { padding: 16px; background: white; border: 1px solid var(--line); border-radius: 16px; box-shadow: var(--shadow-sm); }
+#root .shloka-sidebar h2 { margin: 0; font: 700 1.1rem var(--body); }
+#root .shloka-sidebar p { margin: 6px 0 12px; color: var(--muted); font-size: .8rem; }
+#root .shloka-sidebar nav { display: grid; gap: 8px; }
+#root .shloka-sidebar button { display: flex; justify-content: space-between; gap: 12px; min-height: 44px; padding: 10px; border: 1px solid var(--line); border-radius: 9px; color: var(--navy); background: var(--cream); font-weight: 700; }
+#root .shloka-sidebar button.active { border-color: var(--gold); box-shadow: inset 3px 0 0 var(--gold); }
+#root .shloka-text-card { margin: 0 0 16px; padding: 14px 16px; border: 1px solid var(--line); border-radius: 12px; background: white; }
+#root .shloka-text-card summary { color: var(--navy); cursor: pointer; font-weight: 700; }
+#root .shloka-text-card p { margin: 12px 0 0; white-space: pre-line; font: 500 1.15rem/1.8 var(--dev); }
+#root .gita-word-slot.found, #root .gita-word-slot.answer-revealed { grid-template-columns: minmax(0, 1fr) 28px; }
+@media (max-width: 760px) {
+  #root .shloka-sidebar { width: 100%; }
+  #root .shloka-sidebar nav { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}

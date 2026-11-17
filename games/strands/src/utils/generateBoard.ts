@@ -1,3 +1,4 @@
+import { seededRandom } from './seededRandom.ts';
 import type {
   Cell,
   Theme,
@@ -5,11 +6,11 @@ import type {
   TargetWord,
 } from '../types/gameTypes';
 
-function shuffle<T>(items: T[]): T[] {
+function shuffle<T>(items: T[], random: () => number): T[] {
   const copy = [...items];
 
   for (let i = copy.length - 1; i > 0; i -= 1) {
-    const j = Math.floor(Math.random() * (i + 1));
+    const j = Math.floor(random() * (i + 1));
     [copy[i], copy[j]] = [copy[j], copy[i]];
   }
 
@@ -66,23 +67,23 @@ function flipVertical(path: Cell[], rows: number): Cell[] {
   }));
 }
 
-function buildRoute(rows: number, cols: number): Cell[] {
+function buildRoute(rows: number, cols: number, random: () => number): Cell[] {
   const base =
-    Math.random() < 0.5
+    random() < 0.5
       ? rowSnake(rows, cols)
       : columnSnake(rows, cols);
 
   let route = base;
 
-  if (Math.random() < 0.5) {
+  if (random() < 0.5) {
     route = flipHorizontal(route, cols);
   }
 
-  if (Math.random() < 0.5) {
+  if (random() < 0.5) {
     route = flipVertical(route, rows);
   }
 
-  if (Math.random() < 0.5) {
+  if (random() < 0.5) {
     route = [...route].reverse();
   }
 
@@ -91,6 +92,7 @@ function buildRoute(rows: number, cols: number): Cell[] {
 export function generateBoard(
   sourceTheme: ThemeData,
 ): Theme {
+  const random = sourceTheme.seed === undefined ? Math.random : seededRandom(sourceTheme.seed);
   const totalCells = sourceTheme.rows * sourceTheme.cols;
 
   const totalTokens = sourceTheme.targets.reduce(
@@ -98,9 +100,9 @@ export function generateBoard(
     0,
   );
 
-  if (totalTokens !== totalCells) {
+  if (!totalTokens || totalTokens > totalCells) {
     throw new Error(
-      `${sourceTheme.titleEnglish}: runtime board generation expects exactly ` +
+      `${sourceTheme.titleEnglish}: runtime board generation supports up to ` +
         `${totalCells} tokens, but this theme has ${totalTokens}.`,
     );
   }
@@ -109,11 +111,12 @@ export function generateBoard(
    * Shuffling targets changes which part of the board each word occupies.
    * The word itself and its Sanskrit tokens are never altered.
    */
-  const shuffledTargets = shuffle(sourceTheme.targets);
+  const shuffledTargets = shuffle(sourceTheme.targets, random);
 
   const route = buildRoute(
     sourceTheme.rows,
     sourceTheme.cols,
+    random,
   );
 
   const grid: string[][] = Array.from(
@@ -149,9 +152,15 @@ export function generateBoard(
       };
     });
 
+  const filler = sourceTheme.targets.flatMap(target => target.tokens);
+  for (const cell of route.slice(cursor)) {
+    grid[cell.row][cell.col] = filler[Math.floor(random() * filler.length)];
+  }
+
   return {
     ...sourceTheme,
     grid,
     targets: generatedTargets,
   };
 }
+

@@ -24,6 +24,7 @@ export type TargetWord =
   };
 
 export type ThemeData = {
+  seed?: number;
   id: string;
   order?: number;
 

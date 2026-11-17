@@ -9,7 +9,8 @@
     "preview": "vite preview",
     "validate:puzzles": "node scripts/validate-puzzles.mjs",
     "test:boards": "node --experimental-strip-types scripts/test-random-boards.mjs",
-    "test:ci": "npm run validate:puzzles && npm run test:boards && npm run build"
+    "test:ci": "npm run validate:puzzles && npm run test:boards && npm run test:gita && npm run build",
+    "test:gita": "node --experimental-strip-types scripts/test-gita-puzzles.mjs"
   },
   "dependencies": {
     "firebase": "^12.19.0",
