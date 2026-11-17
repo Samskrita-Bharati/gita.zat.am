@@ -11,8 +11,7 @@ rebuild the selected shloka in its original order.
 2. A correct match locks the card in place. A wrong match costs 5 points.
 3. Complete every match to see your final score and save it to the leaderboard
    when signed in.
-4. Use **Next shloka** to switch between today's two shlokas. A URL such as
-   `?id=1` selects that shloka when it is scheduled for today. Missing, invalid,
+4. A URL such as `?id=1` selects that shloka when it is scheduled for today. Missing, invalid,
    or past IDs fall back to today's first shloka; IDs beyond today's second
    fall back to today's second shloka.
 

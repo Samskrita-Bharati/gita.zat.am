@@ -9,7 +9,7 @@ const source = html.match(/<script type="text\/javascript">([\s\S]*?)<\/script>/
 assert.ok(source, "Game script is present");
 
 function game(storage = new Map()) {
-  const elements = { completionSaveStatus: { textContent: "" }, scoreSaveStatus: { textContent: "", className: "" }, dailyGameStatus: { textContent: "" }, nextVerse: { disabled: true } };
+  const elements = { completionSaveStatus: { textContent: "" }, scoreSaveStatus: { textContent: "", className: "" }, dailyGameStatus: { textContent: "" } };
   const submissions = [];
   function $(argument) {
     if (typeof argument === "function") return;
@@ -66,7 +66,7 @@ test("the board starts only after today's shloka loads", async () => {
   await context.loadDailyGame();
   assert.equal(initialized, true);
   assert.equal(context.dailyVerse.id, 2);
-  assert.equal(elements.nextVerse.disabled, false);
+  assert.match(elements.dailyGameStatus.textContent, /shloka/);
 });
 
 test("a loading failure leaves the game disabled and informs the player", async () => {
@@ -76,11 +76,10 @@ test("a loading failure leaves the game disabled and informs the player", async 
   context.init = () => { initialized = true; };
   await context.loadDailyGame();
   assert.equal(initialized, false);
-  assert.equal(elements.nextVerse.disabled, true);
   assert.match(elements.dailyGameStatus.textContent, /could not be loaded/);
 });
 
-test("the next button selects only the other verse from today", () => {
+test("verse navigation selects only the other verse from today", () => {
   const { context } = game();
   context.goToNextVerse();
   assert.equal(new URL(context.window.location.next).searchParams.get("id"), "2");

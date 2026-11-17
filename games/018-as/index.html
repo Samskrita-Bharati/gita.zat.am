@@ -49,7 +49,6 @@ async function loadDailyGame() {
     dailyVerse = challenge.verse;
     dailyDate = challenge.date;
     todayIds = challenge.todayIds;
-    document.getElementById('nextVerse').disabled = todayIds.length < 2;
     status.textContent = 'Arrange the words of today’s shloka.';
     init();
   } catch (error) {
@@ -420,10 +419,6 @@ function matchCardToSlot(slot, card) {
       <span id="matchesValue" class="zatam-game-stat-value">0 / 0</span>
     </div>
   </section>
-
-  <div class="zatam-game-actions">
-    <button id="nextVerse" class="zatam-game-btn zatam-game-btn-secondary" type="button" onclick="goToNextVerse()" disabled>Next shloka</button>
-  </div>
 
   <section id="content" class="zatam-game-play-area ordering-game-board" aria-label="Subhāṣita ordering game">
     <div id="cardPile" aria-label="Number cards"></div>
