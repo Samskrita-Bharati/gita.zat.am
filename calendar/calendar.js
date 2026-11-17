@@ -129,15 +129,7 @@ function renderDetails(verses) {
     const status = document.createElement("p");
     status.className = "verse-completion";
     status.textContent = isCompleted(selectedDate, verse) ? "✓ Completed" : "Not completed yet";
-    const play = document.createElement("a");
-    play.className = "calendar-play-link";
-    const gameUrl = new URL("../games/057-gita-typing/", window.location.href);
-    gameUrl.searchParams.set("date", dateKey(selectedDate));
-    gameUrl.searchParams.set("id", verse.id);
-    play.href = gameUrl.href;
-    play.textContent = "Practice this shloka";
-    play.setAttribute("aria-label", `Practice chapter ${verse.ch}, verse ${verse.vn} in the typing game`);
-    card.append(heading, text, transliteration, status, play);
+    card.append(heading, text, transliteration, status);
     return card;
   }));
 }

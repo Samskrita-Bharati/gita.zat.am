@@ -62,7 +62,7 @@ test("completion marks appear for the matching date and verse", async () => {
   let { elements } = await loadCalendar("?date=2026-10-20", store);
   assert.ok(elements.calendarGrid.children.flatMap((cell) => cell.children).some((link) => link.children?.some((child) => String(child.textContent).includes("1.1 ✓"))));
   assert.equal(elements.selectedDateVerses.children[0].children[3].textContent, "✓ Completed");
-  assert.match(elements.selectedDateVerses.children[0].children[4].href, /date=2026-10-20&id=1/);
+  assert.equal(elements.selectedDateVerses.children[0].children.length, 4);
   ({ elements } = await loadCalendar("?date=2026-10-21", store));
   assert.equal(elements.selectedDateVerses.children[0].children[3].textContent, "Not completed yet");
 });
