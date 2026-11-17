@@ -118,6 +118,15 @@ function createVerseCard(verse, games) {
     option.className = "game-picker-option";
     option.setAttribute("aria-label", game.title.trim());
     option.title = game.title.trim();
+    if (!/^https?:\/\//i.test(game.dir)) {
+      const gameDirectory = game.dir.replace(/\/index\.html$/i, "");
+      const cover = document.createElement("img");
+      cover.src = game.cover || `./${gameDirectory}/cover.jpg`;
+      cover.alt = "";
+      cover.loading = "lazy";
+      cover.onerror = () => cover.remove();
+      option.append(cover);
+    }
     const href = /^https?:\/\//i.test(game.dir)
       ? game.dir
       : `./${game.dir}${game.dir.endsWith(".html") ? "" : "/"}`;
