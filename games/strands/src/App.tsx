@@ -5,7 +5,7 @@ import type {
   ScoreBreakdown,
   Theme,
 } from './types/gameTypes';
-import { loadPreviewPuzzles, previewIndex } from './services/gitaContentService';
+import { loadShlokaPuzzles } from './services/gitaContentService';
 import type { GitaPuzzle } from './services/gitaContentService';
 
 import { pathText, targetForPath } from './utils/board';
@@ -77,7 +77,7 @@ export default function App() {
   useState<GitaPuzzle[]>([]);
   const [loadError,setLoadError] = useState('');
 
-  const [active,setActive] = useState(() => previewIndex(window.location.search));
+  const [active,setActive] = useState(0);
 
   const [selection,setSelection] = useState<Cell[]>([]);
 
@@ -154,7 +154,7 @@ const foundRequiredCount = useMemo(
 
   useEffect(() => {
 
-    loadPreviewPuzzles()
+    loadShlokaPuzzles()
 
       .then(setThemes)
 
@@ -169,13 +169,13 @@ const foundRequiredCount = useMemo(
   useEffect(() => {
     if (!sourceTheme) return;
     const url = new URL(window.location.href);
-    url.searchParams.set('id', String(sourceTheme.verseId));
+    url.searchParams.delete('id');
     window.history.replaceState(null, '', url);
   }, [sourceTheme]);
 
   function readyMessage() {
 
-    return language === 'sa' ? 'सिद्धे सति “आरभताम्” नुदतु।' : 'Press Start Puzzle when you are ready.';
+    return language === 'sa' ? 'समीपकोष्ठान् योजयित्वा श्लोकपदानि अन्वेषयतु।' : 'Connect adjacent letters to find the shloka words.';
 
   }
 
@@ -193,7 +193,7 @@ const foundRequiredCount = useMemo(
 
     setHintsRemaining(nextTheme?.startingHints ?? 0);
 
-    setStarted(false);
+    setStarted(true);
 
     setElapsedSeconds(0);
 
@@ -237,13 +237,13 @@ const foundRequiredCount = useMemo(
 
   useEffect(() => {
 
-    if (!started || done || answerMode) return;
+    if (!started || done || answerMode || tutorialOpen) return;
 
     const timer = window.setInterval(() => setElapsedSeconds((seconds) => seconds + 1), 1000);
 
     return () => window.clearInterval(timer);
 
-  }, [started,done,answerMode]);
+  }, [started,done,answerMode,tutorialOpen]);
 
 const hasInProgressRun = Boolean(
 
@@ -306,20 +306,6 @@ const hasInProgressRun = Boolean(
     setTutorialOpen(false);
 
     localStorage.setItem(TUTORIAL_KEY,'1');
-
-  }
-
-  function startPuzzle() {
-
-    if (started) return;
-
-    setStarted(true);
-
-    setMessage(language === 'sa'
-
-      ? 'सर्वान् विषयशब्दान् अन्वेषयतु। समयगणना आरब्धा!'
-
-      : 'Find the shloka words. The timer is running!');
 
   }
 
@@ -724,10 +710,6 @@ const hasInProgressRun = Boolean(
 
                 elapsedSeconds={elapsedSeconds}
 
-                started={started}
-
-                onStart={startPuzzle}
-
                 language={language}
 
                 theme={theme}
@@ -744,7 +726,7 @@ const hasInProgressRun = Boolean(
 
                 revealed={revealed}
 
-                disabled={!started || done || answerMode}
+                disabled={!started || done || answerMode || tutorialOpen}
 
                 onChange={setSelection}
 
@@ -840,7 +822,7 @@ const hasInProgressRun = Boolean(
 
       />
 
-      <TutorialOverlay open={tutorialOpen && !started && !answerMode && !showAnswerConfirm} language={language} onClose={closeTutorial} />
+      <TutorialOverlay open={tutorialOpen && !answerMode && !showAnswerConfirm} language={language} onClose={closeTutorial} />
 
       <ShowAnswerModal
 

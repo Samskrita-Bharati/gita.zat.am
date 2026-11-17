@@ -4,8 +4,6 @@ import { tr } from '../i18n';
 
 type Props = {
   elapsedSeconds: number;
-  started: boolean;
-  onStart: () => void;
   language: Language;
   theme: Theme;
 };
@@ -20,14 +18,14 @@ function formatTime(seconds: number) {
   return `${String(Math.floor(safe / 60)).padStart(2,'0')}:${String(safe % 60).padStart(2,'0')}`;
 }
 
-export default function TimerCard({ elapsedSeconds, started, onStart, language, theme }: Props) {
+export default function TimerCard({ elapsedSeconds, language, theme }: Props) {
   const bonus = speedBonusFor(theme, elapsedSeconds);
   const lost = theme.maxSpeedBonus - bonus;
   const progress = Math.min(1, lost / Math.max(1, theme.maxSpeedBonus));
   return (
     <section className="timer-card count-up">
       <div className="timer-copy">
-        <small>{started ? tr(language,'elapsed') : tr(language,'ready')}</small>
+        <small>{tr(language,'elapsed')}</small>
         <strong>{formatTime(elapsedSeconds)}</strong>
         <span>{tr(language,'speedBonusNow')}: <b>+{bonus}</b></span>
       </div>
@@ -38,7 +36,7 @@ export default function TimerCard({ elapsedSeconds, started, onStart, language, 
       >
         <span>+{bonus}</span>
       </div>
-      {!started && <button className="start-button" onClick={onStart}>{tr(language,'startPuzzle')}</button>}
     </section>
   );
 }
+

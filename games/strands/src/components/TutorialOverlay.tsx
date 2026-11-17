@@ -37,8 +37,8 @@ export default function TutorialOverlay({ open, language, onClose }: Props) {
 
         <p className="tutorial-note">
           {sa
-            ? 'प्रथमस्तरः सरलः। द्वितीयस्तरे द्विदिशापन्थाः, तृतीयस्तरे अधिकवक्रपन्थाः।'
-            : 'Level 1 teaches the mechanic. Level 2 uses two-direction paths. Level 3 adds more bends and diagonals.'}
+            ? 'प्रत्येककोष्ठे एकः अक्षरसमूहः अस्ति। निर्देशानन्तरं क्रीडा स्वतः आरभते।'
+            : 'Each cell holds a Sanskrit grapheme. Close these instructions to play; the timer pauses while they are open.'}
         </p>
 
         <button className="tutorial-start" onClick={onClose}>
@@ -48,3 +48,4 @@ export default function TutorialOverlay({ open, language, onClose }: Props) {
     </div>
   );
 }
+
