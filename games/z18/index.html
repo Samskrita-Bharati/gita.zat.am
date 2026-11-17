@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>BodhaPlay scrambler</title>
+	<link rel="stylesheet" href="../../css/global.css" />
+	<link rel="stylesheet" href="../shared/game-theme.css" />
+	<style>
+		#z18-game-frame {
+			position: relative;
+			width: min(100%, 1024px);
+			aspect-ratio: 4 / 3;
+			margin: 0 auto;
+			overflow: hidden;
+		}
+		#z18-game-frame canvas {
+			display: block;
+			width: 100% !important;
+			height: auto !important;
+		}
+	</style>
+	<script type="module" src="../../navbar/navbar-loader.js"></script>
+	<script type="module" src="../../navbar/bilingual-toggle.js"></script>
+	<script type="module">
+		import { getShlokaTextFromUrl, splitShlokaWords, splitWordIntoGraphemes } from "../shared/shloka-utils.js";
+		import { initGameScore, submitGameScore, scoreFromPenalties } from "../shared/game-score.js";
+		import { cleanShlokaText } from "../../shlokasToday/shlokasToday.js";
+		import { GAME_CONFIG } from "./config.js";
+		import zim from "https://zimjs.org/cdn/019/zim_pizzazz";
+		const rootStyles = getComputedStyle(document.documentElement);
+		const rootColor = (name) => rootStyles.getPropertyValue(name).trim();
+		const themeColors = {
+			navy: rootColor("--navy"),
+			navyDark: rootColor("--navy-dark"),
+			gold: rootColor("--gold"),
+			goldLight: rootColor("--gold-light"),
+			cream: rootColor("--cream"),
+			creamDark: rootColor("--cream-dark"),
+			white: rootColor("--white"),
+			danger: rootColor("--danger"),
+			accentCoral: rootColor("--accent-coral"),
+			accentBlue: rootColor("--accent-blue"),
+			success: rootColor("--success"),
+		};
+		let rows = [];
+		let words = [];
+		let scrambledGraphemesByWord = [];
+		let remainingWords = [];
+		let gameId = null;
+		let currentWordIndex = 0;
+		let scrambler;
+		let emitter;
+		let score = 0;
+		let totalMoves = 0;
+		let wordTransitioning = false;
+		function done() {
+			if (wordTransitioning) return;
+			wordTransitioning = true;
+			const finishedScrambler = scrambler;
+			const movesForWord = score;
+			totalMoves += score;
+			window.setTimeout(function () {
+				try {
+					finishedScrambler?.dispose?.();
+				} catch (error) {
+					console.warn("[z18] Could not dispose completed scrambler:", error);
+				}
+				scrambler = null;
+				startNextWord();
+			}, 0);
+			emitter.spurt(150);
+			const row = rows[currentWordIndex];
+			row.scrambledLabel.dispose();
+			new Label({
+				text: words[currentWordIndex],
+				size: 20,
+				font: "Arial",
+				color: themeColors.success,
+				bold: true,
+			}).pos(42, 0, LEFT, CENTER, row.box);
+			new Label("Move:", 20, "Arial", themeColors.accentBlue).pos(300, 0, LEFT, CENTER, row.box);
+			new Label(String(movesForWord), 20, "Arial", black).pos(360, 0, LEFT, CENTER, row.box);
+			S.update();
+		}
+		function shuffle(items) {
+			const shuffled = [...items];
+			for (let index = shuffled.length - 1; index > 0; index--) {
+				const randomIndex = Math.floor(Math.random() * (index + 1));
+				[shuffled[index], shuffled[randomIndex]] = [shuffled[randomIndex], shuffled[index]];
+			}
+			return shuffled;
+		}
+		function sampleWords(candidates, count) {
+			return shuffle(candidates).slice(0, count);
+		}
+		function scrambleGraphemes(graphemes) {
+			const scrambled = shuffle(graphemes);
+			if (scrambled.length > 1 && scrambled.every((value, index) => value === graphemes[index])) {
+				scrambled.push(scrambled.shift());
+			}
+			return scrambled;
+		}
+		function startNextWord() {
+			if (remainingWords.length === 0) {
+				const totalLetters = words.reduce((count, word) => count + splitWordIntoGraphemes(word).length, 0);
+				const extraMoves = Math.max(0, totalMoves - totalLetters);
+				const finalScore = scoreFromPenalties({ mistakes: extraMoves, mistakePenalty: 2 });
+				const end = new Pane({
+					content: `Score : ${finalScore} / 100\nMoves : ${totalMoves}\n\n`,
+					backgroundColor: themeColors.creamDark,
+					color: themeColors.navyDark,
+					corner: 16,
+				});
+				const status = new Label("Saving score…", 18, "Arial", themeColors.navyDark).center(end).mov(50, 55);
+				const cancel = new Button({
+					width: 120,
+					height: 50,
+					label: "Done",
+					backgroundColor: themeColors.accentCoral,
+					rollBackgroundColor: themeColors.danger,
+					downBackgroundColor: themeColors.danger,
+					color: themeColors.white,
+					corner: 12,
+				}).center(end).mov(-100);
+				const redo = new Button({
+					width: 120,
+					height: 50,
+					label: "पुनः 🤔",
+					backgroundColor: themeColors.gold,
+					rollBackgroundColor: themeColors.goldLight,
+					downBackgroundColor: themeColors.navy,
+					color: themeColors.navyDark,
+					corner: 12,
+				}).center(end).mov(100);
+				cancel.on("click", () => end.hide());
+				redo.on("click", () => window.location.reload());
+				end.show();
+				end.noMouse();
+				timeout(1, () => end.mouse());
+				submitGameScore(finalScore, {
+					metrics: { totalMoves, totalLetters, extraMoves, shlokaId: gameId ?? "daily" },
+				}).then((result) => {
+					status.text = result.ok ? "Score saved ✓" : "Sign in to save your score.";
+					S.update();
+				}).catch((error) => {
+					console.error("[z18] Score submission failed:", error);
+					status.text = "Score could not be saved.";
+					S.update();
+				});
+				return;
+			}
+
+			const randomIndex = rand(remainingWords.length - 1);
+			const currentWord = remainingWords.splice(randomIndex, 1)[0];
+			currentWordIndex = currentWord.index;
+			score = 0;
+			wordTransitioning = false;
+			const graphemes = splitWordIntoGraphemes(currentWord.word);
+			const tileSpacing = 5;
+			const maxTileSize = 150;
+			const horizontalPadding = 48;
+			const tileSize = Math.min(
+				maxTileSize,
+				(W - horizontalPadding - tileSpacing * (graphemes.length - 1)) / graphemes.length,
+			);
+			const tileFontSize = Math.round(56 * tileSize / maxTileSize);
+			const tiles = graphemes.map((letter) => new zim.Label({
+				text: letter,
+				color: themeColors.navyDark,
+				size: tileFontSize,
+				backing: new zim.Rectangle(
+					tileSize,
+					tileSize,
+					new RadialColor([themeColors.goldLight, themeColors.gold], [0, 1], 0, 0, 100, 0, 0, 0),
+					null,
+					0,
+					18,
+				),
+				align: CENTER,
+				valign: CENTER,
+			}));
+			const tileSet = new Tile({
+				obj: tiles,
+				unique: true,
+				cols: graphemes.length,
+				rows: 1,
+				spacingH: tileSpacing,
+				spacingV: tileSpacing,
+			});
+			scrambler = new Scrambler({ tile: tileSet, keys: graphemes, keyProperty: "text" }).pos(0, -H * 0.25, CENTER, CENTER);
+			scrambler.on("complete", done);
+			scrambler.on("pressup", () => score++);
+			S.update();
+		}
+		const search = window.location.search;
+		const idValues = new URLSearchParams(search).getAll("id");
+		const parsedId = idValues.length === 1 ? idValues[0] : null;
+		const numericId = parsedId && /^[1-9]\d*$/.test(parsedId) ? Number(parsedId) : null;
+		gameId = Number.isSafeInteger(numericId) ? numericId : null;
+		const shlokaText = await getShlokaTextFromUrl(search);
+		let verseReference = null;
+		try {
+			const versesResponse = await fetch(new URL("../../assets/bhagavad-gita-verses.json", import.meta.url));
+			if (!versesResponse.ok) throw new Error(`Verse data request failed: ${versesResponse.status}`);
+			const verses = await versesResponse.json();
+			verseReference = verses.find((verse) => cleanShlokaText(verse.txt) === shlokaText)
+				?? verses.find((verse) => verse.id === gameId)
+				?? null;
+		} catch (error) {
+			console.error("[z18] Could not load chapter and verse:", error);
+		}
+		const eligibleWords = splitShlokaWords(shlokaText)
+			.filter((word) => {
+				const graphemeCount = splitWordIntoGraphemes(word).length;
+				return graphemeCount >= GAME_CONFIG.minWordGraphemes
+					&& graphemeCount <= GAME_CONFIG.maxWordGraphemes;
+			});
+		words = sampleWords(eligibleWords, GAME_CONFIG.randomWordCount);
+		scrambledGraphemesByWord = words.map((word) => scrambleGraphemes(splitWordIntoGraphemes(word)));
+		console.group("[z18] Shloka game input");
+		console.log("Requested shloka id:", gameId ?? "today's default");
+		console.log("Shloka text:", shlokaText);
+		console.log("Eligible words:", eligibleWords);
+		console.log("Selected words:", words);
+		console.log("Scrambled graphemes by word:", scrambledGraphemesByWord);
+		console.log("Word grapheme segments:");
+		words.forEach((word, index) => {
+			console.log(`${index + 1}. ${word}`, splitWordIntoGraphemes(word));
+		});
+		console.groupEnd();
+		if (words.length === 0) {
+			document.body.textContent = "No shloka found for this id.";
+			throw new Error("No shloka text available for this game.");
+		}
+		initGameScore({
+			gameId: "z18",
+			gameName: "BodhaPlay शब्दावली",
+			levelId: gameId ? String(gameId) : "daily",
+			levelName: gameId ? `Shloka ${gameId}` : "Daily shloka",
+		});
+		new Frame("z18-game-frame", 1024, 768, themeColors.creamDark, themeColors.cream, ready);
+		function ready() {
+			const bar = new Rectangle(W, 40, themeColors.navy, null, 0, 10).addTo();
+			F.makeIcon({ box: themeColors.navy }).scaleTo(bar, 90, 90).loc(10, 3);
+			const referenceText = verseReference
+				? `Chapter - ${verseReference.ch}   Verse - ${verseReference.vn}`
+				: "Chapter - —   Verse - —";
+			new Label(referenceText, 25, "Arial", themeColors.goldLight).pos(0, 2, CENTER, CENTER, bar);
+			rows = [];
+			const rowHeight = 48;
+			const listTop = H * 0.65;
+			const listHeight = H - listTop;
+			loop(words.length, i => {
+				const row = { box: new Container(W, rowHeight) };
+				new Label(`${i + 1}.`, 20, "Arial", black)
+					.pos(12, 0, LEFT, CENTER, row.box);
+				row.scrambledLabel = new Label(scrambledGraphemesByWord[i].join(" "), 20, "Arial", themeColors.danger)
+					.pos(42, 0, LEFT, CENTER, row.box);
+				row.box.mouseChildren = false;
+				rows.push(row);
+			});
+			new List({
+				backdropColor: themeColors.white,
+				corner: 14,
+				paddingH: 0,
+				paddingV: 0,
+				valign: TOP,
+				indent: 0,
+				width: W,
+				height: listHeight,
+				viewNum: Math.max(1, Math.floor(listHeight / rowHeight)),
+				list: rows.map(({ box }) => box),
+				dropCopy: false,
+				vertical: true,
+				scrollBarActive: true,
+				scrollBarDrag: true,
+				scrollBarV: true,
+				scrollWheel: true,
+				dropWidth: W,
+				dropHeight: rowHeight,
+				dropHitTest: "reg",
+				dropEnd: false
+			}).loc(0, listTop);
+			remainingWords = words.map((word, index) => ({ word, index }));
+			startNextWord();
+			emitter = new Emitter({
+				obj: new Rectangle(15, 15, [themeColors.gold, themeColors.accentCoral, themeColors.accentBlue, themeColors.success]),
+				startPaused: true,
+				random: {
+					scale: { min: 1, max: 4 },
+					rotation: { min: 0, max: 360 }
+				},
+				angle: { min: 180, max: 270 },
+				vertical: true,
+				height: scrambler.height,
+				width: 10,
+				force: { min: 4, max: 8 },
+				num: 5 // five at a time
+			}).pos(0, -H * 0.25, CENTER, CENTER);
+		}
+	</script>
+</head>
+<body data-page="games" class="zatam-themed-game">
+	<div id="navbar-mount"></div>
+	<div id="z18-game-frame"></div>
+</body>
+</html>

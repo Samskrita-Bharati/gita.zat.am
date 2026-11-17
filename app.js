@@ -10,8 +10,7 @@ export const menu = [
   {
     id: 19,
     title: "BodhaPlay: शब्दावली",
-    dir: "games/z18/z18.html",
-    cover: "./games/assets/bp26c.png",
+    dir: "games/z18",
     desc: `Unscramble Sanskrit vocabulary with the ZIM game.`,
   },
   {
