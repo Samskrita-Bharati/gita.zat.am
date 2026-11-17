@@ -9,6 +9,14 @@ import {
   auth,
 } from "../api/firebase-config.js";
 
+import {
+  getDestination,
+  getPreferencesUrl,
+  preserveRedirectOnLink,
+} from "./safe-redirect.js";
+
+preserveRedirectOnLink(document.querySelector('a[data-cy="signup-link"]'));
+
 const loginForm = document.getElementById("login-form");
 const emailInput = document.getElementById("signin-email");
 const passwordInput = document.getElementById("signin-password");
@@ -50,22 +58,9 @@ loginForm.addEventListener("submit", async (e) => {
     message.style.color = "green";
 
     setTimeout(() => {
-      // Redirect to preferences if not set
-      if (!profile.preferencesSet) {
-        window.location.href = "preferences.html";
-      } else {
-        // Get redirect parameter from URL
-        const urlParams = new URLSearchParams(window.location.search);
-        const redirectUrl = urlParams.get("redirect");
-
-        if (redirectUrl) {
-          // Redirect to the original page
-          window.location.href = decodeURIComponent(redirectUrl);
-        } else {
-          // Default redirect to main page
-          window.location.href = "../index.html";
-        }
-      }
+      window.location.assign(
+        profile && profile.preferencesSet ? getDestination() : getPreferencesUrl(),
+      );
     }, 1000);
   } catch (error) {
     console.error(error);
@@ -84,22 +79,7 @@ googleSignInBtn.addEventListener("click", async () => {
     message.style.color = "green";
 
     setTimeout(() => {
-      // Check if new user first - they should set preferences
-      if (isNewUser === true) {
-        // Default redirect to preferences page
-        window.location.href = "./preferences.html";
-      } else {
-        // Get redirect parameter from URL for returning users
-        const urlParams = new URLSearchParams(window.location.search);
-        const redirectUrl = urlParams.get("redirect");
-        if (redirectUrl) {
-          // Redirect to the original page
-          window.location.href = decodeURIComponent(redirectUrl);
-        } else {
-          // Default redirect to main page
-          window.location.href = "../index.html";
-        }
-      }
+      window.location.assign(isNewUser ? getPreferencesUrl() : getDestination());
     }, 1000);
   } catch (error) {
     console.error(error);

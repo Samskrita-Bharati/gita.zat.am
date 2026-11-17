@@ -137,6 +137,12 @@ a:hover {
   color: var(--navy-dark);
 }
 
+a[aria-disabled="true"],
+a[aria-disabled="true"]:hover {
+  color: var(--muted);
+  cursor: not-allowed;
+}
+
 button,input,select,textarea {
   color: inherit;
   font: inherit;
