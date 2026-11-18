@@ -228,24 +228,70 @@ function finish(outcome) {
   );
 }
 
-function start() {
+async function start() {
+  // Prevent multiple starts while Firebase checks the account.
+  if (start.preparing) return;
+
+  start.preparing = true;
+
   try {
-    const puzzle = makePuzzle(source.text, source.previous, source.next);
+    await prepareLeaderboard();
+
+    const playerUid = getPlayerUid();
+
+    if (!playerUid) {
+      say(
+        "This page cannot detect your signed-in account. " +
+          "Sign in using the navbar in this same browser tab.",
+        "error",
+      );
+
+      return;
+    }
+
+    const puzzle = makePuzzle(
+      source.text,
+      source.previous,
+      source.next,
+    );
+
     clearInterval(timer);
+
     run = createRun(puzzle);
+
+    // Capture the account and timing for this exact round.
+    run.startedAt = run.deadline - 60000;
+    run.playerUid = playerUid;
+    run.saveStarted = false;
+
     selected = 0;
+
     $("intro").hidden = true;
     $("board").hidden = false;
     $("result").hidden = true;
+
     $("time").textContent = "1:00";
     $("time").classList.remove("time-warning");
+
+    setLeaderboardMessage("");
+
     say("Select a blank, then choose its missing word.");
+
     render();
+
     timer = setInterval(updateTime, 200);
   } catch (error) {
-    say(error.message, "error");
+    console.error("[059-fitb] Could not start round:", error);
+
+    say(
+      "The round could not start. Check the browser Console.",
+      "error",
+    );
+  } finally {
+    start.preparing = false;
   }
 }
+
 $("start").onclick = start;
 
 $("again").onclick = start;
