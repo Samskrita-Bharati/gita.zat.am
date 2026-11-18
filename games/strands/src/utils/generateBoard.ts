@@ -1,4 +1,6 @@
+import { adjacent, cellKey } from './board.ts';
 import { seededRandom } from './seededRandom.ts';
+import { randomAkshara } from './randomAkshara.ts';
 import type {
   Cell,
   Theme,
@@ -89,78 +91,88 @@ function buildRoute(rows: number, cols: number, random: () => number): Cell[] {
 
   return route;
 }
-export function generateBoard(
-  sourceTheme: ThemeData,
-): Theme {
-  const random = sourceTheme.seed === undefined ? Math.random : seededRandom(sourceTheme.seed);
-  const totalCells = sourceTheme.rows * sourceTheme.cols;
+// Try independent randomized paths. Backtrack across words as well as within
+// a word, and cap the search so even a tightly packed board loads quickly.
+function findSpreadPaths(targets: ThemeData['targets'], rows: number, cols: number, random: () => number): Cell[][] | null {
+  const cells = rowSnake(rows, cols);
+  const neighbors = cells.map(cell => cells.map((next, i) => adjacent(cell, next) ? i : -1).filter(i => i >= 0));
+  const occupied = new Set<number>();
+  const starts: number[] = [];
+  const paths: Cell[][] = [];
+  let budget = 5000;
+  const distance = (a: number, b: number) => Math.abs(cells[a].row - cells[b].row) + Math.abs(cells[a].col - cells[b].col);
 
-  const totalTokens = sourceTheme.targets.reduce(
-    (sum, target) => sum + target.tokens.length,
-    0,
-  );
-
-  if (!totalTokens || totalTokens > totalCells) {
-    throw new Error(
-      `${sourceTheme.titleEnglish}: runtime board generation supports up to ` +
-        `${totalCells} tokens, but this theme has ${totalTokens}.`,
-    );
-  }
-
-  /*
-   * Shuffling targets changes which part of the board each word occupies.
-   * The word itself and its Sanskrit tokens are never altered.
-   */
-  const shuffledTargets = shuffle(sourceTheme.targets, random);
-
-  const route = buildRoute(
-    sourceTheme.rows,
-    sourceTheme.cols,
-    random,
-  );
-
-  const grid: string[][] = Array.from(
-    { length: sourceTheme.rows },
-    () => Array(sourceTheme.cols).fill(''),
-  );
-
-  let cursor = 0;
-
-  const generatedTargets: TargetWord[] =
-    shuffledTargets.map((target) => {
-      const path = route.slice(
-        cursor,
-        cursor + target.tokens.length,
-      );
-
-      if (path.length !== target.tokens.length) {
-        throw new Error(
-          `${sourceTheme.titleEnglish}: could not generate a complete path for ${target.word}.`,
-        );
+  function place(wordIndex: number): boolean {
+    if (wordIndex === targets.length) return true;
+    if (budget <= 0) return false;
+    const candidates = shuffle(cells.map((_, i) => i).filter(i => !occupied.has(i)), random);
+    if (starts.length) {
+      const spread = (i: number) => Math.min(...starts.map(start => distance(i, start)));
+      candidates.sort((a, b) => spread(b) - spread(a));
+    }
+    const path: number[] = [];
+    function extend(i: number): boolean {
+      if (budget-- <= 0) return false;
+      occupied.add(i);
+      path.push(i);
+      if (path.length === targets[wordIndex].tokens.length) {
+        paths[wordIndex] = path.map(index => cells[index]);
+        starts.push(path[0]);
+        if (place(wordIndex + 1)) return true;
+        starts.pop();
+      } else {
+        for (const next of shuffle(neighbors[i], random)) {
+          if (!occupied.has(next) && extend(next)) return true;
+          if (budget <= 0) break;
+        }
       }
-
-      path.forEach((cell, index) => {
-        grid[cell.row][cell.col] =
-          target.tokens[index];
-      });
-
-      cursor += target.tokens.length;
-
-      return {
-        ...target,
-        path,
-      };
-    });
-
-  const filler = sourceTheme.targets.flatMap(target => target.tokens);
-  for (const cell of route.slice(cursor)) {
-    grid[cell.row][cell.col] = filler[Math.floor(random() * filler.length)];
+      path.pop();
+      occupied.delete(i);
+      return false;
+    }
+    for (const i of candidates) {
+      if (extend(i)) return true;
+      if (budget <= 0) break;
+    }
+    return false;
   }
-
-  return {
-    ...sourceTheme,
-    grid,
-    targets: generatedTargets,
-  };
+  return place(0) ? paths : null;
 }
 
+export function generateBoard(sourceTheme: ThemeData, layoutSeed = sourceTheme.seed): Theme {
+  const random = layoutSeed === undefined ? Math.random : seededRandom(layoutSeed);
+  const { rows, cols } = sourceTheme;
+  const totalCells = rows * cols;
+  const totalTokens = sourceTheme.targets.reduce((sum, target) => sum + target.tokens.length, 0);
+  if (!totalTokens || totalTokens > totalCells || sourceTheme.targets.some(target => !target.tokens.length)) {
+    throw new Error(`${sourceTheme.titleEnglish}: targets must fit within ${totalCells} cells.`);
+  }
+
+  const targets = shuffle(sourceTheme.targets, random);
+  const route = buildRoute(rows, cols, random);
+  // Legacy fixtures stay on their original placement rule. Gita boards try
+  // spread-out paths first. A full route is always available as a fallback.
+  let paths: Cell[][] | null = null;
+  if (sourceTheme.seed !== undefined) {
+    targets.sort((a, b) => b.tokens.length - a.tokens.length);
+    paths = findSpreadPaths(targets, rows, cols, random);
+  }
+
+  const grid: string[][] = Array.from({ length: rows }, () => Array(cols).fill(''));
+  const occupied = new Set<string>();
+  let cursor = 0;
+  const generatedTargets: TargetWord[] = targets.map((target, i) => {
+    const path = paths?.[i] ?? route.slice(cursor, cursor + target.tokens.length);
+    cursor += target.tokens.length;
+    path.forEach((cell, index) => {
+      grid[cell.row][cell.col] = target.tokens[index];
+      occupied.add(cellKey(cell));
+    });
+    return { ...target, path };
+  });
+
+  for (const cell of route) {
+    if (!occupied.has(cellKey(cell))) grid[cell.row][cell.col] = randomAkshara(random);
+  }
+  return { ...sourceTheme, grid, targets: generatedTargets };
+}

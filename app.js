@@ -33,6 +33,13 @@ export const menu = [
     cover: "./games/assets/bp26c.png",
     desc: `Match Sanskrit words with their sounds.`,
   },
+  {
+  id: 63,
+  title: "Gita Strands",
+  dir: "games/strands",
+  cover: "./games/strands/cover.svg",
+  desc: "Connect Sanskrit letters to discover hidden words from the shloka.",
+},
 ];
 
 // =====================================================

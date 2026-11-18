@@ -8,7 +8,10 @@ type VerseRecord = { id: number; ch: number; vn: number; txt: string };
 export type ShlokaContent = { id: number; chapter: number; verse: number; text: string; words: string[] };
 export type GitaPuzzle = ThemeData & { verseId: number; reference: string; text: string; seed: number };
 // Shared word arrays change the target pool. Keep prior preview scores separate.
-export const PUZZLE_VERSION = 2;
+export const PUZZLE_VERSION = 3;
+export const BOARD_ROWS = 4;
+export const BOARD_COLS = 4;
+const BOARD_CAPACITY = BOARD_ROWS * BOARD_COLS;
 let recordsPromise: Promise<VerseRecord[]> | undefined;
 
 function loadRecords(): Promise<VerseRecord[]> {
@@ -38,23 +41,22 @@ function resolveRecord(records: VerseRecord[], text: string): VerseRecord {
 export function buildGitaPuzzle(verse: ShlokaContent): GitaPuzzle {
   const id = `gita-${verse.id}-v${PUZZLE_VERSION}`;
   const seed = seedFromId(id);
-  const candidates = shuffleWith(eligibleWords(verse.words), seededRandom(seed)).slice(0, 5);
+  const candidates = shuffleWith(eligibleWords(verse.words, BOARD_CAPACITY), seededRandom(seed)).slice(0, 5);
   if (!candidates.length) throw new Error(`Shloka ${verse.chapter}.${verse.verse} has no words of at least two cells that fit the board.`);
   let selected: typeof candidates = [];
   for (let count = Math.min(3, candidates.length); count >= 1 && !selected.length; count--) {
     const choose = (start: number, picked: typeof candidates): void => {
       if (selected.length) return;
       if (picked.length === count) {
-        if (picked.reduce((sum, item) => sum + item.tokens.length, 0) <= 36) selected = picked;
+        if (picked.reduce((sum, item) => sum + item.tokens.length, 0) <= BOARD_CAPACITY) selected = picked;
         return;
       }
       for (let i = start; i < candidates.length; i++) choose(i + 1, [...picked, candidates[i]]);
     };
     choose(0, []);
   }
-  const cells = selected.reduce((sum, item) => sum + item.tokens.length, 0);
-  const cols = Math.min(6, Math.max(3, Math.ceil(Math.sqrt(cells))));
-  const rows = Math.max(2, Math.ceil(cells / cols));
+  const rows = BOARD_ROWS;
+  const cols = BOARD_COLS;
   return {
     id, seed, verseId: verse.id, reference: `${verse.chapter}.${verse.verse}`, text: verse.text,
     titleSanskrit: `श्लोकः ${verse.chapter}.${verse.verse}`, titleEnglish: `Shloka ${verse.chapter}.${verse.verse}`,

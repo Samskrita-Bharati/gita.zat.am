@@ -176,14 +176,8 @@ function verifyGeneratedBoard(theme) {
         reversedPath,
       );
 
-    if (
-      !foundReverse ||
-      foundReverse.id !==
-        target.id
-    ) {
-      throw new Error(
-        `${theme.id}/${target.word}: targetForPath failed on the reversed path`,
-      );
+    if (target.path.length > 1 && foundReverse?.id === target.id) {
+      throw new Error(`${theme.id}/${target.word}: reversed path unexpectedly solved the target`);
     }
 
     if (

@@ -23,7 +23,7 @@ export default function TutorialOverlay({ open, language, onClose }: Props) {
           </div>
           <div>
             <b>2</b>
-            <p>{sa ? 'स्पर्शमानकोष्ठेषु कर्षतु। तिर्यक् गमनमपि शक्यम्।' : 'Drag through touching cells. Diagonal moves are allowed.'}</p>
+            <p>{sa ? 'प्रथमाक्षराद् अन्तिमाक्षरपर्यन्तं कर्षतु। तिर्यग्गमनमपि शक्यम्।' : 'Trace the word from its first letter to its last. Diagonal moves are allowed.'}</p>
           </div>
           <div>
             <b>3</b>

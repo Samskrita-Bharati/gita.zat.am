@@ -20,21 +20,15 @@ export function pathText(theme: Theme, path: Cell[]) {
 }
 
 export function targetForPath(theme: Theme, path: Cell[]) {
-  // First check the intended stored path.
-  const exactTarget = theme.targets.find(
-    (target) =>
-      samePath(target.path, path) ||
-      samePath(target.path, reversePath(path)),
-  );
-
+  const exactTarget = theme.targets.find(target => samePath(target.path, path));
   if (exactTarget) return exactTarget;
 
-  // If repeated letters create the same valid Sanskrit word
-  // through another connected route, still accept it.
-  const selectedWord = pathText(theme, path);
-
-  return theme.targets.find(
-    (target) => target.word === selectedWord,
+  // Accept alternate routes only when the cells spell the word in order.
+  // A reversed stored path never solves that same target.
+  return theme.targets.find(target =>
+    !samePath(target.path, reversePath(path)) &&
+    target.tokens.length === path.length &&
+    path.every((cell, index) => theme.grid[cell.row]?.[cell.col] === target.tokens[index]),
   );
 }
 
@@ -49,3 +43,4 @@ export function targetCells(theme: Theme, targetId: string) {
     theme.targets.find((target) => target.id === targetId)?.path.map(cellKey) ?? [],
   );
 }
+

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import type {
   Cell,
@@ -36,6 +36,8 @@ import TutorialOverlay from './components/TutorialOverlay';
 import ShowAnswerModal from './components/ShowAnswerModal';
 
 import { generateBoard } from './utils/generateBoard';
+import { seedFromId } from './utils/seededRandom';
+import { leaderboardScore, prepareStrandsScoreRun } from './services/strandsLeaderboard';
 
 const COMPLETED_KEY =
   'gita-strands:completed:v1';
@@ -106,6 +108,10 @@ export default function App() {
   const [breakdown,setBreakdown] = useState<ScoreBreakdown|null>(null);
 
   const [leaderboard,setLeaderboard] = useState('');
+  const [submittingScore, setSubmittingScore] = useState(false);
+  const pendingScore = useRef(false);
+  const scoreRun = useRef<ReturnType<typeof prepareStrandsScoreRun> | null>(null);
+  const [pageSeed] = useState(() => crypto.getRandomValues(new Uint32Array(1))[0]);
 
   const [pendingExit,setPendingExit] = useState<PendingExit>(null);
 
@@ -125,10 +131,10 @@ export default function App() {
   const theme = useMemo(() => {
     if (!sourceTheme) return undefined;
 
-    const generated = generateBoard(sourceTheme);
+    const generated = generateBoard(sourceTheme, seedFromId(`${sourceTheme.id}:${pageSeed}:${boardVersion}`));
 
     return generated;
-  }, [sourceTheme, boardVersion]);
+  }, [sourceTheme, boardVersion, pageSeed]);
 
   const requiredTargets = useMemo(
 
@@ -169,7 +175,7 @@ const foundRequiredCount = useMemo(
   useEffect(() => {
     if (!sourceTheme) return;
     const url = new URL(window.location.href);
-    url.searchParams.delete('id');
+    url.searchParams.set('id', String(sourceTheme.verseId));
     window.history.replaceState(null, '', url);
   }, [sourceTheme]);
 
@@ -180,6 +186,9 @@ const foundRequiredCount = useMemo(
   }
 
   function resetRun(nextTheme = theme) {
+    scoreRun.current?.cancel();
+    scoreRun.current = null;
+
 
     setSelection([]);
 
@@ -237,13 +246,14 @@ const foundRequiredCount = useMemo(
 
   useEffect(() => {
 
-    if (!started || done || answerMode || tutorialOpen) return;
+    if (!started || done || answerMode || tutorialOpen || !sourceTheme) return;
+    scoreRun.current ??= prepareStrandsScoreRun(sourceTheme);
 
     const timer = window.setInterval(() => setElapsedSeconds((seconds) => seconds + 1), 1000);
 
     return () => window.clearInterval(timer);
 
-  }, [started,done,answerMode,tutorialOpen]);
+  }, [started,done,answerMode,tutorialOpen,sourceTheme,boardVersion]);
 
 const hasInProgressRun = Boolean(
 
@@ -263,7 +273,7 @@ const hasInProgressRun = Boolean(
 
     const warnBeforeUnload = (event:BeforeUnloadEvent) => {
 
-      if (!hasInProgressRun) return;
+      if (!hasInProgressRun && !pendingScore.current) return;
 
       event.preventDefault();
 
@@ -361,7 +371,7 @@ const hasInProgressRun = Boolean(
 
   async function submit(path:Cell[]) {
 
-    if (!theme || path.length === 0 || !started || done) {
+    if (!theme || !sourceTheme || path.length === 0 || !started || done || pendingScore.current) {
 
       setSelection([]);
 
@@ -467,7 +477,28 @@ const hasInProgressRun = Boolean(
 
         setBestScores(nextBestScores);
 
-        setLeaderboard('');
+        const maximum = theme.completionPoints + theme.maxSpeedBonus +
+          requiredTargets.reduce((sum, word) => sum + (word.featured ? theme.featuredWordPoints : theme.themeWordPoints), 0);
+        const onlineScore = leaderboardScore(finalBreakdown.total, maximum);
+        const sa = language === 'sa';
+        pendingScore.current = true;
+        setSubmittingScore(true);
+        setLeaderboard(sa ? 'अङ्काः प्रेष्यन्ते…' : 'Submitting leaderboard score…');
+        setSelection([]);
+        // The shared API uses the current URL to record verse completion.
+        const url = new URL(window.location.href);
+        url.searchParams.set('id', String(sourceTheme.verseId));
+        window.history.replaceState(null, '', url);
+        const run = scoreRun.current ??= prepareStrandsScoreRun(sourceTheme);
+        const status = await run.submit(finalBreakdown, maximum);
+        setLeaderboard(status === 'saved'
+          ? (sa ? `अङ्काः रक्षिताः: ${onlineScore}/100` : `Leaderboard score saved: ${onlineScore}/100.`)
+          : status === 'not-signed-in'
+            ? (sa ? 'स्थानीयाङ्काः रक्षिताः। अङ्कप्रेषणाय प्रवेशं करोतु।' : 'Local score saved. Sign in before playing to submit leaderboard scores.')
+            : (sa ? 'स्थानीयाङ्काः रक्षिताः। प्रेषणं न सुनिश्चितम्।' : 'Local score saved. Leaderboard submission could not be confirmed.'));
+        pendingScore.current = false;
+        setSubmittingScore(false);
+        return;
       }
 
     } else if (target) {
@@ -588,7 +619,7 @@ const hasInProgressRun = Boolean(
 
   function requestThemeChange(index:number) {
 
-    if (index === active) return;
+    if (index === active || pendingScore.current) return;
 
     if (hasInProgressRun) setPendingExit({type:'theme',index});
 
@@ -809,6 +840,7 @@ const hasInProgressRun = Boolean(
         bestScore={bestScores[theme.id] ?? 0}
 
         leaderboard={leaderboard}
+        submittingScore={submittingScore}
 
         onReplay={restartCurrentTheme}
 
