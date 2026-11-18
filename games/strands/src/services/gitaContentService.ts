@@ -69,36 +69,13 @@ export function buildGitaPuzzle(verse: ShlokaContent): GitaPuzzle {
   };
 }
 
-export async function loadShlokaPuzzles(search = window.location.search): Promise<GitaPuzzle[]> {
+export async function loadShlokaPuzzle(search = window.location.search): Promise<GitaPuzzle> {
   const text = await getShlokaTextFromUrl(search);
   if (text === null) throw new Error('No shloka is available under the portal schedule yet.');
   const records = await loadRecords();
   const selected = resolveRecord(records, text);
-  const makePuzzle = (record: VerseRecord, sharedText: string) => buildGitaPuzzle({
-    id: record.id, chapter: record.ch, verse: record.vn, text: sharedText,
-    words: splitShlokaWords(sharedText),
+  return buildGitaPuzzle({
+    id: selected.id, chapter: selected.ch, verse: selected.vn, text,
+    words: splitShlokaWords(text),
   });
-  const puzzles = [makePuzzle(selected, text)];
-  // Each day contains a pair. Keep the requested/resolved shloka first. Ask the
-  // shared loader about its partner too, so this cannot expose a future verse.
-  const firstId = records[0].id;
-  const lastId = records[records.length - 1].id;
-  const partnerId = selected.id % 2 ? selected.id + 1 : selected.id - 1;
-  const partnerCandidates = selected.id === firstId ? [partnerId, lastId]
-    : selected.id === lastId && selected.id % 2 ? [firstId] : [partnerId];
-  for (const requestedPartner of partnerCandidates) {
-    if (!records.some(record => record.id === requestedPartner) || requestedPartner === selected.id) continue;
-    const partnerText = await getShlokaTextFromUrl(`?id=${requestedPartner}`);
-    if (partnerText === null) continue;
-    const partner = resolveRecord(records, partnerText);
-    if (partner.id !== requestedPartner || partner.id === selected.id) continue;
-    puzzles.push(makePuzzle(partner, partnerText));
-    break;
-  }
-  return puzzles;
 }
-
-// Compatibility exports keep the existing App/layout untouched. The loader now
-// uses shared content; it no longer reads sampleShlokas.ts or clamps to ID 2.
-export const loadPreviewPuzzles = loadShlokaPuzzles;
-export function previewIndex(_search: string): number { return 0; }

@@ -5,7 +5,7 @@ import type {
   ScoreBreakdown,
   Theme,
 } from './types/gameTypes';
-import { loadShlokaPuzzles } from './services/gitaContentService';
+import { loadShlokaPuzzle } from './services/gitaContentService';
 import type { GitaPuzzle } from './services/gitaContentService';
 
 import { pathText, targetForPath } from './utils/board';
@@ -17,8 +17,6 @@ import { usePortalLanguage } from './hooks/usePortalLanguage';
 
 import GameHeader from './components/GameHeader';
 
-import ShlokaSidebar from './components/ShlokaSidebar';
-
 import StrandBoard from './components/StrandBoard';
 
 import WordPanel from './components/WordPanel';
@@ -28,8 +26,6 @@ import HintPanel from './components/HintPanel';
 import TimerCard, { speedBonusFor } from './components/TimerCard';
 
 import ResultsModal from './components/ResultsModal';
-
-import ExitConfirmModal from './components/ExitConfirmModal';
 
 import TutorialOverlay from './components/TutorialOverlay';
 
@@ -47,7 +43,6 @@ const BEST_SCORES_KEY =
 
 const TUTORIAL_KEY =
   'gita-strands:tutorial-seen:v1';
-type PendingExit = { type:'back' } | { type:'theme'; index:number } | null;
 
 function loadCompleted() {
 
@@ -75,11 +70,8 @@ function loadBestScores() {
 
 export default function App() {
 
-  const [themes,setThemes] =
-  useState<GitaPuzzle[]>([]);
+  const [sourceTheme,setSourceTheme] = useState<GitaPuzzle>();
   const [loadError,setLoadError] = useState('');
-
-  const [active,setActive] = useState(0);
 
   const [selection,setSelection] = useState<Cell[]>([]);
 
@@ -113,8 +105,6 @@ export default function App() {
   const scoreRun = useRef<ReturnType<typeof prepareStrandsScoreRun> | null>(null);
   const [pageSeed] = useState(() => crypto.getRandomValues(new Uint32Array(1))[0]);
 
-  const [pendingExit,setPendingExit] = useState<PendingExit>(null);
-
   const language = usePortalLanguage();
 
   const [tutorialOpen,setTutorialOpen] = useState(() => localStorage.getItem(TUTORIAL_KEY) !== '1');
@@ -125,7 +115,6 @@ export default function App() {
 
   const [answerMode,setAnswerMode] = useState(false);
 
-  const sourceTheme = themes[active];
   const [boardVersion,setBoardVersion] = useState(0);
 
   const theme = useMemo(() => {
@@ -160,9 +149,9 @@ const foundRequiredCount = useMemo(
 
   useEffect(() => {
 
-    loadShlokaPuzzles()
+    loadShlokaPuzzle()
 
-      .then(setThemes)
+      .then(setSourceTheme)
 
       .catch((error) => setLoadError(error instanceof Error ? error.message : String(error)));
 
@@ -234,7 +223,7 @@ const foundRequiredCount = useMemo(
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
 
-  }, [active, boardVersion, sourceTheme?.id]);
+  }, [boardVersion, sourceTheme?.id]);
 
   useEffect(() => {
 
@@ -609,225 +598,187 @@ const hasInProgressRun = Boolean(
 
   }
 
-  function requestBack() {
-
-    if (hasInProgressRun) setPendingExit({type:'back'});
-
-    else window.history.back();
-
-  }
-
-  function requestThemeChange(index:number) {
-
-    if (index === active || pendingScore.current) return;
-
-    if (hasInProgressRun) setPendingExit({type:'theme',index});
-
-    else setActive(index);
-
-  }
-
-  function confirmExit() {
-
-    const action = pendingExit;
-
-    setPendingExit(null);
-
-    if (!action) return;
-
-    if (action.type === 'back') window.history.back();
-
-    else setActive(action.index);
-
-  }
-
   if (loadError) return <main className="load-state"><h1>Gita Strands</h1><p>{loadError}</p></main>;
 
-  if (!theme) return <main className="load-state"><h1>Gita Strands</h1><p>Loading puzzle data…</p></main>;
+  if (!theme || !sourceTheme) return <main className="load-state"><h1>Gita Strands</h1><p>Loading puzzle data…</p></main>;
 
   return (
 
     <div className="portal-game-shell">
 
-      <div className="portal-body">
+      <main className="game-main" style={{background:theme.background}}>
 
-        <ShlokaSidebar puzzles={themes} active={active} completed={completed} onSelect={requestThemeChange} language={language} />
+        <section className="theme-banner">
 
-        <main className="game-main" style={{background:theme.background}}>
+          <div className="theme-heading">
 
-          <section className="theme-banner">
+            <div className="theme-eyebrow">{language === 'sa' ? 'भगवद्गीता' : 'BHAGAVAD GITA'}</div>
 
-            <div className="theme-heading">
+            <h1>{theme.titleSanskrit} {language === 'en' && <span>{theme.titleEnglish}</span>}</h1>
 
-              <div className="theme-eyebrow">{language === 'sa' ? 'भगवद्गीता' : 'BHAGAVAD GITA'}</div>
-
-              <h1>{theme.titleSanskrit} {language === 'en' && <span>{theme.titleEnglish}</span>}</h1>
-
-              <p>{language === 'sa' ? (theme.clueSanskrit || theme.clue) : theme.clue}</p>
-
-            </div>
-
-            <div className="theme-meta">
-
-              <span>{language === 'sa' ? 'श्लोकः' : 'Shared shloka'}</span>
-
-              <b>{theme.rows} × {theme.cols}</b>
-
-              <b>{theme.targets.length} {tr(language, 'words')}</b>
-
-              <button className="tutorial-help-btn" onClick={() => setTutorialOpen(true)} aria-label="How to play">?</button>
-
-            </div>
-
-          </section>
-
-          <details className="shloka-text-card">
-            <summary>{language === 'sa' ? 'श्लोकं पठतु' : 'Read the shloka'}</summary>
-            <p lang="sa">{sourceTheme.text}</p>
-          </details>
-          <div className="game-grid">
-
-            <section className="board-card">
-
-              <div className="status-line">
-
-                <div><small>{tr(language,'currentMessage')}</small><strong>{message}</strong></div>
-
-                  <span>
-
-                    {answerMode
-
-                      ? 'Answers shown'
-
-                      : `${foundRequiredCount}/${requiredTargets.length} ${tr(language,'found')}`}
-
-                  </span>              </div>
-
-              {!answerMode && (
-
-  <div
-
-    className="level-progress"
-
-    aria-label={`${foundRequiredCount} of ${requiredTargets.length} required words found`}
-
-  >
-
-    <div
-
-      className="level-progress-fill"
-
-      style={{
-
-        width: `${
-
-          requiredTargets.length
-
-            ? (foundRequiredCount / requiredTargets.length) * 100
-
-            : 0
-
-        }%`,
-
-      }}
-
-    />
-
-  </div>
-
-)}
-
-              <TimerCard
-
-                elapsedSeconds={elapsedSeconds}
-
-                language={language}
-
-                theme={theme}
-
-              />
-
-              <StrandBoard
-
-                theme={theme}
-
-                selection={selection}
-
-                found={found}
-
-                revealed={revealed}
-
-                disabled={!started || done || answerMode || tutorialOpen}
-
-                onChange={setSelection}
-
-                onSubmit={submit}
-
-                language={language}
-
-                feedback={boardFeedback}
-
-                showAnswers={answerMode}
-
-              />
-
-              <HintPanel
-
-                hintsRemaining={hintsRemaining}
-
-                hintsUsed={hintsUsed}
-
-                hintPenalty={theme.hintPenalty}
-
-                canHint={started && !done && hintsRemaining > 0}
-
-                onHint={useHint}
-
-                language={language}
-
-                onShowAnswer={requestShowAnswer}
-
-                canShowAnswer={!done && !answerMode}
-
-              />
-
-              {answerMode && (
-
-                <div className="answer-mode-bar">
-
-                  <div>
-
-                    <strong>{language === 'sa' ? 'उत्तरमोड्' : 'Answer Mode'}</strong>
-
-                    <span>{language === 'sa' ? 'अस्य प्रयासस्य अङ्काः न रक्ष्यन्ते।' : 'This run will not be saved or scored.'}</span>
-
-                  </div>
-
-                  <button onClick={restartCurrentTheme}>{language === 'sa' ? 'पुनः आरभताम्' : 'Restart Puzzle'}</button>
-
-                </div>
-
-              )}
-
-            </section>
-
-            <aside className="strands-right-sidebar" aria-label={language === 'sa' ? 'प्रगतिः शब्दाश्च' : 'Progress and words'}>
-              <GameHeader
-                totalPoints={totalBestPoints}
-                runPoints={runDisplayPoints}
-                bestScore={bestScores[theme.id] ?? 0}
-                foundCount={foundRequiredCount}
-                requiredCount={requiredTargets.length}
-                language={language}
-              />
-              <WordPanel theme={theme} found={found} revealed={revealed} language={language} showAnswers={answerMode} />
-            </aside>
+            <p>{language === 'sa' ? (theme.clueSanskrit || theme.clue) : theme.clue}</p>
 
           </div>
 
-        </main>
+          <div className="theme-meta">
 
-      </div>
+            <span>{language === 'sa' ? 'श्लोकः' : 'Shared shloka'}</span>
+
+            <b>{theme.rows} × {theme.cols}</b>
+
+            <b>{theme.targets.length} {tr(language, 'words')}</b>
+
+            <button className="tutorial-help-btn" onClick={() => setTutorialOpen(true)} aria-label="How to play">?</button>
+
+          </div>
+
+        </section>
+
+        <details className="shloka-text-card">
+          <summary>{language === 'sa' ? 'श्लोकं पठतु' : 'Read the shloka'}</summary>
+          <p lang="sa">{sourceTheme.text}</p>
+        </details>
+        <div className="game-grid">
+
+          <section className="board-card">
+
+            <div className="status-line">
+
+              <div><small>{tr(language,'currentMessage')}</small><strong>{message}</strong></div>
+
+                <span>
+
+                  {answerMode
+
+                    ? 'Answers shown'
+
+                    : `${foundRequiredCount}/${requiredTargets.length} ${tr(language,'found')}`}
+
+                </span>              </div>
+
+            {!answerMode && (
+
+<div
+
+  className="level-progress"
+
+  aria-label={`${foundRequiredCount} of ${requiredTargets.length} required words found`}
+
+>
+
+  <div
+
+    className="level-progress-fill"
+
+    style={{
+
+      width: `${
+
+        requiredTargets.length
+
+          ? (foundRequiredCount / requiredTargets.length) * 100
+
+          : 0
+
+      }%`,
+
+    }}
+
+  />
+
+</div>
+
+)}
+
+            <TimerCard
+
+              elapsedSeconds={elapsedSeconds}
+
+              language={language}
+
+              theme={theme}
+
+            />
+
+            <StrandBoard
+
+              theme={theme}
+
+              selection={selection}
+
+              found={found}
+
+              revealed={revealed}
+
+              disabled={!started || done || answerMode || tutorialOpen}
+
+              onChange={setSelection}
+
+              onSubmit={submit}
+
+              language={language}
+
+              feedback={boardFeedback}
+
+              showAnswers={answerMode}
+
+            />
+
+            <HintPanel
+
+              hintsRemaining={hintsRemaining}
+
+              hintsUsed={hintsUsed}
+
+              hintPenalty={theme.hintPenalty}
+
+              canHint={started && !done && hintsRemaining > 0}
+
+              onHint={useHint}
+
+              language={language}
+
+              onShowAnswer={requestShowAnswer}
+
+              canShowAnswer={!done && !answerMode}
+
+            />
+
+            {answerMode && (
+
+              <div className="answer-mode-bar">
+
+                <div>
+
+                  <strong>{language === 'sa' ? 'उत्तरमोड्' : 'Answer Mode'}</strong>
+
+                  <span>{language === 'sa' ? 'अस्य प्रयासस्य अङ्काः न रक्ष्यन्ते।' : 'This run will not be saved or scored.'}</span>
+
+                </div>
+
+                <button onClick={restartCurrentTheme}>{language === 'sa' ? 'पुनः आरभताम्' : 'Restart Puzzle'}</button>
+
+              </div>
+
+            )}
+
+          </section>
+
+          <aside className="strands-right-sidebar" aria-label={language === 'sa' ? 'प्रगतिः शब्दाश्च' : 'Progress and words'}>
+            <GameHeader
+              totalPoints={totalBestPoints}
+              runPoints={runDisplayPoints}
+              bestScore={bestScores[theme.id] ?? 0}
+              foundCount={foundRequiredCount}
+              requiredCount={requiredTargets.length}
+              language={language}
+            />
+            <WordPanel theme={theme} found={found} revealed={revealed} language={language} showAnswers={answerMode} />
+          </aside>
+
+        </div>
+
+      </main>
 
       <ResultsModal
 
@@ -844,11 +795,7 @@ const hasInProgressRun = Boolean(
 
         onReplay={restartCurrentTheme}
 
-        onNext={() => setActive((index) => Math.min(index + 1,themes.length - 1))}
-
-        onBack={() => window.history.back()}
-
-        hasNext={active < themes.length - 1}
+        onBack={() => window.location.assign(new URL('../../', window.location.href))}
 
         language={language}
 
@@ -865,18 +812,6 @@ const hasInProgressRun = Boolean(
         onCancel={() => setShowAnswerConfirm(false)}
 
         onConfirm={confirmShowAnswer}
-
-      />
-
-      <ExitConfirmModal
-
-        open={pendingExit !== null}
-
-        onStay={() => setPendingExit(null)}
-
-        onLeave={confirmExit}
-
-        language={language}
 
       />
 

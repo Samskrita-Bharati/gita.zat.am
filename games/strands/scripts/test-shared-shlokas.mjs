@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { buildGitaPuzzle, loadShlokaPuzzles, PUZZLE_VERSION } from '../src/services/gitaContentService.ts';
+import { buildGitaPuzzle, loadShlokaPuzzle, PUZZLE_VERSION } from '../src/services/gitaContentService.ts';
 import { eligibleWords, splitIntoCells } from '../src/utils/graphemes.ts';
 import { targetForPath } from '../src/utils/board.ts';
 import { generateBoard } from '../src/utils/generateBoard.ts';
@@ -26,7 +26,7 @@ globalThis.fetch = async url => {
 };
 console.log = () => {}; // Suppress the shared helper's verse logging during the suite.
 try {
-  await assert.rejects(loadShlokaPuzzles('?id=1'), /503/);
+  await assert.rejects(loadShlokaPuzzle('?id=1'), /503/);
   failRequest = false;
   const seen = new Set();
   let changedLayoutCount = 0;
@@ -96,32 +96,30 @@ try {
   assert.deepEqual(eligibleWords(['अ', 'तु', 'रामः।', 'रामः॥', '॥१.१॥', '।', '\n', 'कृष्णः']).map(x => x.word), ['रामः', 'कृष्णः']);
   const today = getDailySchedule(records).verses;
   const firstId = today[0].id, lastId = today.at(-1).id;
-  for (const query of ['', '?id=nope', '?id=0', '?id=-1', '?id=1.2', '?id=1&id=2', '?id=9007199254740993']) {
-    const puzzles = await loadShlokaPuzzles(query);
-    assert.equal(puzzles[0].verseId, firstId, query);
-
+  for (const verse of today) {
+    const fromLink = await loadShlokaPuzzle(`?id=${verse.id}`);
+    assert.equal(fromLink.verseId, verse.id);
+    assert.equal(fromLink.reference, `${verse.ch}.${verse.vn}`);
+    assert(!Array.isArray(fromLink), 'The game opens exactly one shloka.');
   }
-  const future = await loadShlokaPuzzles('?id=999999');
-  assert.equal(future[0].verseId, lastId);
-  assert(future[0].id.startsWith(`gita-${lastId}-v${PUZZLE_VERSION}`));
-  const past = await loadShlokaPuzzles('?id=2');
-  assert.deepEqual(past.map(p => p.verseId), [2, 1]);
-  assert.notEqual(past[0].id, past[1].id);
+  for (const query of ['', '?id=nope', '?id=0', '?id=-1', '?id=1.2', '?id=1&id=2', '?id=9007199254740993']) {
+    assert.equal((await loadShlokaPuzzle(query)).verseId, firstId, query);
+  }
+  const future = await loadShlokaPuzzle('?id=999999');
+  assert.equal(future.verseId, lastId);
+  assert.equal(future.id, `gita-${lastId}-v${PUZZLE_VERSION}`);
+  assert.equal((await loadShlokaPuzzle('?id=2')).verseId, 2);
   current = new RealDate(SCHEDULE_START.year, SCHEDULE_START.month - 1, SCHEDULE_START.day - 1, 12);
-  await assert.rejects(loadShlokaPuzzles('?id=1'), /No shloka is available/);
+  await assert.rejects(loadShlokaPuzzle('?id=1'), /No shloka is available/);
   current = new RealDate(SCHEDULE_START.year, SCHEDULE_START.month - 1, SCHEDULE_START.day, 12);
-  const opening = await loadShlokaPuzzles('?id=999999');
-  assert.deepEqual(opening.map(p => p.verseId), [2, 1]);
+  assert.equal((await loadShlokaPuzzle('?id=999999')).verseId, 2);
   // Keep the cycle-boundary exception provided by the shared helper intact.
   if (records.length % 2) {
     current.setDate(current.getDate() + Math.floor(records.length / 2));
-    const boundary = await loadShlokaPuzzles(`?id=${records.length}`);
-    assert.equal(boundary[0].verseId, records.length);
-    assert.deepEqual(boundary.map(p => p.verseId), [records.length, 1]);
-    const otherSide = await loadShlokaPuzzles('?id=1');
-    assert.deepEqual(otherSide.map(p => p.verseId), [1, records.length]);
+    assert.equal((await loadShlokaPuzzle(`?id=${records.length}`)).verseId, records.length);
+    assert.equal((await loadShlokaPuzzle('?id=1')).verseId, 1);
   }
-  realLog(`PASS: ${records.length} shared verses, fixed 4x4 boards, forward-only paths, layout variation on reload, random akshara filler, graphemes/punctuation, URL validation, past/future fallback, schedule start, and fetch-error retry (${requests} data requests).`);
+  realLog(`PASS: ${records.length} shared verses, fixed 4x4 boards, forward-only paths, layout variation on reload, random akshara filler, graphemes/punctuation, single-shloka links, URL validation, past/future fallback, schedule start, and fetch-error retry (${requests} data requests).`);
 } finally {
   globalThis.fetch = realFetch; globalThis.Date = RealDate; console.log = realLog;
 }

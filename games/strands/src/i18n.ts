@@ -14,7 +14,6 @@ const EN = {
   scoringWorks:'How scoring works', scoringText:'Word points + completion points + speed bonus − hint cost. The timer counts upward, so finishing sooner keeps more bonus points.',
   puzzleComplete:'PUZZLE COMPLETE', pointsThisRun:'points this run', wordsSpangram:'Words + spangram', completion:'Completion',
   speedBonus:'Speed bonus', hintCost:'Hint cost', runScore:'Run score', bestTheme:'Best for this shloka',
-  savedNote:'Completed shlokas and best scores are saved on this device. An unfinished puzzle is not restored yet.',
   replay:'Replay', nextTheme:'Next Shloka', leavePuzzle:'LEAVE THIS SHLOKA?', loseProgress:'Your current shloka progress will be lost.',
   loseProgressBody:"Completed shlokas stay saved and can be replayed, but unfinished words, elapsed time and this run's score are not saved.",
   stayContinue:'Stay & Continue', leaveLevel:'Leave Level',
@@ -35,7 +34,7 @@ const SA = {
   scoringWorks:'अङ्कगणना', scoringText:'शब्दाङ्काः + पूर्त्यङ्काः + शीघ्रतालाभः − सूचनाव्ययः। समयः शून्यात् वर्धते; शीघ्रसमाप्त्या अधिकः लाभः।',
   puzzleComplete:'प्रहेलिका समाप्ता', pointsThisRun:'अस्यां क्रीडायाम् अङ्काः', wordsSpangram:'शब्दाः + विशेषशब्दः', completion:'पूर्तिः',
   speedBonus:'शीघ्रतालाभः', hintCost:'सूचनाव्ययः', runScore:'क्रीडाङ्कः', bestTheme:'अस्य स्तरस्य श्रेष्ठम्',
-  savedNote:'समाप्तस्तराः श्रेष्ठाङ्काश्च रक्ष्यन्ते। असमाप्तस्तरस्य मध्यप्रगतिः न रक्ष्यते।',
+
   replay:'पुनः क्रीडतु', nextTheme:'अग्रिमस्तरः', leavePuzzle:'स्तरं त्यजति?', loseProgress:'अस्य स्तरस्य वर्तमानप्रगतिः नश्यति।',
   loseProgressBody:'समाप्तस्तराः रक्षिताः भवन्ति तथा पुनः क्रीडितुं शक्यन्ते, किन्तु असमाप्तशब्दाः, गतसमयः, अस्यां क्रीडायाम् अङ्काश्च न रक्ष्यन्ते।',
   stayContinue:'अत्रैव तिष्ठतु', leaveLevel:'स्तरं त्यजतु',
