@@ -1,4 +1,11 @@
 import { makePuzzle, createRun, checkRun, SCORES } from "./game-logic.mjs";
+
+import {
+  prepareLeaderboard,
+  getPlayerUid,
+  saveDailyImprovement,
+} from "./leaderboard-score.js";
+
 const $ = (id) => document.getElementById(id);
 let source,
   run,
@@ -74,28 +81,153 @@ function render() {
     run.finished || run.choices.some((w, i) => !run.locked[i] && w === null);
   $("clear").disabled = run.finished;
 }
+
+function setLeaderboardMessage(message, kind = "info") {
+  let element = document.getElementById(
+    "leaderboardSaveStatus",
+  );
+
+  if (!element) {
+    element = document.createElement("p");
+    element.id = "leaderboardSaveStatus";
+
+    element.setAttribute("role", "status");
+    element.setAttribute("aria-live", "polite");
+
+    $("details").after(element);
+  }
+
+  element.className =
+    `zatam-game-status zatam-game-status-${kind}`;
+
+  element.textContent = message;
+}
+
+async function saveFinishedRun(
+  completedRun,
+  outcome,
+  completedAt,
+) {
+  const elapsedMs = Math.max(
+    0,
+    Math.min(
+      60000,
+      completedAt - completedRun.startedAt,
+    ),
+  );
+
+  try {
+    const result = await saveDailyImprovement({
+      uid: completedRun.playerUid,
+      score: completedRun.score,
+      elapsedMs,
+      completedAt,
+      outcome,
+    });
+
+    // A previous round's save must not change the
+    // messages displayed for a newer round.
+    if (run !== completedRun) {
+      return;
+    }
+
+    if (result.saved) {
+      setLeaderboardMessage(
+        "High score recorded to leaderboard.",
+        "success",
+      );
+
+      return;
+    }
+
+    if (result.reason === "not-improved") {
+      setLeaderboardMessage(
+        `Today's best remains ${result.best.score}/100 ` +
+          `in ${(result.best.elapsedMs / 1000).toFixed(2)} seconds.`,
+      );
+
+      return;
+    }
+
+    setLeaderboardMessage(
+      "Score not saved. Sign in before starting a round " +
+        "and stay signed in with the same account.",
+      "error",
+    );
+  } catch (error) {
+    console.error(
+      "[059-fitb] Leaderboard save failed:",
+      error,
+    );
+
+    if (run !== completedRun) {
+      return;
+    }
+
+    setLeaderboardMessage(
+      "Score could not be saved. Check your connection " +
+        "and Firebase permissions.",
+      "error",
+    );
+  }
+}
+
 function finish(outcome) {
+  // Prevent duplicate saving for the same round.
+  if (run.saveStarted) {
+    return;
+  }
+
+  run.saveStarted = true;
+
   clearInterval(timer);
+
+  const completedRun = run;
+
+  // Background tabs may notice timeout late.
+  // Their actual round still ends at the original deadline.
+  const completedAt =
+    outcome === "timeout"
+      ? completedRun.deadline
+      : Math.min(Date.now(), completedRun.deadline);
+
   $("result").hidden = false;
+
   $("resultTitle").textContent =
     outcome === "won"
       ? "Shloka complete!"
       : outcome === "timeout"
         ? "Time is up"
         : "No submissions left";
-  $("finalScore").textContent = `${run.score} / 100`;
+
+  $("finalScore").textContent =
+    `${completedRun.score} / 100`;
+
   $("details").textContent =
     outcome === "won"
-      ? `Solved on submission ${run.submissions} of 5.`
+      ? `Solved on submission ${completedRun.submissions} of 5.`
       : "Try another round when you are ready.";
+
   say(
     outcome === "won"
       ? "All three words are correct. Well done!"
       : "Round finished.",
     outcome === "won" ? "success" : "error",
   );
+
   render();
+
+  setLeaderboardMessage(
+    "Checking today's best score…",
+  );
+
+  void saveFinishedRun(
+    completedRun,
+    outcome,
+    completedAt,
+  );
 }
+
 function start() {
   try {
     const puzzle = makePuzzle(source.text, source.previous, source.next);
@@ -115,7 +247,9 @@ function start() {
   }
 }
 $("start").onclick = start;
+
 $("again").onclick = start;
+
 $("check").onclick = () => {
   if (!active()) return;
   const result = checkRun(run);
@@ -134,6 +268,7 @@ $("check").onclick = () => {
   );
   render();
 };
+
 $("clear").onclick = () => {
   if (!active()) return;
   run.choices = run.choices.map((w, i) => (run.locked[i] ? w : null));
@@ -141,18 +276,32 @@ $("clear").onclick = () => {
   render();
   say("Unchecked choices cleared. Correct words remain locked.");
 };
+
 document.addEventListener("visibilitychange", () => {
   if (!document.hidden) updateTime();
 });
+
 window.addEventListener("pageshow", updateTime);
-try {
+
+try 
+{
   const { loadChallengeSource } = await import("./shloka-source.js");
   source = await loadChallengeSource();
+  try {
+    await prepareLeaderboard();
+  } catch (error) {
+    console.warn(
+      "[059-fitb] Account initialization failed:",
+      error,
+    );
+  }
   makePuzzle(source.text, source.previous, source.next); // Validate before offering a timed round.
   $("start").disabled = false;
   $("start").textContent = "Start Game";
   say("Ready. Your 60 seconds begin when you press Start Game.");
-} catch (error) {
+} 
+  catch (error) 
+{
   $("start").textContent = "Shloka unavailable";
   say(
     error.message ||
