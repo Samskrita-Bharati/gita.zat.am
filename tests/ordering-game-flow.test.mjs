@@ -37,13 +37,25 @@ function game(storage = new Map()) {
   return { context, storage, submissions, elements };
 }
 
-function piece(number) {
+function piece(number, text = "") {
   const value = { number };
   return {
+    contents: text ? [text] : [],
     data(key, next) { if (arguments.length > 1) { value[key] = next; return this; } return value[key]; },
-    addClass() { return this; }, attr() { return this; }, append() { return this; }, empty() { return this; },
+    addClass() { return this; }, attr() { return this; },
+    append(item) { this.contents.push(item); return this; },
+    empty() { this.contents = []; return this; },
   };
 }
+
+test("a matched number card keeps the shloka word underneath it", () => {
+  const { context } = game();
+  const slot = piece(1, "धर्मक्षेत्रे - dharmakṣetre");
+  const card = piece(1);
+  context.matchCardToSlot(slot, card);
+  assert.equal(slot.contents[0], "धर्मक्षेत्रे - dharmakṣetre");
+  assert.equal(slot.contents[1], card);
+});
 
 test("completing every match records the actual verse ID in the score and calendar", async () => {
   const { context, storage, submissions, elements } = game();

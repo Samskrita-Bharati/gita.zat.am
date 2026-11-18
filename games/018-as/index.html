@@ -346,7 +346,7 @@ function matchCardToSlot(slot, card) {
     card.append(' ✓');
     card.addClass('correct').attr({ tabindex: -1, 'aria-disabled': 'true' });
     card.attr('draggable', 'false');
-    slot.addClass('matched').data('matched', true).attr({ tabindex: -1, 'aria-disabled': 'true' }).empty().append(card);
+    slot.addClass('matched').data('matched', true).attr({ tabindex: -1, 'aria-disabled': 'true' }).append(card);
     correctCards++;
     updateGameHint('Correct match ✓');
   } 
