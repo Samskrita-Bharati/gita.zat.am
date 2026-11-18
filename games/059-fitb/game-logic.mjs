@@ -1,71 +1,6 @@
 export const SCORES = [100, 85, 70, 50, 35];
-const BANK = [
-  "ज्ञानम्",
-  "शान्तिः",
-  "सत्यम्",
-  "कर्म",
-  "योगः",
-  "मनः",
-  "आत्मा",
-  "भक्तिः",
-  "धर्मः",
-  "फलम्",
-  "जीवनम्",
-  "सुखम्",
-  "दुःखम्",
-  "प्रकाशः",
-  "मित्रम्",
-  "जलम्",
-  "अग्निः",
-  "वायुः",
-  "आकाशः",
-  "पृथिवी",
-  "सूर्यः",
-  "चन्द्रः",
-  "नक्षत्रम्",
-  "पर्वतः",
-  "नदी",
-  "समुद्रः",
-  "वनम्",
-  "वृक्षः",
-  "पुष्पम्",
-  "पत्रम्",
-  "मूलम्",
-  "बीजम्",
-  "अन्नम्",
-  "क्षीरम्",
-  "मधु",
-  "गृहम्",
-  "ग्रामः",
-  "नगरम्",
-  "मार्गः",
-  "रथः",
-  "अश्वः",
-  "गजः",
-  "सिंहः",
-  "मृगः",
-  "पक्षी",
-  "मत्स्यः",
-  "गुरुः",
-  "शिष्यः",
-  "विद्या",
-  "पुस्तकम्",
-  "वचनम्",
-  "प्रश्नः",
-  "उत्तरम्",
-  "बुद्धिः",
-  "शक्तिः",
-  "धैर्यम्",
-  "क्षमा",
-  "दया",
-  "प्रेम",
-  "आशा",
-  "श्रद्धा",
-  "स्मृतिः",
-  "कालः",
-  "लोकः"
-];
-const normalize = word => word.normalize('NFC');
+const normalize = (word) => word.normalize("NFC");
+const wrap = (value, length) => ((value % length) + length) % length;
 
 export function shuffle(items, random = Math.random) {
   const result = [...items];
@@ -76,67 +11,179 @@ export function shuffle(items, random = Math.random) {
   return result;
 }
 
-export function makePuzzle(text, splitWords, random = Math.random) {
-  // Keep original whitespace and punctuation as separate display tokens.
-  const cleaned = text.replace(/[।॥]*\s*[0-9०-९]+\.[0-9०-९]+\s*[।॥]*\s*$/u, '').trim();
-  const tokens = cleaned.match(/[\p{L}\p{M}\u200c\u200d]+|[^\p{L}\p{M}\u200c\u200d]+/gu) || [];
-  const words = splitWords(cleaned);
+export function cleanText(text) {
+  return String(text ?? "")
+    .replace(/[।॥]*\s*[0-9०-९]+\.[0-9०-९]+\s*[।॥]*\s*$/u, "")
+    .trim();
+}
 
-  if (words.length < 2) 
-    throw new Error('This shloka does not contain enough words.');
+export function wordTokens(text) {
+  const tokens =
+    cleanText(text).match(
+      /[\p{L}\p{M}\u200c\u200d]+|[^\p{L}\p{M}\u200c\u200d]+/gu,
+    ) || [];
   const eligible = [];
-  let lineStart = 0;
-  // Leave speaker introduction lines visible, including the name before उवाच.
-
+  // Speaker introductions remain visible and never become choices.
   const introductions = new Set();
-  for (const line of cleaned.split('\n')) {
-    if (/उवाच/u.test(line)) for (let p = lineStart; p < lineStart + line.length; p++) introductions.add(p);
+  let lineStart = 0;
+  for (const line of cleanText(text).split("\n")) {
+    if (/उवाच/u.test(line)) {
+      for (let p = lineStart; p < lineStart + line.length; p++)
+        introductions.add(p);
+    }
     lineStart += line.length + 1;
   }
-
   let position = 0;
   tokens.forEach((token, index) => {
-    if (/^[\p{L}\p{M}\u200c\u200d]+$/u.test(token) && /\p{Script=Devanagari}/u.test(token) && !introductions.has(position)) eligible.push(index);
+    if (
+      /^[\p{L}\p{M}\u200c\u200d]+$/u.test(token) &&
+      /\p{Script=Devanagari}/u.test(token) &&
+      !introductions.has(position)
+    )
+      eligible.push(index);
     position += token.length;
   });
+  return { tokens, eligible };
+}
 
-  const candidates = shuffle(eligible, random);
-  const first = candidates[0];
-  const second = candidates.find(i => normalize(tokens[i]) !== normalize(tokens[first] || ''));
+export function scheduleCycleLength(verseCount, perDay = 2) {
+  if (
+    !Number.isInteger(verseCount) ||
+    verseCount < 1 ||
+    !Number.isInteger(perDay) ||
+    perDay < 1
+  )
+    throw new Error("Invalid shloka schedule.");
+  let a = verseCount,
+    b = perDay;
+  while (b) [a, b] = [b, a % b];
+  return verseCount / a;
+}
 
-  if (first === undefined || second === undefined) 
-    throw new Error('This shloka needs two different playable words.');
+export function versesForDay(verses, dayIndex, perDay = 2) {
+  scheduleCycleLength(verses.length, perDay);
+  const first = wrap(dayIndex * perDay, verses.length);
+  return Array.from(
+    { length: Math.min(perDay, verses.length) },
+    (_, offset) => verses[(first + offset) % verses.length],
+  );
+}
 
-  const indices = [first, second].sort((a,b) => a-b);
-  const answers = indices.map(i => tokens[i]);
+export function adjacentDays(verses, dayIndex, perDay = 2) {
+  return {
+    previous: versesForDay(verses, dayIndex - 1, perDay),
+    next: versesForDay(verses, dayIndex + 1, perDay),
+  };
+}
+
+// An id-only URL does not carry the original date. Associate it with its
+// most recent scheduled occurrence on or before the current local day.
+export function mostRecentDay(verseIndex, verseCount, todayIndex, perDay = 2) {
+  const cycle = scheduleCycleLength(verseCount, perDay);
+  for (let offset = 0; offset < cycle; offset++) {
+    const day = todayIndex - offset;
+    const first = wrap(day * perDay, verseCount);
+    for (let i = 0; i < Math.min(perDay, verseCount); i++) {
+      if ((first + i) % verseCount === verseIndex) return day;
+    }
+  }
+  throw new Error("Selected shloka could not be matched to the schedule.");
+}
+
+function sourceWords(verses, occupied) {
+  const unique = new Map();
+  for (const verse of verses) {
+    const { tokens, eligible } = wordTokens(verse.txt);
+    for (const i of eligible) {
+      const key = normalize(tokens[i]);
+      if (!occupied.has(key)) unique.set(key, tokens[i]);
+    }
+  }
+  return [...unique.values()];
+}
+
+export function makePuzzle(
+  text,
+  previousVerses,
+  nextVerses,
+  random = Math.random,
+) {
+  const { tokens, eligible } = wordTokens(text);
+  const uniquePositions = new Map();
+  for (const index of shuffle(eligible, random)) {
+    const key = normalize(tokens[index]);
+    if (!uniquePositions.has(key)) uniquePositions.set(key, index);
+  }
+  const indices = [...uniquePositions.values()]
+    .slice(0, 3)
+    .sort((a, b) => a - b);
+  if (indices.length !== 3)
+    throw new Error("This shloka needs three different playable words.");
+  const answers = indices.map((index) => tokens[index]);
   const occupied = new Set(tokens.map(normalize));
-  const distractors = shuffle(BANK.filter(w => !occupied.has(normalize(w))), random).slice(0,4);
+  const previous = shuffle(sourceWords(previousVerses, occupied), random);
+  const next = shuffle(sourceWords(nextVerses, occupied), random);
 
-  if (distractors.length !== 4) 
-    throw new Error('Not enough distinct word choices.');
-  return { tokens, indices, answers, pool: shuffle([...answers, ...distractors], random) };
-
+  // Allocate scarce previous-only words first. This avoids a random pick
+  // using all words that the next day needs when the sources overlap.
+  const nextSet = new Set(next.map(normalize));
+  const previousOnly = previous.filter((word) => !nextSet.has(normalize(word)));
+  const shared = previous.filter((word) => nextSet.has(normalize(word)));
+  const fromPrevious = [...previousOnly, ...shared].slice(0, 3);
+  const chosen = new Set(fromPrevious.map(normalize));
+  const fromNext = next
+    .filter((word) => !chosen.has(normalize(word)))
+    .slice(0, 3);
+  if (fromPrevious.length !== 3 || fromNext.length !== 3) {
+    throw new Error(
+      "The neighboring days do not contain enough distinct words for three choices from each day. Please select another shloka.",
+    );
+  }
+  return {
+    tokens,
+    indices,
+    answers,
+    fromPrevious,
+    fromNext,
+    pool: shuffle([...answers, ...fromPrevious, ...fromNext], random),
+  };
 }
 
 export function createRun(puzzle, now = Date.now()) {
-  return { puzzle, choices: [null,null], locked: [false,false], submissions: 0, deadline: now + 60000, finished: false, score: null };
+  return {
+    puzzle,
+    choices: puzzle.answers.map(() => null),
+    locked: puzzle.answers.map(() => false),
+    submissions: 0,
+    deadline: now + 60000,
+    finished: false,
+    score: null,
+  };
 }
-
 export function checkRun(run, now = Date.now()) {
-  if (run.finished) 
-    return 'finished';
-  if (now >= run.deadline) 
-    { run.finished = true; run.score = 0; return 'timeout'; }
-  if (run.choices.some((w,i) => !run.locked[i] && w === null)) 
-    return 'incomplete';
-
+  if (run.finished) return "finished";
+  if (now >= run.deadline) {
+    run.finished = true;
+    run.score = 0;
+    return "timeout";
+  }
+  if (run.choices.some((w, i) => !run.locked[i] && w === null))
+    return "incomplete";
   run.submissions++;
-  run.choices.forEach((word,i) => { if (normalize(word || '') === normalize(run.puzzle.answers[i])) run.locked[i] = true; });
-
-  if (run.locked.every(Boolean)) 
-    { run.finished = true; run.score = SCORES[run.submissions-1]; return 'won'; }
-  if (run.submissions >= 5) 
-    { run.finished = true; run.score = 0; return 'lost'; }
-  run.choices = run.choices.map((word,i) => run.locked[i] ? word : null);
-  return 'retry';
+  run.choices.forEach((word, i) => {
+    if (normalize(word || "") === normalize(run.puzzle.answers[i]))
+      run.locked[i] = true;
+  });
+  if (run.locked.every(Boolean)) {
+    run.finished = true;
+    run.score = SCORES[run.submissions - 1];
+    return "won";
+  }
+  if (run.submissions >= 5) {
+    run.finished = true;
+    run.score = 0;
+    return "lost";
+  }
+  run.choices = run.choices.map((word, i) => (run.locked[i] ? word : null));
+  return "retry";
 }
