@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { makePuzzle, createRun, checkRun, SCORES } from "./engine.mjs";
+import { makePuzzle, createRun, checkRun, SCORES } from "./game-logic.mjs";
 
 const split = (text) => text.trim().split(/\s+/u);
 const text =

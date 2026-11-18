@@ -1,4 +1,4 @@
-import { makePuzzle, createRun, checkRun, SCORES } from "./engine.mjs";
+import { makePuzzle, createRun, checkRun, SCORES } from "./game-logic.mjs";
 const $ = (id) => document.getElementById(id);
 let splitWords,
   text,
