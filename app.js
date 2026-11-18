@@ -8,6 +8,12 @@ export const menu = [
     desc: ` Order the words of a सुभाषितम्  in correct sequence! <pre>subhaaShitam</pre>`,
   },
   {
+    id: 19,
+    title: "BodhaPlay: शब्दावली",
+    dir: "games/z18",
+    desc: `Unscramble Sanskrit vocabulary with the ZIM game.`,
+  },
+  {
     id: 50,
     title: "Auto श्लोकपाठक:",
     dir: "games/050-asp",
