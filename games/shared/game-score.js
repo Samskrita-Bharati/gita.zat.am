@@ -52,7 +52,9 @@ import {
   setDoc,
   writeBatch,
   serverTimestamp,
+  arrayUnion,
 } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
+import { getShlokaAssignmentFromUrl } from "./shloka-utils.js";
 
 const SCORE_MIN = 0;
 const SCORE_MAX = 100;
@@ -180,6 +182,19 @@ function getMonthId(timestamp = Date.now()) {
   const month = String(date.getMonth() + 1).padStart(2, "0");
 
   return `${year}-${month}`;
+}
+
+async function updateShlokaProgress(uid, assignment) {
+  if (!uid || !assignment) return;
+
+  const { id, month } = assignment;
+  if (!Number.isSafeInteger(id) || id < 1 || !/^\d{6}$/.test(month)) {
+    throw new Error("[Zat.am Score] Invalid shloka assignment.");
+  }
+
+  await setDoc(doc(db, "shlokaProgress", `${uid}_${month}`), {
+    completedShlokas: arrayUnion(id),
+  }, { merge: true });
 }
 
 async function getAuthenticatedUser() {
@@ -483,6 +498,7 @@ export async function submitGameScore(
     ...cleanMetrics,
     gameId: state.gameId,
     gameName: state.gameName,
+    uid: user.uid,
     levelId: resolvedLevelId,
     levelName: resolvedLevelName,
     result: String(result || "completed").slice(0, 40),
@@ -519,6 +535,8 @@ export async function submitGameScore(
       [entryKey]: attemptMeta,
     },
 
+    // Firestore rules verify that only this new entry was appended.
+    lastEntryKey: entryKey,
     updatedAt: serverTimestamp(),
   };
 
@@ -528,6 +546,9 @@ export async function submitGameScore(
   batch.set(globalHistoryDoc, historyUpdate, { merge: true });
 
   await batch.commit();
+
+  const shlokaAssignment = await getShlokaAssignmentFromUrl();
+  await updateShlokaProgress(user.uid, shlokaAssignment);
 
   state.submitted = true;
 

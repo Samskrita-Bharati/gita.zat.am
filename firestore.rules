@@ -2,108 +2,216 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // ========================
-    // Helper functions
-    // ========================
-    function isSignedIn() {
+    function signedIn() {
       return request.auth != null;
     }
 
     function isOwner(userId) {
-      return isSignedIn() && request.auth.uid == userId;
+      return signedIn() && request.auth.uid == userId;
     }
 
-    // Look up admin flag from the user's private/account doc
+    // This flag can only be granted through the Firebase console or by
+    // an existing admin. No user can grant admin status to themselves.
     function isAdmin() {
-      return isSignedIn()
-        && get(/databases/$(database)/documents/users/$(request.auth.uid)/private/account)
-             .data.isAdmin == true;
+      return signedIn()
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid)/private/account)
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)/private/account).data.isAdmin == true;
     }
 
-    // ========================
-    // Users Collection
-    // users/{userId}/private/account   -> email, isAdmin, createdAt
-    // users/{userId}/public/profile    -> name, language, location, etc.
-    // ========================
+    function editableProfileFields() {
+      return ['name', 'language', 'country', 'region', 'location', 'preferencesSet'];
+    }
+
+    function validProfile(data) {
+      return data.keys().hasAll(['name', 'language', 'country', 'region',
+                                 'location', 'preferencesSet', 'createdAt', 'streak'])
+        && data.keys().hasOnly(['name', 'language', 'country', 'region',
+                                'location', 'preferencesSet', 'createdAt',
+                                'streak', 'lastLogin'])
+        && data.name is string && data.name.size() <= 120
+        && data.language is string && data.language.size() <= 20
+        && data.country is string && data.country.size() <= 120
+        && data.region is string && data.region.size() <= 120
+        && data.location is string && data.location.size() <= 250
+        && data.preferencesSet is bool
+        && data.createdAt is timestamp
+        && data.streak is int && data.streak >= 1 && data.streak <= 10000
+        && (!('lastLogin' in data) || data.lastLogin is timestamp);
+    }
+
+    // Register/login profile fields can be changed only by their owner.
+    // NOTE: streak is currently computed in the browser; rules can constrain
+    // its writes, but cannot make the streak an authoritative anti-cheat value.
+    function validStreakUpdate() {
+      return request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['streak', 'lastLogin'])
+        && request.resource.data.lastLogin is timestamp
+        && request.resource.data.lastLogin <= request.time
+        && request.resource.data.lastLogin >= request.time - duration.value(2, 'd')
+        && request.resource.data.streak <= resource.data.streak + 1;
+    }
+
     match /users/{userId} {
+      // The current app only uses users/{uid}/private/account and
+      // users/{uid}/public/profile; the parent user doc is unused.
+      allow get: if isOwner(userId) || isAdmin();
+      allow list, create, update, delete: if false;
 
-      // We currently don't store anything on the base user doc,
-      // but allow owners (and admins) to read it if it exists.
-      allow create: if isOwner(userId);
-      allow read: if isOwner(userId) || isAdmin();
-      allow update, delete: if false;
-
-      // ---------- Private data ----------
-      // Contains sensitive account info: email, isAdmin, createdAt.
       match /private/{docId} {
+        allow get: if docId == 'account' && (isOwner(userId) || isAdmin());
+        allow list: if false;
 
-        // Owners and admins can read private docs.
-        allow read: if isOwner(userId) || isAdmin();
+        allow create: if docId == 'account' && isOwner(userId)
+          && request.resource.data.keys().hasAll(['email', 'isAdmin', 'createdAt'])
+          && request.resource.data.keys().hasOnly(['email', 'isAdmin', 'createdAt'])
+          && request.resource.data.email is string
+          && request.resource.data.email == request.auth.token.email
+          && request.resource.data.isAdmin == false
+          && request.resource.data.createdAt == request.time;
 
-        // Owners can create their own private/account doc, but
-        // they are not allowed to set isAdmin to true themselves.
-        allow create: if isOwner(userId)
+        // Only an existing administrator may change another user's admin flag.
+        allow update: if docId == 'account' && isAdmin()
+          && request.auth.uid != userId
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['isAdmin'])
+          && request.resource.data.isAdmin is bool;
+
+        allow delete: if false;
+      }
+
+      match /public/{docId} {
+        // Leaderboard needs to look up display names; only signed-in users
+        // can access these profiles.
+        allow get: if docId == 'profile' && signedIn();
+        allow list: if false;
+
+        allow create: if docId == 'profile' && isOwner(userId)
+          && validProfile(request.resource.data)
+          && request.resource.data.createdAt == request.time
+          && request.resource.data.preferencesSet == false
+          && request.resource.data.streak == 1
+          && !('lastLogin' in request.resource.data);
+
+        allow update: if docId == 'profile' && isOwner(userId)
+          && validProfile(request.resource.data)
           && (
-            !('isAdmin' in request.resource.data)
-            || request.resource.data.isAdmin == false
+            request.resource.data.diff(resource.data).affectedKeys()
+              .hasOnly(editableProfileFields())
+            || validStreakUpdate()
           );
 
-        // Owners can update their private doc, but cannot change isAdmin.
-        allow update: if isOwner(userId)
-          && !( 'isAdmin' in request.resource.data
-                && request.resource.data.isAdmin != resource.data.isAdmin );
-
-        // Admins can change ONLY the isAdmin flag on other users.
-        allow update: if !isOwner(userId)
-          && isAdmin()
-          && request.resource.data.diff(resource.data).changedKeys().hasOnly(['isAdmin']);
-
-        // No deletes for private docs from client.
-        allow delete: if false;
-      }
-
-      // ---------- Public data ----------
-      // Contains leaderboard-safe, non-sensitive profile info.
-      match /public/{docId} {
-
-        // Anyone can read public profile data (e.g., for leaderboards).
-        allow read: if true;
-
-        // Only the owner can create or update their public profile.
-        allow create: if isOwner(userId);
-        allow update: if isOwner(userId);
-
-        // Public docs are not deletable from the client.
         allow delete: if false;
       }
     }
 
-    // ========================
-    // Leaderboards Collection (TODO: Leaderboard team)
-    // Public read; writes can be tightened later as needed.
-    // ========================
-    match /leaderboards/{document=**} {
-      // Anyone can read leaderboard scores (public leaderboards).
-      allow read: if true;
-      allow write: if request.auth != null;
+    function supportedGame(gameId) {
+      return gameId in ['018-as', '050-asp', '057-gita-typing', 'fw', 'ma'];
     }
 
-    // ========================
-    // Admin Logs Collection
-    // Stores audit trail for admin actions (if implemented in future)
-    // ========================
-    match /admin-logs/{document=**} {
-
-      // Only admins can read admin logs
-      allow read: if isAdmin();
-
-      // No writes allowed currently (no Cloud Functions/Admin SDK)
-      allow write: if false;
+    function leaderboardDocument(gameId) {
+      return gameId == 'Global' || supportedGame(gameId);
     }
 
-    // ========================
-    // Catch-all rule: Deny access to everything else
-    // ========================
+    function validLeaderboardLabel(gameId) {
+      return request.resource.data.label is string
+        && request.resource.data.label.size() > 0
+        && request.resource.data.label.size() <= 120
+        && (gameId != 'Global' || request.resource.data.label == 'Global')
+        && (gameId != '018-as' || request.resource.data.label == 'सुभाषितम्');
+    }
+
+    // Each score submission appends one entry to the monthly game history
+    // AND one to Global. It cannot edit or delete another player's entries.
+    // This is data-integrity protection; client-calculated scores can still
+    // be fabricated by a malicious player. Server-side scoring is needed
+    // for a fully cheat-resistant leaderboard.
+    function validOwnAttempt(historyGameId, entryKey) {
+      let attempt = request.resource.data.attemptMeta[entryKey];
+      let gameId = attempt.gameId;
+      return supportedGame(gameId)
+        && (historyGameId == 'Global' || historyGameId == gameId)
+        && attempt.uid == request.auth.uid
+        && entryKey.matches('^[0-9]{13}_' + request.auth.uid + '_[0-9]+_' + gameId + '$')
+        && attempt.keys().hasAll(['uid', 'gameId', 'gameName', 'levelId',
+                                  'levelName', 'result', 'elapsedSeconds', 'completedAt'])
+        && attempt.gameName is string && attempt.gameName.size() <= 120
+        && attempt.result is string && attempt.result.size() <= 40
+        && attempt.elapsedSeconds is int && attempt.elapsedSeconds >= 0
+        && attempt.completedAt is int && attempt.completedAt > 0
+        && request.resource.data.entries[entryKey] is int
+        && request.resource.data.entries[entryKey] >= 0
+        && request.resource.data.entries[entryKey] <= 100;
+    }
+
+    function validNewHistory(gameId) {
+      let newKey = request.resource.data.lastEntryKey;
+      return request.resource.data.keys()
+          .hasAll(['entries', 'attemptMeta', 'lastEntryKey', 'updatedAt'])
+        && request.resource.data.keys()
+          .hasOnly(['entries', 'attemptMeta', 'lastEntryKey', 'updatedAt'])
+        && request.resource.data.entries is map
+        && request.resource.data.attemptMeta is map
+        && newKey is string
+        && request.resource.data.entries.keys().size() == 1
+        && request.resource.data.attemptMeta.keys().size() == 1
+        && request.resource.data.entries.keys().hasOnly([newKey])
+        && request.resource.data.attemptMeta.keys().hasOnly([newKey])
+        && request.resource.data.updatedAt == request.time
+        && validOwnAttempt(gameId, newKey);
+    }
+
+    function validAppendedHistory(gameId) {
+      let newKey = request.resource.data.lastEntryKey;
+      let scoreDiff = request.resource.data.entries.diff(resource.data.entries);
+      let metaDiff = request.resource.data.attemptMeta.diff(resource.data.attemptMeta);
+      return newKey is string
+        && request.resource.data.keys().hasAll(['entries', 'attemptMeta', 'lastEntryKey', 'updatedAt'])
+        && request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['entries', 'attemptMeta', 'lastEntryKey', 'updatedAt'])
+        && scoreDiff.addedKeys() == [newKey].toSet()
+        && scoreDiff.affectedKeys() == [newKey].toSet()
+        && metaDiff.addedKeys() == [newKey].toSet()
+        && metaDiff.affectedKeys() == [newKey].toSet()
+        && request.resource.data.updatedAt == request.time
+        && validOwnAttempt(gameId, newKey);
+    }
+
+    match /leaderboards/{gameId} {
+      allow get, list: if signedIn();
+
+      allow create: if signedIn() && leaderboardDocument(gameId)
+        && request.resource.data.keys().hasAll(['label', 'updatedAt'])
+        && request.resource.data.keys().hasOnly(['label', 'updatedAt'])
+        && validLeaderboardLabel(gameId)
+        && request.resource.data.updatedAt == request.time;
+
+      // Existing scoring code updates only the parent timestamp. Keep its
+      // label immutable; prevent overwriting the parent or other players.
+      allow update: if signedIn() && leaderboardDocument(gameId)
+        && request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['updatedAt'])
+        && request.resource.data.updatedAt == request.time;
+
+      allow delete: if isAdmin();
+
+      match /gameHistory/{monthId} {
+        allow get, list: if signedIn();
+        allow create: if signedIn() && leaderboardDocument(gameId)
+          && monthId.matches('^[0-9]{4}-(0[1-9]|1[0-2])$')
+          && validNewHistory(gameId);
+        allow update: if signedIn() && leaderboardDocument(gameId)
+          && monthId.matches('^[0-9]{4}-(0[1-9]|1[0-2])$')
+          && validAppendedHistory(gameId);
+        // The existing admin reset feature deletes monthly history docs.
+        allow delete: if isAdmin();
+      }
+    }
+
+    match /admin-logs/{logId} {
+      allow get, list: if isAdmin();
+      // Admin logs need a trusted server writer when implemented.
+      allow create, update, delete: if false;
+    }
+
     match /{document=**} {
       allow read, write: if false;
     }

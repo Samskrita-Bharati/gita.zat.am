@@ -9,6 +9,10 @@ import {
   auth,
 } from "../api/firebase-config.js";
 
+import { getSafeRedirect, preserveRedirectOnLink } from "./safe-redirect.js";
+
+preserveRedirectOnLink(document.querySelector('a[data-cy="login-link"]'));
+
 const signupForm = document.getElementById("signup-form");
 const nameInput = document.getElementById("signup-name");
 const emailInput = document.getElementById("signup-email");
@@ -62,7 +66,10 @@ signupForm.addEventListener("submit", async (e) => {
 
     setTimeout(() => {
       // window.location.href = "preferences.html"; // Redirect to preferences page
-      window.location.href = "login.html";
+      const login = new URL("../login.html", import.meta.url);
+      const redirect = getSafeRedirect();
+      if (redirect) login.searchParams.set("redirect", redirect);
+      window.location.href = login.href;
     }, 4000);
   } catch (error) {
     console.error(error);
