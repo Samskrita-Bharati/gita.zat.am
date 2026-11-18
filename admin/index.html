@@ -12,11 +12,20 @@
     <div id="navbar-mount"></div>
 
     <main class="gg-admin-main">
-      <section id="access-state" class="gg-access-state" role="status" aria-live="polite">
+      <section
+        id="access-state"
+        class="gg-access-state"
+        role="status"
+        aria-live="polite"
+      >
         <div class="gg-access-icon" aria-hidden="true">🔒</div>
         <h1 id="access-title">Checking access…</h1>
-        <p id="access-description">Please wait while we verify your administrator permissions.</p>
-        <a class="gg-button gg-button-secondary" href="../index.html">Back to games</a>
+        <p id="access-description">
+          Please wait while we verify your administrator permissions.
+        </p>
+        <a class="gg-button gg-button-secondary" href="../index.html"
+          >Back to games</a
+        >
       </section>
 
       <!-- Never shown until the account document confirms isAdmin === true. -->
@@ -24,8 +33,14 @@
         <header class="gg-admin-hero">
           <div>
             <div class="gg-eyebrow">GG — ZAT.AM · ADMINISTRATION</div>
-            <h1>Learning Insights <span class="gg-hero-spark" aria-hidden="true">✦</span></h1>
-            <p>Understand your learning community, game activity, and leaderboard performance.</p>
+            <h1>
+              Learning Insights
+              <span class="gg-hero-spark" aria-hidden="true">✦</span>
+            </h1>
+            <p>
+              Understand your learning community, game activity, and leaderboard
+              performance.
+            </p>
           </div>
           <div class="gg-hero-controls">
             <label for="date-range">Reporting period</label>
@@ -34,7 +49,13 @@
               <option value="30" selected>Last 30 days</option>
               <option value="90">Last 90 days</option>
             </select>
-            <button id="refresh-dashboard" type="button" class="gg-button gg-button-primary">↻ Refresh</button>
+            <button
+              id="refresh-dashboard"
+              type="button"
+              class="gg-button gg-button-primary"
+            >
+              ↻ Refresh
+            </button>
           </div>
         </header>
 
@@ -50,53 +71,234 @@
             </nav>
             <div class="gg-sidebar-note">
               <strong>Firestore reporting</strong>
-              <span>Google Analytics traffic reports stay in your separate GA4 property.</span>
+              <span
+                >Google Analytics traffic reports stay in your separate GA4
+                property.</span
+              >
             </div>
           </aside>
 
           <div class="gg-admin-content">
-            <div id="data-status" class="gg-data-status" role="status" aria-live="polite">Loading Firebase reports…</div>
-            <section id="overview" class="gg-report-section" aria-labelledby="overview-title">
+            <div
+              id="data-status"
+              class="gg-data-status"
+              role="status"
+              aria-live="polite"
+            >
+              Loading Firebase reports…
+            </div>
+            <section
+              id="overview"
+              class="gg-report-section"
+              aria-labelledby="overview-title"
+            >
               <div class="gg-section-heading">
-                <div><div class="gg-section-kicker">AT A GLANCE</div><h2 id="overview-title">Overview</h2></div>
+                <div>
+                  <div class="gg-section-kicker">AT A GLANCE</div>
+                  <h2 id="overview-title">Overview</h2>
+                </div>
                 <span id="updated-at" class="gg-muted">Not refreshed yet</span>
               </div>
               <div class="gg-metric-grid">
-                <article class="gg-metric-card"><div class="gg-metric-head"><span>Registered profiles</span><span aria-hidden="true">♙</span></div><strong id="stat-players">—</strong><small>Firestore public profiles, all time</small></article>
-                <article class="gg-metric-card"><div class="gg-metric-head"><span>New registrations</span><span aria-hidden="true">✦</span></div><strong id="stat-signups">—</strong><small>Within the selected period</small></article>
-                <article class="gg-metric-card"><div class="gg-metric-head"><span>Game page visits</span><span aria-hidden="true">▣</span></div><strong id="stat-visits">—</strong><small>Recorded visits, not GA4 page views</small></article>
-                <article class="gg-metric-card"><div class="gg-metric-head"><span>Recorded scores</span><span aria-hidden="true">♛</span></div><strong id="stat-scores">—</strong><small>Existing Global leaderboard attempts</small></article>
+                <article class="gg-metric-card">
+                  <div class="gg-metric-head">
+                    <span>Registered profiles</span
+                    ><span aria-hidden="true">♙</span>
+                  </div>
+                  <strong id="stat-players">—</strong
+                  ><small>Firestore public profiles, all time</small>
+                </article>
+                <article class="gg-metric-card">
+                  <div class="gg-metric-head">
+                    <span>New registrations</span
+                    ><span aria-hidden="true">✦</span>
+                  </div>
+                  <strong id="stat-signups">—</strong
+                  ><small>Within the selected period</small>
+                </article>
+                <article class="gg-metric-card">
+                  <div class="gg-metric-head">
+                    <span>Game page visits</span
+                    ><span aria-hidden="true">▣</span>
+                  </div>
+                  <strong id="stat-visits">—</strong
+                  ><small>Recorded visits, not GA4 page views</small>
+                </article>
+                <article class="gg-metric-card">
+                  <div class="gg-metric-head">
+                    <span>Recorded scores</span
+                    ><span aria-hidden="true">♛</span>
+                  </div>
+                  <strong id="stat-scores">—</strong
+                  ><small>Existing Global leaderboard attempts</small>
+                </article>
               </div>
             </section>
 
-            <section id="players" class="gg-report-section" aria-labelledby="players-title">
-              <div class="gg-section-heading"><div><div class="gg-section-kicker">COMMUNITY</div><h2 id="players-title">Players &amp; activity</h2></div></div>
+            <section
+              id="players"
+              class="gg-report-section"
+              aria-labelledby="players-title"
+            >
+              <div class="gg-section-heading">
+                <div>
+                  <div class="gg-section-kicker">COMMUNITY</div>
+                  <h2 id="players-title">Players &amp; activity</h2>
+                </div>
+              </div>
               <div class="gg-two-col">
-                <div class="gg-panel"><div class="gg-panel-header"><h3>Recent registrations</h3><span>Profile records</span></div><div id="recent-players" class="gg-players-list gg-empty">Waiting for data…</div></div>
-                <div class="gg-panel"><div class="gg-panel-header"><h3>Login activity</h3><span>Based on lastLogin</span></div><div class="gg-feature-stat"><strong id="stat-active-users">—</strong><span>Profiles active in the selected period</span></div><p class="gg-explain">This is based on the existing login streak timestamp, not on live online status.</p></div>
+                <div class="gg-panel">
+                  <div class="gg-panel-header">
+                    <h3>Recent registrations</h3>
+                    <span>Profile records</span>
+                  </div>
+                  <div id="recent-players" class="gg-players-list gg-empty">
+                    Waiting for data…
+                  </div>
+                </div>
+                <div class="gg-panel">
+                  <div class="gg-panel-header">
+                    <h3>Login activity</h3>
+                    <span>Based on lastLogin</span>
+                  </div>
+                  <div class="gg-feature-stat">
+                    <strong id="stat-active-users">—</strong
+                    ><span>Profiles active in the selected period</span>
+                  </div>
+                  <p class="gg-explain">
+                    This is based on the existing login streak timestamp, not on
+                    live online status.
+                  </p>
+                </div>
               </div>
             </section>
 
-            <section id="games" class="gg-report-section" aria-labelledby="games-title">
-              <div class="gg-section-heading"><div><div class="gg-section-kicker">ENGAGEMENT</div><h2 id="games-title">Games</h2></div><span class="gg-muted">Includes future catalog games automatically</span></div>
-              <div class="gg-panel gg-chart-panel"><div class="gg-panel-header"><h3>Recorded game visits</h3><span id="visits-range">Selected period</span></div><div id="visits-chart" class="gg-bar-chart" aria-label="Recorded game visits over time"></div><p id="visit-note" class="gg-explain">Game visits are recorded only on pages that load the shared GG navbar and pass authentication.</p></div>
-              <div class="gg-panel gg-table-panel"><div class="gg-panel-header"><h3>Games overview</h3><span>Registered catalog + recorded activity</span></div><div class="gg-table-scroll"><table><thead><tr><th>Game</th><th>Page visits</th><th>Score submissions</th><th>Avg. score</th></tr></thead><tbody id="game-table"><tr><td colspan="4">Loading games…</td></tr></tbody></table></div></div>
+            <section
+              id="games"
+              class="gg-report-section"
+              aria-labelledby="games-title"
+            >
+              <div class="gg-section-heading">
+                <div>
+                  <div class="gg-section-kicker">ENGAGEMENT</div>
+                  <h2 id="games-title">Games</h2>
+                </div>
+                <span class="gg-muted"
+                  >Includes future catalog games automatically</span
+                >
+              </div>
+              <div class="gg-panel gg-chart-panel">
+                <div class="gg-panel-header">
+                  <h3>Recorded game visits</h3>
+                  <span id="visits-range">Selected period</span>
+                </div>
+                <div
+                  id="visits-chart"
+                  class="gg-bar-chart"
+                  aria-label="Recorded game visits over time"
+                ></div>
+                <p id="visit-note" class="gg-explain">
+                  Game visits are recorded only on pages that load the shared GG
+                  navbar and pass authentication.
+                </p>
+              </div>
+              <div class="gg-panel gg-table-panel">
+                <div class="gg-panel-header">
+                  <h3>Games overview</h3>
+                  <span>Registered catalog + recorded activity</span>
+                </div>
+                <div class="gg-table-scroll">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Game</th>
+                        <th>Page visits</th>
+                        <th>Score submissions</th>
+                        <th>Avg. score</th>
+                      </tr>
+                    </thead>
+                    <tbody id="game-table">
+                      <tr>
+                        <td colspan="4">Loading games…</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
             </section>
 
-            <section id="scores" class="gg-report-section" aria-labelledby="scores-title">
-              <div class="gg-section-heading"><div><div class="gg-section-kicker">ACHIEVEMENTS</div><h2 id="scores-title">Score analytics</h2></div><a class="gg-text-link" href="../leaderboard/">View leaderboard →</a></div>
+            <section
+              id="scores"
+              class="gg-report-section"
+              aria-labelledby="scores-title"
+            >
+              <div class="gg-section-heading">
+                <div>
+                  <div class="gg-section-kicker">ACHIEVEMENTS</div>
+                  <h2 id="scores-title">Score analytics</h2>
+                </div>
+                <a class="gg-text-link" href="../leaderboard/"
+                  >View leaderboard →</a
+                >
+              </div>
               <div class="gg-two-col">
-                <div class="gg-panel"><div class="gg-panel-header"><h3>Average submitted score</h3><span>0–100 point scale</span></div><div class="gg-feature-stat"><strong id="stat-average-score">—</strong><span>Across recorded attempts this period</span></div><p class="gg-explain">These values come from the existing scoring history. We do not change game scoring or treat browser-submitted scores as server-verified.</p></div>
-                <div class="gg-panel"><div class="gg-panel-header"><h3>Recent recorded attempts</h3><span>Global history</span></div><div id="score-list" class="gg-attempt-list gg-empty">Waiting for scores…</div></div>
+                <div class="gg-panel">
+                  <div class="gg-panel-header">
+                    <h3>Average submitted score</h3>
+                    <span>0–100 point scale</span>
+                  </div>
+                  <div class="gg-feature-stat">
+                    <strong id="stat-average-score">—</strong
+                    ><span>Across recorded attempts this period</span>
+                  </div>
+                  <p class="gg-explain">
+                    These values come from the existing scoring history. We do
+                    not change game scoring or treat browser-submitted scores as
+                    server-verified.
+                  </p>
+                </div>
+                <div class="gg-panel">
+                  <div class="gg-panel-header">
+                    <h3>Recent recorded attempts</h3>
+                    <span>Global history</span>
+                  </div>
+                  <div id="score-list" class="gg-attempt-list gg-empty">
+                    Waiting for scores…
+                  </div>
+                </div>
               </div>
             </section>
 
-            <section id="streaks" class="gg-report-section" aria-labelledby="streaks-title">
-              <div class="gg-section-heading"><div><div class="gg-section-kicker">CONSISTENCY</div><h2 id="streaks-title">Streaks</h2></div></div>
-              <div class="gg-panel"><div class="gg-panel-header"><h3>Highest recorded streaks</h3><span>Existing login-based streak field</span></div><div id="streak-list" class="gg-streak-list gg-empty">Waiting for data…</div><p class="gg-explain">Streak values are maintained by the existing application. No streak rules or calculations have been changed.</p></div>
+            <section
+              id="streaks"
+              class="gg-report-section"
+              aria-labelledby="streaks-title"
+            >
+              <div class="gg-section-heading">
+                <div>
+                  <div class="gg-section-kicker">CONSISTENCY</div>
+                  <h2 id="streaks-title">Streaks</h2>
+                </div>
+              </div>
+              <div class="gg-panel">
+                <div class="gg-panel-header">
+                  <h3>Highest recorded streaks</h3>
+                  <span>Existing login-based streak field</span>
+                </div>
+                <div id="streak-list" class="gg-streak-list gg-empty">
+                  Waiting for data…
+                </div>
+                <p class="gg-explain">
+                  Streak values are maintained by the existing application. No
+                  streak rules or calculations have been changed.
+                </p>
+              </div>
             </section>
 
-            <footer class="gg-admin-footer">GG — Zat.am · Administrator access only · Firestore activity and leaderboard data</footer>
+            <footer class="gg-admin-footer">
+              GG — Zat.am · Administrator access only · Firestore activity and
+              leaderboard data
+            </footer>
           </div>
         </div>
       </div>
