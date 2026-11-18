@@ -35,6 +35,8 @@ import { generateBoard } from './utils/generateBoard';
 import { seedFromId } from './utils/seededRandom';
 import { leaderboardScore, prepareStrandsScoreRun } from './services/strandsLeaderboard';
 
+import { applyHintCosts, SHLOKA_HINT_COST } from './utils/hintScore';
+
 const COMPLETED_KEY =
   'gita-strands:completed:v1';
 
@@ -88,6 +90,7 @@ export default function App() {
   const [hintsRemaining,setHintsRemaining] = useState(0);
 
   const [hintsUsed,setHintsUsed] = useState(0);
+  const [shlokaRevealed, setShlokaRevealed] = useState(false);
 
   const [started,setStarted] = useState(false);
 
@@ -188,6 +191,7 @@ const foundRequiredCount = useMemo(
     setWordPoints(0);
 
     setHintsUsed(0);
+    setShlokaRevealed(false);
 
     setHintsRemaining(nextTheme?.startingHints ?? 0);
 
@@ -315,24 +319,19 @@ const hasInProgressRun = Boolean(
 
     const speedBonus = speedBonusFor(activeTheme,elapsedSeconds);
 
-    const penalty = hintsUsed * activeTheme.hintPenalty;
-
-    const rawTotal =
-      finalWordPoints +
-      activeTheme.completionPoints +
-      speedBonus -
-      penalty;
-
-    const total = Math.max(
+    const { total, hintPenalty: penalty, hintsUsed: totalHintsUsed } = applyHintCosts(
+      finalWordPoints + activeTheme.completionPoints + speedBonus,
       activeTheme.completionPoints,
-      rawTotal,
+      hintsUsed,
+      activeTheme.hintPenalty,
+      shlokaRevealed,
     );
 
     const minutes = elapsedSeconds / 60;
 
     const stars:1|2|3 =
 
-      hintsUsed === 0 && minutes < 3 ? 3 :
+      totalHintsUsed === 0 && minutes < 3 ? 3 :
 
       minutes < 6 ? 2 : 1;
 
@@ -350,7 +349,7 @@ const hasInProgressRun = Boolean(
 
       elapsedSeconds,
 
-      hintsUsed,
+      hintsUsed: totalHintsUsed,
 
       stars
 
@@ -512,46 +511,27 @@ const hasInProgressRun = Boolean(
 
   }
 
+  const canUseHints = Boolean(theme && started && !done && !answerMode && !tutorialOpen);
+  const canUsePathHint = canUseHints && hintsRemaining > 0 && revealed.size === 0;
+
   function useHint() {
-
-    if (!theme || !started || hintsRemaining < 1 || done) return;
-
-  const target = theme.targets.find(
-
-    (item) =>
-
-      !item.bonus &&
-
-      !found.has(item.id) &&
-
-      !revealed.has(item.id)
-
-  );
-
-    if (!target) {
-
-      setMessage(language === 'sa'
-
-        ? 'सर्वेषाम् अवशिष्टशब्दानां सूचना सक्रियाऽस्ति।'
-
-        : 'Every remaining word already has a hint active.');
-
-      return;
-
-    }
-
+    if (!theme || !canUsePathHint) return;
+    const target = requiredTargets.find((item) => !found.has(item.id));
+    if (!target) return;
     setHintsRemaining((count) => count - 1);
-
     setHintsUsed((count) => count + 1);
-
-    setRevealed((current) => new Set(current).add(target.id));
-
+    setRevealed(new Set([target.id]));
     setMessage(language === 'sa'
+      ? `नीलमार्गम् अनुसरतु। अन्तिमाङ्काः −${theme.hintPenalty}।`
+      : `Follow the blue arrow. Final score −${theme.hintPenalty}.`);
+  }
 
-      ? `नीलसूचना प्रयुक्ता। अन्तिमाङ्काः −${theme.hintPenalty}।`
-
-      : `Blue hint active. Final score −${theme.hintPenalty}.`);
-
+  function revealShloka() {
+    if (!canUseHints || shlokaRevealed) return;
+    setShlokaRevealed(true);
+    setMessage(language === 'sa'
+      ? `पूर्णश्लोकः प्रकाशितः। अन्तिमाङ्काः −${SHLOKA_HINT_COST}।`
+      : `Full shloka unlocked. Final score −${SHLOKA_HINT_COST}.`);
   }
 
   function requestShowAnswer() {
@@ -577,6 +557,7 @@ const hasInProgressRun = Boolean(
     setWordPoints(0);
 
     setHintsUsed(0);
+    setShlokaRevealed(false);
 
     setHintsRemaining(theme.startingHints);
 
@@ -612,17 +593,11 @@ const hasInProgressRun = Boolean(
 
           <div className="theme-heading">
 
-            <div className="theme-eyebrow">{language === 'sa' ? 'भगवद्गीता' : 'BHAGAVAD GITA'}</div>
-
-            <h1>{theme.titleSanskrit} {language === 'en' && <span>{theme.titleEnglish}</span>}</h1>
-
-            <p>{language === 'sa' ? (theme.clueSanskrit || theme.clue) : theme.clue}</p>
+            <h2>{language === 'sa' ? theme.titleSanskrit : theme.titleEnglish}</h2>
 
           </div>
 
           <div className="theme-meta">
-
-            <span>{language === 'sa' ? 'श्लोकः' : 'Shared shloka'}</span>
 
             <b>{theme.rows} × {theme.cols}</b>
 
@@ -634,10 +609,6 @@ const hasInProgressRun = Boolean(
 
         </section>
 
-        <details className="shloka-text-card">
-          <summary>{language === 'sa' ? 'श्लोकं पठतु' : 'Read the shloka'}</summary>
-          <p lang="sa">{sourceTheme.text}</p>
-        </details>
         <div className="game-grid">
 
           <section className="board-card">
@@ -724,26 +695,6 @@ const hasInProgressRun = Boolean(
 
             />
 
-            <HintPanel
-
-              hintsRemaining={hintsRemaining}
-
-              hintsUsed={hintsUsed}
-
-              hintPenalty={theme.hintPenalty}
-
-              canHint={started && !done && hintsRemaining > 0}
-
-              onHint={useHint}
-
-              language={language}
-
-              onShowAnswer={requestShowAnswer}
-
-              canShowAnswer={!done && !answerMode}
-
-            />
-
             {answerMode && (
 
               <div className="answer-mode-bar">
@@ -772,6 +723,20 @@ const hasInProgressRun = Boolean(
               foundCount={foundRequiredCount}
               requiredCount={requiredTargets.length}
               language={language}
+            />
+            <HintPanel
+              hintsRemaining={hintsRemaining}
+              wordHintCost={theme.hintPenalty}
+              shlokaHintCost={SHLOKA_HINT_COST}
+              canHint={canUsePathHint}
+              activeWordHint={!answerMode && revealed.size > 0}
+              canReadShloka={canUseHints}
+              shlokaText={shlokaRevealed ? sourceTheme.text : null}
+              onHint={useHint}
+              onRevealShloka={revealShloka}
+              language={language}
+              onShowAnswer={requestShowAnswer}
+              canShowAnswer={!done && !answerMode && !tutorialOpen}
             />
             <WordPanel theme={theme} found={found} revealed={revealed} language={language} showAnswers={answerMode} />
           </aside>

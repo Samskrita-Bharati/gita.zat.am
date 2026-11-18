@@ -68,19 +68,34 @@ export default function StrandBoard({
   }
 
   useLayoutEffect(() => {
-    if (!boardRef.current) return;
-
-    if (selection.length === 0) setLinePoints([]);
-    else setLinePoints(selection.map(centerForCell));
-
-    setGuideLines(
-      revealedTargets.map((target) => ({
-        id: target.id,
-        spangram: target.featured,
-        points: target.path.map(centerForCell),
-      })),
-    );
-  }, [selection, theme.id, revealed, showAnswers]);
+    const board = boardRef.current;
+    if (!board) return;
+    const updatePaths = () => {
+      setLinePoints(selection.map(centerForCell));
+      const cellWidth = board.querySelector<HTMLElement>('.letter-cell')?.offsetWidth ?? 0;
+      setGuideLines(
+        revealedTargets.map((target) => {
+          const points = target.path.map(centerForCell);
+          const end = points.at(-1);
+          const previous = points.at(-2);
+          if (end && previous) {
+            const length = Math.hypot(end.x - previous.x, end.y - previous.y);
+            if (length > 0) {
+              // Stop near the final tile's edge so the arrow does not cover its letter.
+              const trim = Math.min(cellWidth * 0.34, length / 2);
+              end.x -= (end.x - previous.x) * trim / length;
+              end.y -= (end.y - previous.y) * trim / length;
+            }
+          }
+          return { id: target.id, spangram: target.featured, points };
+        }),
+      );
+    };
+    updatePaths();
+    const observer = new ResizeObserver(updatePaths);
+    observer.observe(board);
+    return () => observer.disconnect();
+  }, [selection, theme, revealed, showAnswers]);
 
   function begin(cell: Cell, pointerId: number, target: HTMLElement) {
     if (disabled) return;
@@ -207,3 +222,4 @@ export default function StrandBoard({
     </div>
   );
 }
+

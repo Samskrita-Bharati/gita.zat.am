@@ -12,7 +12,6 @@ export default function TutorialOverlay({ open, language, onClose }: Props) {
   return (
     <div className="modal-backdrop tutorial-backdrop" role="dialog" aria-modal="true">
       <div className="tutorial-card">
-        <div className="tutorial-badge">01</div>
         <small>{sa ? 'शीघ्रमार्गदर्शनम्' : 'QUICK TUTORIAL'}</small>
         <h2>{sa ? 'एवं क्रीडतु' : 'How to play'}</h2>
 

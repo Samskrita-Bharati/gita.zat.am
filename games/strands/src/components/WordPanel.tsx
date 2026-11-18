@@ -26,7 +26,5 @@ export default function WordPanel({ theme, found, revealed, language, showAnswer
       })}
     </div>
     <p className="discovery-help">{tr(language, 'discoveryHelp')}</p>
-    {!showAnswers && revealed.size > 0 && <div className="hint-note"><span>{tr(language, 'hintActive')}</span><p>{tr(language, 'hintActiveText')}</p></div>}
-    <div className="rule-card"><strong>{tr(language, 'scoringWorks')}</strong><p>{tr(language, 'scoringText')}</p></div>
   </section>;
 }
