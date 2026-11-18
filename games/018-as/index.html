@@ -266,7 +266,7 @@ selectedCard=null;
     var cardNumber = i + 1;
     var card = $('<div></div>')
       .addClass('ordering-number-card')
-      .text(cardNumber + ' - ' + displayNumber(cardNumber))
+      .text(displayNumber(cardNumber))
       .data('number', cardNumber)
       .attr({
         id: 'card' + cardNumber,
@@ -346,7 +346,7 @@ function matchCardToSlot(slot, card) {
     card.append(' ✓');
     card.addClass('correct').attr({ tabindex: -1, 'aria-disabled': 'true' });
     card.attr('draggable', 'false');
-    slot.addClass('matched').data('matched', true).attr({ tabindex: -1, 'aria-disabled': 'true' }).empty().append(card);
+    slot.addClass('matched').data('matched', true).attr({ tabindex: -1, 'aria-disabled': 'true' }).append(card);
     correctCards++;
     updateGameHint('Correct match ✓');
   } 
