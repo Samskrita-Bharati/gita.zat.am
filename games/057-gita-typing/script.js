@@ -27,7 +27,36 @@ async function get_gita() {
   meanings = quotes_all.meanings;
 }
 
-get_gita();
+const gitaReady = get_gita();
+gitaReady.catch(() => {});
+let dailyChallenge = null;
+let dailyChallengeTools = null;
+const dailyChallengeRequested = new URLSearchParams(window.location.search).has("date");
+const dailyChallengeReady = dailyChallengeRequested
+  ? Promise.all([
+      import("./daily-challenge.mjs"),
+      fetch("../../assets/bhagavad-gita-verses.json").then((response) => {
+        if (!response.ok) throw new Error("Daily shlokas could not be loaded.");
+        return response.json();
+      }),
+      gitaReady,
+    ]).then(([tools, verses]) => {
+      dailyChallengeTools = tools;
+      dailyChallenge = tools.resolveDailyChallenge(window.location.search, verses, quotes, meanings);
+    })
+  : Promise.resolve();
+// Attach a handler immediately so a failed request is reported when Start is pressed.
+dailyChallengeReady.catch(() => {});
+if (dailyChallengeRequested) {
+  const notice = document.getElementById("dailyChallengeNotice");
+  const back = document.createElement("a");
+  const calendarUrl = new URL("../../calendar/index.html", window.location.href);
+  calendarUrl.searchParams.set("date", new URLSearchParams(window.location.search).get("date"));
+  back.href = calendarUrl.href;
+  back.textContent = "Return to calendar";
+  notice.append("Daily challenge: the selected shloka overrides the progression setting. ", back);
+  notice.hidden = false;
+}
 
 const imp_quotes = [
 // Most interesting verses
@@ -118,7 +147,18 @@ let num_errors, progression_type, nectar_index=-1, is_random;
 
 let lastPlayedTs;
 
-function startGame() {
+async function startGame() {
+
+  start.disabled = true;
+  try {
+    await gitaReady;
+    await dailyChallengeReady;
+  } catch (error) {
+    info.textContent = `Could not start the game: ${error.message} Please return to the calendar and try again.`;
+    start.disabled = false;
+    return;
+  }
+  start.disabled = false;
 
   console.log("new game started!");
   is_playing = true;
@@ -137,7 +177,10 @@ function startGame() {
   share.style.display = "none";
   tooltip.innerHTML = "Copy to clipboard";
   
-  if (progression_type == 1) {
+  if (dailyChallenge) {
+    ch_index = dailyChallenge.verse.ch - 1;
+    sh_index = dailyChallenge.verse.vn - 1;
+  } else if (progression_type == 1) {
     ch_index = Math.floor(Math.random() * quotes.length);
     sh_index = Math.floor(Math.random() * quotes[ch_index].length);
   } else if (progression_type == 0) {
@@ -160,7 +203,7 @@ function startGame() {
     }
     sh_index = nectar_list[ch_index][nectar_index]-1;
   }
-  quoteText = quotes[ch_index][sh_index];
+  quoteText = dailyChallenge ? dailyChallenge.quote : quotes[ch_index][sh_index];
   wordQueue = quoteText.split(" ");
   
   reference.innerHTML = `Chapter: ${ch_index+1}, Shloka: ${sh_index+1}`
@@ -188,7 +231,7 @@ function checkInput() {
   if (typedValue == "@") {
     console.log("cheat code for testing game");
     input.value = ""; // empty the text input
-    gameOver();
+    gameOver(false);
     return;
   }
   if (currentWord !== typedValue) {
@@ -213,7 +256,7 @@ function checkInput() {
 
   if (wordQueue.length === 0) {
     console.log("Successfully finished game");
-    gameOver();
+    gameOver(true);
     return;
   }
 
@@ -222,7 +265,7 @@ function checkInput() {
 
 let elapsedTime;
 
-function gameOver() {
+function gameOver(completedCorrectly = false) {
   if (is_playing == false) {
     return;
   } else {
@@ -240,15 +283,27 @@ function gameOver() {
     <br> You finished in ${elapsedTime/1000} seconds with ${num_errors} typos
     `;
   
-  quote.innerHTML = `<span class="quote">Verse: ${quotes[ch_index][sh_index].split(",").join("<br>")}</span>`;
-  meaning.innerHTML = `<span class="meaning">Meaning: ${meanings[ch_index][sh_index]}</span>`;
+  quote.innerHTML = `<span class="quote">Verse: ${quoteText.split(",").join("<br>")}</span>`;
+  meaning.innerHTML = `<span class="meaning">Meaning: ${dailyChallenge ? dailyChallenge.meaning : meanings[ch_index][sh_index]}</span>`;
+
+  if (dailyChallenge && completedCorrectly) {
+    const status = document.createElement("p");
+    try {
+      dailyChallengeTools.saveDailyCompletion(dailyChallenge);
+      status.textContent = "✓ Shloka completed and saved to your calendar in this browser.";
+    } catch (error) {
+      status.textContent = "The shloka was completed, but its calendar tick could not be saved in this browser.";
+      console.error(error);
+    }
+    message.appendChild(status);
+  }
   
   
   input.style.display = "none";
   share.style.display = "block";
   share.focus();
   
-  if (is_random == false) {
+  if (is_random == false && !dailyChallenge) {
     save_history();
   }
   
@@ -321,7 +376,11 @@ function save_history() {
   localStorage.setItem('lpts', lpts);
 }
 
-get_history();
+try {
+  get_history();
+} catch (error) {
+  console.warn("Typing history is unavailable in this browser:", error);
+}
 input.style.display = "none";
 share.style.display = "none";
 

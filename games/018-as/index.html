@@ -18,23 +18,6 @@
 <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.5.0/jquery.min.js"></script>
 <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.9/jquery-ui.min.js"></script>
 <script type="text/javascript">
-var s=["भाषासु मुख्या मधुरा दिव्या गीर्वाणभारती। तत्रापि मधुरं काव्यं तस्मादपि सुभाषितम्॥",
-"पृथिव्यां त्रीणि रत्नानि जलमन्नं सुभाषितम्। मूढै: पाषाणखण्डेषु रत्नसंज्ञा विधीयते॥",
-"अञ्जलिस्थानि पुष्पाणि वासयन्ति करद्वयम्। अहो सुमनसां प्रीति: वामदक्षिणयो: समा॥",	
-"उदये सविता रक्तो रक्तश्चास्तमने तथा। सम्पत्तौ च विपत्तौ च महतामेकरूपता॥",	
-"छायामन्यस्य कुर्वन्ति तिष्ठन्ति स्वयमातपे फलान्यपि परार्थाय वृक्षाः सत्पुरुषाः इव॥",
-"भुक्त्वा तृणानि शुष्कानि पीत्वा तोयं जलाशयात्। दुग्धं यच्छन्ति लोकेभ्यः धेनवो लोकमातरः॥",
-"कुसुमं वर्णसंपन्नं गन्धहीनं न शोभते। न शोभते क्रियाहीनं मधुरं वचनं तथा॥",
-"यथा चित्तं तथा वाचो यथा वाचस्तथा क्रियाः। चित्ते वाचि क्रियायां च साधूनामेकरूपता॥",
-"काकः कृष्णः पिकः कृष्णः को भेदः पिककाकयोः| वसन्तसमये प्राप्ते काकः काकः पिकः पिकः॥",
-"हस्तस्य भूषणं दानं सत्यं कण्ठस्य भूषणम्। श्रोत्रस्य भूषणं शास्त्रं भूषणैः किं प्रयोजनम्॥",
-"क्षणशः कणशश्चैव विद्यामर्थं च साधयेत्। क्षणत्यागे कुतो विद्या कणत्यागे कुतो धनम्॥",
-"नास्ति विद्यासमो बन्धुः नास्ति विद्यासमः सहृत्। नास्ति विद्यासमं वित्तम् नास्ति विद्यासमं सुखम्॥",
-"अन्नदानं परं दानं विद्यादानमतः परम्। अन्नेन क्षणिका तृप्तिः यावज्जीवं च विद्यया॥",
-"नास्ति भूम्या समं दानं नास्ति मात्रा समो गुरुः। नास्ति सत्यात्परो धर्मो नास्ति दानात्परं धनम्॥",
-"काव्यशास्त्रविनोदेन कालो गच्छति धीमताम्। व्यसनेन तु मूर्खाणां निद्रया कलहेन वा॥",
-"यावत् तिष्ठन्ति गिरयो यावच्चन्द्रदिवाकरौ। यावत् वहन्ति सरितः तावत् स्थास्यन्ति संस्कृतम्॥",
-]
 var correctCards = 0;
 var gameHintElement;
 var verseProgressElement;
@@ -45,23 +28,34 @@ var resultScoreElement;
 var resultDetailsElement;
 var scoreSaveStatusElement;
 var selectedCard = null;
-var gameActive = true;
+var gameActive = false;
 var hasStarted = false;
 var elapsedSeconds = 0;
 var timerId = null;
 var wrongMatches = 0;
-$( init );
-const urlParams = new URLSearchParams(window.location.search);
-var requestedSnum = urlParams.get('snum');
-var parsedSnum = Number(requestedSnum);
-var playableVerseIndexes = s.reduce(function(indexes, verse, index) {
-  if (typeof verse === 'string' && verse.trim()) indexes.push(index);
-  return indexes;
-}, []);
-var snum = Number.isInteger(parsedSnum) && playableVerseIndexes.indexOf(parsedSnum) !== -1
-  ? parsedSnum
-  : playableVerseIndexes[Math.floor(Math.random() * playableVerseIndexes.length)];
-var words=s[snum].trim().split(/\s+/).filter(Boolean);
+var words = [];
+var dailyVerse = null;
+var dailyDate = null;
+var todayIds = [];
+
+$(function() { void loadDailyGame(); });
+
+async function loadDailyGame() {
+  var status = document.getElementById('dailyGameStatus');
+  try {
+    var daily = await import('./daily-shloka.mjs');
+    var challenge = await daily.loadTodaysShloka(window.location.search);
+    words = challenge.words;
+    dailyVerse = challenge.verse;
+    dailyDate = challenge.date;
+    todayIds = challenge.todayIds;
+    status.textContent = '';
+    init();
+  } catch (error) {
+    console.error('[018-as] Could not load today’s shloka:', error);
+    status.textContent = 'Today’s shloka could not be loaded. Please refresh the page to try again.';
+  }
+}
 
 function devanagari(value) {
   return Sanscript.t(String(value), 'iast', 'devanagari');
@@ -128,8 +122,10 @@ async function saveCompletedScore(finalScore) {
   try {
     var result = await window.orderingGameScore.submit(finalScore, {
       metrics: {
-        shlokaNumber: playableVerseIndexes.indexOf(snum) + 1,
-        totalShlokas: playableVerseIndexes.length,
+        shlokaId: dailyVerse.id,
+        shlokaChapter: dailyVerse.ch,
+        shlokaVerse: dailyVerse.vn,
+        shlokaDate: dailyDate,
         segments: words.length,
         matches: correctCards,
         wrongMatches: wrongMatches,
@@ -159,19 +155,18 @@ async function saveCompletedScore(finalScore) {
 function updateVerseProgress() {
   if (!verseProgressElement) return;
 
-  verseProgressElement.textContent =
-    (playableVerseIndexes.indexOf(snum) + 1) +
-    ' of ' + playableVerseIndexes.length;
+  verseProgressElement.textContent = dailyVerse
+    ? dailyVerse.ch + '.' + dailyVerse.vn
+    : '—';
 }
 
 function goToNextVerse() {
-  var currentVersePosition = playableVerseIndexes.indexOf(snum);
-  var nextVerseIndex = playableVerseIndexes[
-    (currentVersePosition + 1) % playableVerseIndexes.length
-  ];
+  if (!dailyVerse || todayIds.length < 2) return;
+  var nextId = todayIds[(todayIds.indexOf(dailyVerse.id) + 1) % todayIds.length];
   var nextUrl = new URL(window.location.href);
 
-  nextUrl.searchParams.set('snum', nextVerseIndex);
+  nextUrl.searchParams.set('id', nextId);
+  nextUrl.searchParams.delete('snum');
   window.location.assign(nextUrl.toString());
 }
 
@@ -236,6 +231,7 @@ function selectSlot(slot) {
 }
 
 function init() {
+if (!dailyVerse || !words.length) return;
 gameHintElement=document.getElementById("gameHint");
 verseProgressElement=document.getElementById("verseProgress");
 scoreElement=document.getElementById("scoreValue");
@@ -252,7 +248,7 @@ wrongMatches=0;
 selectedCard=null;
   updateVerseProgress();
   updateStats();
-  updateGameHint('Drag a number card, or select one and then select its matching saying segment.');
+  updateGameHint('');
   // Hide the success message
   $('#successMessage').hide();
   $('#successMessage').css( {
@@ -270,7 +266,7 @@ selectedCard=null;
     var cardNumber = i + 1;
     var card = $('<div></div>')
       .addClass('ordering-number-card')
-      .text(cardNumber + ' - ' + displayNumber(cardNumber))
+      .text(displayNumber(cardNumber))
       .data('number', cardNumber)
       .attr({
         id: 'card' + cardNumber,
@@ -350,7 +346,7 @@ function matchCardToSlot(slot, card) {
     card.append(' ✓');
     card.addClass('correct').attr({ tabindex: -1, 'aria-disabled': 'true' });
     card.attr('draggable', 'false');
-    slot.addClass('matched').data('matched', true).attr({ tabindex: -1, 'aria-disabled': 'true' }).empty().append(card);
+    slot.addClass('matched').data('matched', true).attr({ tabindex: -1, 'aria-disabled': 'true' }).append(card);
     correctCards++;
     updateGameHint('Correct match ✓');
   } 
@@ -370,6 +366,13 @@ function matchCardToSlot(slot, card) {
     var finalScore = calculateScore();
     updateStats();
     showResult(finalScore);
+    try {
+      localStorage.setItem('gita.calendar.completed.v1.' + dailyDate + '.' + dailyVerse.id, '1');
+      document.getElementById('completionSaveStatus').textContent = '✓ Shloka marked complete in this browser.';
+    } catch (error) {
+      document.getElementById('completionSaveStatus').textContent = 'Your calendar tick could not be saved in this browser.';
+      console.warn('[018-as] Completion mark could not be saved:', error);
+    }
     void saveCompletedScore(finalScore);
     updateGameHint('Saying complete!');
   }
@@ -389,12 +392,11 @@ function matchCardToSlot(slot, card) {
     <p class="mangalam">॥ श्रीः ॥</p>
     <span class="zatam-game-eyebrow">क्रमक्रीडा</span>
     <h1 class="zatam-game-title">सुभाषितम्</h1>
-    <p class="zatam-game-subtitle">Arrange each saying in its proper order.</p>
+    <p class="zatam-game-subtitle">Arrange today’s shloka in its proper order.</p>
   </header>
 
-  <section class="zatam-game-instructions ordering-game-instructions" aria-label="How to play">
-    <p>Drag a Sanskrit-number card onto the matching part of the saying, or tap a card and then its matching saying segment. Complete every match to reveal the full subhāṣita.</p>
-  </section>
+  <p id="dailyGameStatus" class="ordering-selection-status" role="status">Loading today’s shloka…</p>
+  <p id="gameHint" class="ordering-selection-status" role="status" aria-live="polite"></p>
 
   <section class="zatam-game-stats ordering-game-stats" aria-label="Game progress">
     <div class="zatam-game-stat zatam-game-score">
@@ -403,7 +405,7 @@ function matchCardToSlot(slot, card) {
     </div>
     <div class="zatam-game-stat">
       <span class="zatam-game-stat-label">Current shloka</span>
-      <span id="verseProgress" class="zatam-game-stat-value">1 of 16</span>
+      <span id="verseProgress" class="zatam-game-stat-value">—</span>
     </div>
     <div class="zatam-game-stat">
       <span class="zatam-game-stat-label">Time</span>
@@ -415,10 +417,6 @@ function matchCardToSlot(slot, card) {
     </div>
   </section>
 
-  <div class="zatam-game-actions">
-    <button class="zatam-game-btn zatam-game-btn-secondary" type="button" onclick="goToNextVerse()">Next shloka</button>
-  </div>
-
   <section id="content" class="zatam-game-play-area ordering-game-board" aria-label="Subhāṣita ordering game">
     <div id="cardPile" aria-label="Number cards"></div>
     <div id="cardSlots" aria-label="Saying slots"></div>
@@ -428,6 +426,7 @@ function matchCardToSlot(slot, card) {
     <h2>उत्तमम् !  uttamam :)</h2>
     <div id="resultScore" class="zatam-game-result-score">100 / 100</div>
     <p id="resultDetails" class="zatam-game-result-message"></p>
+    <p id="completionSaveStatus" class="zatam-game-status" role="status"></p>
     <p id="scoreSaveStatus" class="zatam-game-status zatam-game-status-info">Checking leaderboard...</p>
     <button class="zatam-game-btn zatam-game-btn-primary" type="button" onclick="init()">पुनः (punaH) Again</button>
   </section>

@@ -1,4 +1,4 @@
-import { getDailySchedule } from "../../shlokasToday/daily-schedule.mjs";
+import { getDailySchedule, SCHEDULE_START } from "../../shlokasToday/daily-schedule.mjs";
 import { cleanShlokaText } from "../../shlokasToday/shlokasToday.js";
 
 const versesUrl = new URL("../../assets/bhagavad-gita-verses.json", import.meta.url);
@@ -39,6 +39,15 @@ function getRequestedId(search) {
 
 export async function getShlokaTextFromUrl(search = window.location.search) {
   const verses = await loadVerses();
+  const resolvedId = resolveShlokaId(search, verses);
+  if (resolvedId === null) return null;
+
+  const verse = verses.find((item) => item.id === resolvedId);
+  const text = typeof verse?.txt === "string" ? cleanShlokaText(verse.txt) : null;
+  return text;
+}
+
+function resolveShlokaId(search, verses) {
   const { verses: todaysVerses } = getDailySchedule(verses);
   if (todaysVerses.length === 0) return null;
 
@@ -55,10 +64,31 @@ export async function getShlokaTextFromUrl(search = window.location.search) {
     }
   }
 
-  const verse = verses.find((item) => item.id === resolvedId);
-  const text = typeof verse?.txt === "string" ? cleanShlokaText(verse.txt) : null;
-  console.log(`fetching shloka id = ${resolvedId}; txt = ${text}`);
-  return text;
+  return resolvedId;
+}
+
+export async function getShlokaAssignmentFromUrl(search = window.location.search) {
+  const verses = await loadVerses();
+  const id = resolveShlokaId(search, verses);
+  if (id === null) return null;
+
+  const today = new Date();
+  const date = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  const start = new Date(
+    SCHEDULE_START.year,
+    SCHEDULE_START.month - 1,
+    SCHEDULE_START.day,
+  );
+
+  for (; date >= start; date.setDate(date.getDate() - 1)) {
+    const { verses: assignedVerses } = getDailySchedule(verses, date);
+    if (assignedVerses.some((verse) => Number(verse.id) === id)) {
+      const month = `${date.getFullYear()}${String(date.getMonth() + 1).padStart(2, "0")}`;
+      return { id, month };
+    }
+  }
+
+  return null;
 }
 
 export function splitShlokaWords(text) {

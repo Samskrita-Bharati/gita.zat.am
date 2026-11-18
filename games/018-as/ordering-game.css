@@ -121,7 +121,7 @@ body.zatam-themed-game.zatam-ordering-game {
 }
 
 .zatam-ordering-game #cardSlots::before {
-  content: "Verse in order";
+  content: "Shloka words";
 }
 
 .zatam-ordering-game #cardPile > div,
@@ -188,29 +188,35 @@ body.zatam-themed-game.zatam-ordering-game {
 }
 
 .zatam-ordering-game #cardSlots > div.matched {
-  padding: 0.35rem;
+  position: relative;
+  padding: 1.8rem 0.75rem 0.75rem;
   border-style: solid;
   border-color: var(--gold);
-  background: var(--cream-dark);
+  background: var(--white);
+  opacity: 1;
 }
 
 .zatam-ordering-game #cardSlots > div.matched > .ordering-number-card {
-  display: grid;
-  place-items: center;
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
   width: 100%;
-  min-height: 4rem;
+  height: 100%;
   margin: 0;
-  padding: 0.75rem;
+  padding: 0.2rem 0.4rem;
   color: var(--navy-dark);
-  background: var(--gold);
+  background: rgb(246 178 59 / 30%);
   border: 1.5px solid var(--gold);
   border-radius: calc(var(--radius-sm) - 0.15rem);
   box-shadow: none;
   font-family: var(--zatam-font);
-  font-size: 0.96rem;
+  font-size: 0.85rem;
   line-height: 1.45;
   text-align: center;
   text-shadow: none;
+  pointer-events: none;
 }
 
 .zatam-ordering-game #cardPile > div.ui-draggable-dragging {
@@ -255,6 +261,10 @@ body.zatam-themed-game.zatam-ordering-game {
   font-size: var(--font-size-lg);
   line-height: 1.45;
   text-align: center;
+}
+
+.ordering-selection-status:empty {
+  display: none;
 }
 
 .ordering-footer {
