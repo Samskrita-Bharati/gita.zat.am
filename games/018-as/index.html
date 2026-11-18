@@ -49,7 +49,7 @@ async function loadDailyGame() {
     dailyVerse = challenge.verse;
     dailyDate = challenge.date;
     todayIds = challenge.todayIds;
-    status.textContent = 'Arrange the words of today’s shloka.';
+    status.textContent = '';
     init();
   } catch (error) {
     console.error('[018-as] Could not load today’s shloka:', error);
@@ -248,7 +248,7 @@ wrongMatches=0;
 selectedCard=null;
   updateVerseProgress();
   updateStats();
-  updateGameHint('Drag a number card, or select one and then select its matching saying segment.');
+  updateGameHint('');
   // Hide the success message
   $('#successMessage').hide();
   $('#successMessage').css( {
@@ -395,9 +395,6 @@ function matchCardToSlot(slot, card) {
     <p class="zatam-game-subtitle">Arrange today’s shloka in its proper order.</p>
   </header>
 
-  <section class="zatam-game-instructions ordering-game-instructions" aria-label="How to play">
-    <p>Drag a Sanskrit-number card onto the matching word, or tap a card and then its matching word. Complete every match to finish the shloka.</p>
-  </section>
   <p id="dailyGameStatus" class="ordering-selection-status" role="status">Loading today’s shloka…</p>
   <p id="gameHint" class="ordering-selection-status" role="status" aria-live="polite"></p>
 

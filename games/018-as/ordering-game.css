@@ -257,6 +257,10 @@ body.zatam-themed-game.zatam-ordering-game {
   text-align: center;
 }
 
+.ordering-selection-status:empty {
+  display: none;
+}
+
 .ordering-footer {
   margin: 1.5rem 0 0;
   color: var(--muted);
