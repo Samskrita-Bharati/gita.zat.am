@@ -1,4 +1,4 @@
-export const SCORES = [100, 85, 70, 50, 35];
+export const SCORES = [100, 85, 65, 50, 35];
 const normalize = (word) => word.normalize("NFC");
 const wrap = (value, length) => ((value % length) + length) % length;
 
