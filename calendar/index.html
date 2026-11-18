@@ -21,21 +21,12 @@
           <h2 id="monthHeading" aria-live="polite"></h2>
           <a class="calendar-nav" id="nextMonth" aria-label="Next month">&rarr;</a>
         </div>
-        <section class="calendar-play" aria-labelledby="calendarPlayHeading">
-          <h3 id="calendarPlayHeading" tabindex="-1">Play Gita Strands</h3>
-          <p id="calendarPlayStatus" role="status">Loading shloka dates…</p>
-          <div id="calendarVerseLinks" class="calendar-verse-links"></div>
-        </section>
         <div class="calendar-grid" id="calendarGrid" role="grid"></div>
       </section>
     </main>
     <script type="module" src="../navbar/navbar-loader.js"></script>
-    <script type="module">
-      import { getDailySchedule, SCHEDULE_START } from "../shlokasToday/daily-schedule.mjs";
-
+    <script>
       const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      const firstChallengeDay = new Date(SCHEDULE_START.year, SCHEDULE_START.month - 1, SCHEDULE_START.day);
       const todayKey = `${today.getFullYear()}-${today.getMonth()}-${today.getDate()}`;
       const params = new URLSearchParams(window.location.search);
       const requestedMonth = params.get("month");
@@ -45,13 +36,6 @@
         : new Date(today.getFullYear(), today.getMonth(), 1);
       const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
       const grid = document.getElementById("calendarGrid");
-      const playHeading = document.getElementById("calendarPlayHeading");
-      const playStatus = document.getElementById("calendarPlayStatus");
-      const verseLinks = document.getElementById("calendarVerseLinks");
-      const dateLabel = new Intl.DateTimeFormat("en", { dateStyle: "long" });
-      let verses = [];
-      let selectedDayButton;
-
 
       weekdays.forEach((weekday) => {
         const label = document.createElement("div");
@@ -65,24 +49,6 @@
         const params = new URLSearchParams(window.location.search);
         params.set("month", `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`);
         return `${window.location.pathname}?${params.toString()}`;
-      }
-
-      function showVerseLinks(date, button, focus = false) {
-        const { verses: scheduled } = getDailySchedule(verses, date);
-        selectedDayButton?.setAttribute("aria-pressed", "false");
-        selectedDayButton = button;
-        button.setAttribute("aria-pressed", "true");
-        playHeading.textContent = `Play Gita Strands · ${dateLabel.format(date)}`;
-        playStatus.textContent = "Choose a shloka to play.";
-        verseLinks.replaceChildren(...scheduled.map((verse) => {
-          const url = new URL("../games/strands/", document.baseURI);
-          url.searchParams.set("id", String(verse.id));
-          const link = document.createElement("a");
-          link.href = url.href;
-          link.textContent = `Shloka ${verse.ch}.${verse.vn}`;
-          return link;
-        }));
-        if (focus) playHeading.focus();
       }
 
       function renderCalendar() {
@@ -106,20 +72,10 @@
           cell.className = "day";
           cell.setAttribute("role", "gridcell");
           if (isInMonth) {
-            const day = new Date(year, month, dateNumber);
-            const available = verses.length > 0 && day >= firstChallengeDay && day <= today;
-            const isToday = `${year}-${month}-${dateNumber}` === todayKey;
-            const date = document.createElement(available ? "button" : "span");
+            const date = document.createElement("span");
             date.className = "day-number";
             date.textContent = dateNumber;
-            if (isToday) cell.classList.add("today");
-            if (available) {
-              date.type = "button";
-              date.setAttribute("aria-label", `Choose shlokas for ${dateLabel.format(day)}`);
-              date.setAttribute("aria-pressed", "false");
-              date.addEventListener("click", () => showVerseLinks(day, date, true));
-              if (isToday) showVerseLinks(day, date);
-            }
+            if (`${year}-${month}-${dateNumber}` === todayKey) cell.classList.add("today");
             cell.appendChild(date);
           }
           grid.appendChild(cell);
@@ -127,22 +83,6 @@
       }
 
       renderCalendar();
-      try {
-        const response = await fetch(new URL("../assets/bhagavad-gita-verses.json", import.meta.url));
-        if (!response.ok) throw new Error("Could not load shlokas");
-        const data = await response.json();
-        if (!Array.isArray(data) || data.length === 0) throw new Error("No shlokas found");
-        verses = data;
-        const monthStart = new Date(visibleMonth.getFullYear(), visibleMonth.getMonth(), 1);
-        const monthEnd = new Date(visibleMonth.getFullYear(), visibleMonth.getMonth() + 1, 0);
-        playStatus.textContent = monthStart <= today && monthEnd >= firstChallengeDay && today >= firstChallengeDay
-          ? "Select an available date below to see its shlokas."
-          : "No shlokas are available for this month yet.";
-        renderCalendar();
-      } catch (error) {
-        playStatus.textContent = "Shloka links are temporarily unavailable.";
-        console.error("Calendar shloka links:", error);
-      }
     </script>
   </body>
 </html>
