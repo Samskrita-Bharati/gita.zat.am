@@ -10,6 +10,7 @@
 		#z18-game-frame {
 			position: relative;
 			width: min(100%, 1024px);
+			height: var(--z18-frame-height, auto);
 			aspect-ratio: 4 / 3;
 			margin: 0 auto;
 			border: 1px solid var(--border);
@@ -18,7 +19,7 @@
 		#z18-game-frame canvas {
 			display: block;
 			width: 100% !important;
-			height: auto !important;
+			height: 100% !important;
 		}
 	</style>
 	<script type="module" src="../../navbar/navbar-loader.js"></script>
@@ -55,6 +56,13 @@
 		let score = 0;
 		let totalMoves = 0;
 		let wordTransitioning = false;
+		let rowFontSize = 20;
+		let rowTextOffset = 42;
+		let moveRightPadding = 12;
+		let moveNumberWidth = 0;
+		let moveLabelWidth = 0;
+		let moveColumnGap = 0;
+		let rowTextWidth = 0;
 		function done() {
 			if (wordTransitioning) return;
 			wordTransitioning = true;
@@ -75,13 +83,16 @@
 			row.scrambledLabel.dispose();
 			new Label({
 				text: words[currentWordIndex],
-				size: 20,
+				size: rowFontSize,
 				font: "Arial",
 				color: themeColors.success,
 				bold: true,
-			}).pos(42, 0, LEFT, CENTER, row.box);
-			new Label("Move:", 20, "Arial", themeColors.accentBlue).pos(300, 0, LEFT, CENTER, row.box);
-			new Label(String(movesForWord), 20, "Arial", black).pos(360, 0, LEFT, CENTER, row.box);
+				width: rowTextWidth,
+			}).pos(rowTextOffset, 0, LEFT, CENTER, row.box);
+			new Label({ text: "Move:", size: rowFontSize, font: "Arial", color: themeColors.accentBlue, align: RIGHT, width: moveLabelWidth })
+				.pos(moveRightPadding + moveNumberWidth + moveColumnGap, 0, RIGHT, CENTER, row.box);
+			new Label({ text: String(movesForWord), size: rowFontSize, font: "Arial", color: black, align: RIGHT, width: moveNumberWidth })
+				.pos(moveRightPadding, 0, RIGHT, CENTER, row.box);
 			S.update();
 		}
 		function shuffle(items) {
@@ -158,14 +169,15 @@
 			score = 0;
 			wordTransitioning = false;
 			const graphemes = splitWordIntoGraphemes(currentWord.word);
-			const tileSpacing = 5;
-			const maxTileSize = 150;
-			const horizontalPadding = 48;
+			const widthScale = W / 1024;
+			const tileSpacing = Math.max(2, 5 * widthScale);
+			const maxTileSize = Math.min(150 * widthScale, H * 0.2);
+			const horizontalPadding = Math.max(12, 48 * widthScale);
 			const tileSize = Math.min(
 				maxTileSize,
 				(W - horizontalPadding - tileSpacing * (graphemes.length - 1)) / graphemes.length,
 			);
-			const tileFontSize = Math.round(56 * tileSize / maxTileSize);
+			const tileFontSize = Math.max(14, Math.round(56 * tileSize / 150));
 			const tiles = graphemes.map((letter) => new zim.Label({
 				text: letter,
 				color: themeColors.navyDark,
@@ -233,24 +245,45 @@
 			levelId: gameId ? String(gameId) : "daily",
 			levelName: gameId ? `Shloka ${gameId}` : "Daily shloka",
 		});
-		new Frame("z18-game-frame", 1024, 768, themeColors.white, themeColors.cream, ready);
+		const frameElement = document.getElementById("z18-game-frame");
+		const frameWidth = Math.min(1024, Math.max(280, frameElement.clientWidth));
+		const isCompactViewport = window.matchMedia("(max-width: 1100px), (max-height: 700px)").matches;
+		const availableViewportHeight = Math.max(420, window.innerHeight - frameElement.getBoundingClientRect().top - 12);
+		const frameHeight = isCompactViewport
+			? Math.min(Math.round(frameWidth * 1.35), availableViewportHeight)
+			: Math.round(frameWidth * 0.75);
+		frameElement.style.setProperty("--z18-frame-height", `${frameHeight}px`);
+		new Frame("z18-game-frame", frameWidth, frameHeight, themeColors.white, themeColors.cream, ready);
 		function ready() {
-			const bar = new Rectangle(W, 40, themeColors.navy, null, 0, 10).addTo();
-			F.makeIcon({ box: themeColors.navy }).scaleTo(bar, 90, 90).loc(10, 3);
+			const widthScale = W / 1024;
+			const barHeight = Math.max(30, 40 * widthScale);
+			const textSize = Math.max(12, 25 * widthScale);
+			const rowFontSizeFloor = isCompactViewport ? 18 : 12;
+			const rowHeight = Math.max(isCompactViewport ? 38 : 30, 48 * widthScale);
+			rowFontSize = Math.max(rowFontSizeFloor, 20 * widthScale);
+			rowTextOffset = isCompactViewport ? 70 * widthScale : 42 * widthScale;
+			moveRightPadding = Math.max(10, 16 * widthScale);
+			moveNumberWidth = rowFontSize * 2.1; // room for three digits
+			moveLabelWidth = rowFontSize * 3.1;
+			moveColumnGap = Math.max(4, 8 * widthScale);
+			rowTextWidth = Math.max(0, W - rowTextOffset - moveRightPadding - moveNumberWidth - moveLabelWidth - moveColumnGap - 10 * widthScale);
+			const bar = new Rectangle(W, barHeight, themeColors.navy, null, 0, 10 * widthScale).addTo();
+			F.makeIcon({ box: themeColors.navy }).scaleTo(bar, 90, 90).loc(10 * widthScale, 3 * widthScale);
 			const referenceText = verseReference
 				? `Chapter - ${verseReference.ch}   Verse - ${verseReference.vn}`
 				: "Chapter - —   Verse - —";
-			new Label(referenceText, 25, "Arial", themeColors.goldLight).pos(0, 2, CENTER, CENTER, bar);
+			new Label(referenceText, textSize, "Arial", themeColors.goldLight).pos(0, 2 * widthScale, CENTER, CENTER, bar);
 			rows = [];
-			const rowHeight = 48;
-			const listTop = H * 0.65;
+			const listTop = isCompactViewport
+				? Math.min(H * 0.62, Math.max(barHeight + 190 * widthScale, H * 0.52))
+				: H * 0.65;
 			const listHeight = H - listTop;
 			loop(words.length, i => {
 				const row = { box: new Container(W, rowHeight) };
-				new Label(`${i + 1}.`, 20, "Arial", black)
-					.pos(12, 0, LEFT, CENTER, row.box);
-				row.scrambledLabel = new Label(scrambledGraphemesByWord[i].join(" "), 20, "Arial", themeColors.danger)
-					.pos(42, 0, LEFT, CENTER, row.box);
+				new Label(`${i + 1}.`, rowFontSize, "Arial", black)
+					.pos(12 * widthScale, 0, LEFT, CENTER, row.box);
+				row.scrambledLabel = new Label({ text: scrambledGraphemesByWord[i].join(" "), size: rowFontSize, font: "Arial", color: themeColors.danger, width: rowTextWidth })
+					.pos(rowTextOffset, 0, LEFT, CENTER, row.box);
 				row.box.mouseChildren = false;
 				rows.push(row);
 			});
