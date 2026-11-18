@@ -12,6 +12,7 @@
 			width: min(100%, 1024px);
 			aspect-ratio: 4 / 3;
 			margin: 0 auto;
+			border: 1px solid var(--border);
 			overflow: hidden;
 		}
 		#z18-game-frame canvas {
@@ -218,13 +219,6 @@
 			});
 		words = sampleWords(eligibleWords, GAME_CONFIG.randomWordCount);
 		scrambledGraphemesByWord = words.map((word) => scrambleGraphemes(splitWordIntoGraphemes(word)));
-		console.group("[z18] Shloka game input");
-		console.log("Requested shloka id:", gameId ?? "today's default");
-		console.log("Shloka text:", shlokaText);
-		console.log("Eligible words:", eligibleWords);
-		console.log("Selected words:", words);
-		console.log("Scrambled graphemes by word:", scrambledGraphemesByWord);
-		console.log("Word grapheme segments:");
 		words.forEach((word, index) => {
 			console.log(`${index + 1}. ${word}`, splitWordIntoGraphemes(word));
 		});
@@ -239,7 +233,7 @@
 			levelId: gameId ? String(gameId) : "daily",
 			levelName: gameId ? `Shloka ${gameId}` : "Daily shloka",
 		});
-		new Frame("z18-game-frame", 1024, 768, themeColors.creamDark, themeColors.cream, ready);
+		new Frame("z18-game-frame", 1024, 768, themeColors.white, themeColors.cream, ready);
 		function ready() {
 			const bar = new Rectangle(W, 40, themeColors.navy, null, 0, 10).addTo();
 			F.makeIcon({ box: themeColors.navy }).scaleTo(bar, 90, 90).loc(10, 3);
@@ -261,7 +255,7 @@
 				rows.push(row);
 			});
 			new List({
-				backdropColor: themeColors.white,
+				backdropColor: themeColors.creamDark,
 				corner: 14,
 				paddingH: 0,
 				paddingV: 0,
