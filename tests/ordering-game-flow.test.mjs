@@ -66,7 +66,7 @@ test("the board starts only after today's shloka loads", async () => {
   await context.loadDailyGame();
   assert.equal(initialized, true);
   assert.equal(context.dailyVerse.id, 2);
-  assert.match(elements.dailyGameStatus.textContent, /shloka/);
+  assert.equal(elements.dailyGameStatus.textContent, "");
 });
 
 test("a loading failure leaves the game disabled and informs the player", async () => {
