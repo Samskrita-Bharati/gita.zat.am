@@ -266,7 +266,7 @@ selectedCard=null;
     var cardNumber = i + 1;
     var card = $('<div></div>')
       .addClass('ordering-number-card')
-      .text(cardNumber + ' - ' + displayNumber(cardNumber))
+      .text(displayNumber(cardNumber))
       .data('number', cardNumber)
       .attr({
         id: 'card' + cardNumber,
