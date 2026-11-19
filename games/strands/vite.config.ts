@@ -3,13 +3,28 @@ import react from '@vitejs/plugin-react';
 import { fileURLToPath } from 'node:url';
 
 const gameDirectory = fileURLToPath(new URL('.', import.meta.url));
+const devEntry = '/games/strands/index.dev.html';
 const portalDirectory = fileURLToPath(new URL('../../', import.meta.url));
 
 export default defineConfig({
   root: portalDirectory,
   cacheDir: `${gameDirectory}node_modules/.vite`,
   publicDir: `${gameDirectory}public`,
-  plugins: [react()],
+  plugins: [
+    react(),
+    {
+      name: 'strands-development-entry',
+      configureServer(server) {
+        server.middlewares.use((req, _res, next) => {
+          const url = new URL(req.url ?? '/', 'http://localhost');
+          if (['/games/strands', '/games/strands/', '/games/strands/index.html'].includes(url.pathname)) {
+            req.url = devEntry + url.search;
+          }
+          next();
+        });
+      },
+    },
+  ],
   base: './',
   resolve: {
     alias: {
@@ -17,13 +32,14 @@ export default defineConfig({
       'react-dom': `${gameDirectory}node_modules/react-dom`,
     },
   },
-  optimizeDeps: { entries: [`${gameDirectory}index.html`] },
+  optimizeDeps: { entries: [`${gameDirectory}index.dev.html`] },
   server: { port: 8443, open: '/games/strands/' },
   build: {
     outDir: `${gameDirectory}dist`,
     emptyOutDir: true,
+    assetsDir: 'games/strands/built',
     rollupOptions: {
-      input: `${gameDirectory}index.html`,
+      input: `${gameDirectory}index.dev.html`,
     },
   },
   preview: { port: 8443, open: '/games/strands/' },
