@@ -1,0 +1,210 @@
+/* Strands UI integration only. Shared navbar and portal files stay unchanged. */
+body.gita-strands-page { background: var(--cream); }
+body.gita-strands-page .strands-page-header {
+  width: min(940px, calc(100% - 32px));
+  margin: 14px auto 10px;
+  text-align: center;
+}
+body.gita-strands-page .strands-page-header h1 {
+  margin: 0;
+  color: var(--navy-dark);
+  font: 700 clamp(1.65rem, 3.6vw, 2.35rem)/1.12 Georgia, 'Times New Roman', serif;
+}
+#root {
+  --ink: var(--navy-dark);
+  --ink-soft: var(--muted);
+  --paper: var(--cream);
+  --paper-2: var(--cream);
+  --line: var(--border);
+  --gold-soft: var(--cream-dark);
+  --gold: #f6b23b;
+  --terracotta: var(--accent-coral);
+  --body: Arial, Helvetica, sans-serif;
+  --display: Georgia, 'Times New Roman', serif;
+  --shadow: var(--shadow-sm);
+  width: min(940px, calc(100% - 32px));
+  margin: 0 auto 40px;
+  min-width: 0;
+  font-family: var(--body);
+}
+#root .portal-game-shell { height: auto; min-height: 0; overflow: visible; background: transparent; gap: 16px; }
+#root .theme-sidebar {
+  width: 100%; min-width: 0; max-width: none;
+  max-height: 760px;
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  box-shadow: var(--shadow-sm);
+}
+#root .theme-scroll { padding: 10px; }
+#root .theme-card { grid-template-columns: 34px minmax(0, 1fr) 18px; gap: 8px; padding: 10px; border-radius: 10px; background: var(--cream); }
+#root .theme-number { display: none; }
+#root .theme-icon { width: 34px; height: 34px; border-radius: 8px; }
+#root .theme-card.active { border-color: var(--gold); box-shadow: inset 3px 0 0 var(--gold); background: var(--cream-dark); }
+#root .game-main { min-width: 0; padding: 0; overflow: visible; background: transparent !important; }
+#root .theme-banner { background: white; border: 1px solid var(--line); border-radius: 16px; box-shadow: var(--shadow-sm); }
+#root .theme-eyebrow { color: var(--terracotta); }
+#root .game-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(240px, 30%); align-items: start; gap: 12px; }
+#root .board-card, #root .word-panel { background: white; border: 1px solid var(--line); border-radius: 16px; box-shadow: var(--shadow-sm); }
+#root .word-panel { min-height: 0; max-height: none; overflow: visible; }
+#root .timer-card, #root .hint-panel { background: var(--cream); border-color: var(--line); border-radius: 10px; }
+#root .start-button, #root .hint-btn, #root .tutorial-start, #root .answer-mode-bar button, #root .result-actions .primary {
+  background: var(--navy); color: white; border-color: var(--navy); border-radius: 9px;
+}
+#root .answer-btn { background: white; color: var(--navy); border-color: var(--navy); border-radius: 9px; }
+#root .letter-cell { color: var(--navy-dark); }
+#root .modal-backdrop { z-index: 2147483100; overflow-y: auto; }
+#root .load-state { min-height: 260px; background: transparent; }
+#root .tutorial-card, #root .result-card, #root .exit-card { background: white; border-radius: 16px; }
+@media (max-width: 760px) {
+  #root { width: calc(100% - 20px); }
+  #root .theme-sidebar { height: auto; flex: none; max-height: none; }
+  #root .theme-scroll { display: flex; overflow-x: auto; }
+  #root .theme-card { min-width: 190px; }
+}
+
+/* One shared navbar; game statistics live beside the board. */
+#root .strands-right-sidebar { display: grid; gap: 10px; min-width: 0; align-content: start; }
+#root .strands-score-panel {
+  min-width: 0;
+  padding: 12px;
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  box-shadow: var(--shadow-sm);
+}
+#root .strands-score-panel h2 {
+  margin: 0 0 8px;
+  font: 700 1.1rem var(--body);
+  color: var(--navy-dark);
+}
+#root .strands-score-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin: 0; }
+#root .strands-score-list > div { min-width: 0; padding: 6px 8px; border: 1px solid var(--line); border-radius: 9px; background: var(--cream); }
+#root .strands-score-list dt { margin: 0 0 5px; font-size: .7rem; font-weight: 700; color: var(--muted); overflow-wrap: anywhere; }
+#root .strands-score-list dd { margin: 0; font-size: 1.1rem; font-weight: 800; color: var(--navy-dark); font-variant-numeric: tabular-nums; }
+@media (max-width: 1120px) {
+  #root .strands-right-sidebar { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 760px) {
+  #root .strands-right-sidebar .word-panel { margin-top: 0; }
+}
+
+#root .gita-word-slot.found, #root .gita-word-slot.answer-revealed { grid-template-columns: minmax(0, 1fr) 28px; }
+
+/* Fit a full-size puzzle at normal zoom. Narrow screens stack naturally. */
+#root .theme-banner { margin-bottom: 10px; padding: 7px 12px; align-items: center; min-height: 40px; }
+#root .theme-heading h2 { color: var(--navy-dark); font: 700 1.22rem/1.3 var(--dev); margin: 0; }
+#root .theme-meta { display: flex; gap: 5px; }
+#root .theme-meta b { padding: 4px 7px; }
+#root .board-card { min-width: 0; padding: 10px 12px; }
+#root .status-line { min-height: 32px; padding-bottom: 4px; border-bottom: 0; }
+#root .status-line small { display: none; }
+#root .status-line strong { font-size: .94rem; }
+#root .status-line > span { padding: 4px 7px; font-size: .82rem; }
+#root .level-progress { height: 4px; margin: 4px 0 6px; }
+
+#root .timer-card.count-up { display: block; min-height: 0; padding: 6px 9px; margin: 0 0 6px; }
+#root .timer-copy { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+#root .timer-copy small { letter-spacing: .06em; }
+#root .timer-copy strong { font-size: 1.25rem; }
+#root .timer-copy span { margin: 0 0 0 auto; font-size: .78rem; }
+#root .timer-ring { display: none; }
+
+#root .board-wrap { width: min(100%, clamp(340px, calc(100dvh - 285px), 460px)); }
+#root .letter-cell { font-size: clamp(1.1rem, 3.9vw, 1.48rem); }
+#root .board-help { margin-top: 5px; font-size: .77rem; }
+#root .path-overlay { z-index: 3; }
+#root .path-overlay .guide-path { stroke-width: 5; stroke-dasharray: 8 5; opacity: .78; }
+#root .path-overlay .selection-path { stroke-width: 5; opacity: .5; }
+
+#root .strands-hints {
+  display: grid;
+  gap: 6px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: white;
+  box-shadow: var(--shadow-sm);
+}
+#root .strands-hints h2 { margin: 0; font-size: .92rem; color: var(--navy-dark); }
+#root .strands-hints p { margin: 0; color: var(--muted); font-size: .8rem; }
+#root .strands-hints > button { min-height: 36px; padding: 5px 9px; font-size: .84rem; }
+#root .strands-hints > .hint-btn { display: flex; align-items: center; justify-content: space-between; gap: 8px; text-align: left; }
+#root .strands-hints > .hint-btn {
+  background: #eaf4fa;
+  color: #234c66;
+  border-color: #b9d5e4;
+}
+#root .strands-hints > .hint-btn:not(:disabled):hover { background: #dceef7; }
+#root .strands-hints > .hint-btn span { white-space: nowrap; }
+#root .strands-hints > .answer-btn { width: max-content; max-width: 100%; }
+#root .strands-hints button:disabled { opacity: .58; cursor: not-allowed; }
+
+#root .strands-shloka-dialog {
+  width: min(550px, calc(100% - 32px));
+  max-height: 80vh;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: white;
+  color: var(--navy-dark);
+}
+#root .strands-shloka-dialog::backdrop { background: rgb(8 34 58 / 50%); }
+#root .strands-shloka-dialog h2 { font-size: 1.25rem; }
+#root .strands-shloka-dialog p { margin: 10px 0 16px; white-space: pre-line; font: 500 1.18rem/1.65 var(--dev); }
+
+#root .word-panel { padding: 10px 12px; margin: 0; }
+#root .word-panel .panel-title { padding-bottom: 6px; }
+#root .word-panel .word-slot { min-height: 39px; padding: 5px 8px; }
+#root .word-panel .word-slot-list { margin-top: 6px; gap: 5px; }
+#root .word-panel .rule-card { padding: 6px 8px; margin-top: 6px; }
+
+@media (max-width: 700px) {
+  #root .game-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
+  #root .board-wrap { width: min(100%, 420px); }
+  #root .strands-hints > button { min-height: 44px; }
+}
+
+#root .theme-banner,
+#root .theme-meta { flex-wrap: wrap; }
+
+#root .strands-size-toggle {
+  display: inline-flex;
+  gap: 3px;
+  padding: 3px;
+  border: 1px solid #b9d5e4;
+  border-radius: 10px;
+  background: #f4f9fc;
+}
+
+#root .strands-size-toggle button {
+  min-width: 48px;
+  min-height: 34px;
+  padding: 3px 8px;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  background: transparent;
+  color: #234c66;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+#root .strands-size-toggle button[aria-pressed="true"] {
+  border-color: #8bb5ca;
+  background: #dceef7;
+}
+
+#root .strands-size-toggle button:focus-visible { outline: 2px solid #234c66; outline-offset: 2px; }
+#root .strands-size-toggle button:disabled { opacity: .55; cursor: default; }
+#root .strand-board[data-board-size="6"] { gap: clamp(4px, 1.2vw, 7px); }
+#root .strand-board[data-board-size="6"] .letter-cell { font-size: clamp(.9rem, 3.5vw, 1.3rem); }
+#root .path-overlay .guide-path.found-guide { stroke-dasharray: none; stroke-width: 4; }
+#root .path-overlay .guide-path.found-guide:not(.spangram-guide) {
+  stroke: #28734e;
+  marker-end: url(#guide-arrow-found);
+}
+#root #guide-arrow-found path { fill: #28734e; }
+
+@media (max-width: 700px) {
+  #root .strands-size-toggle button { min-height: 44px; }
+}

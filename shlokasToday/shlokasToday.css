@@ -2,6 +2,7 @@
   min-height: clamp(28rem, 64vh, 40rem);
   display: grid;
   align-items: center;
+  justify-items: center;
   padding: clamp(1rem, 2vw, 1.75rem) clamp(1.25rem, 4vw, 3rem);
   background:
     radial-gradient(circle at 24% 72%, transparent 0 46px, color-mix(in srgb, var(--gold-light) 38%, transparent) 47px 50px, transparent 51px),
@@ -13,19 +14,23 @@
 }
 
 .shlokas-layout {
-  width: min(75rem, 100%);
+  width: fit-content;
+  max-width: 100%;
   margin: 0 auto;
   display: grid;
-  grid-template-columns: minmax(18rem, 1.15fr) minmax(0, 2fr);
+  grid-template-columns: fit-content(30rem) fit-content(40rem);
   grid-template-rows: 1fr auto;
   align-items: center;
-  column-gap: clamp(2rem, 5vw, 5rem);
+  column-gap: clamp(1.5rem, 3vw, 2.5rem);
   row-gap: 1rem;
 }
 
 .shlokas-heading {
   grid-column: 1;
   grid-row: 1 / 3;
+  width: fit-content;
+  max-width: 100%;
+  justify-self: center;
   text-align: left;
 }
 
@@ -40,20 +45,19 @@
 
 .shlokas-title-line {
   display: block;
-  white-space: nowrap;
 }
 
 .shlokas-date-navigation {
-  grid-column: 2;
-  grid-row: 2;
   display: flex;
   justify-content: space-between;
+  width: 100%;
+  margin-top: 1rem;
 }
 
 .shlokas-accent {
   width: 4.25rem;
   height: 0.3rem;
-  margin-top: 1rem;
+  margin: 1rem auto 0;
   background: var(--gold);
   border-radius: var(--radius-pill);
 }
@@ -61,9 +65,12 @@
 .today-verses {
   grid-column: 2;
   grid-row: 1;
-  height: 42rem;
+  width: fit-content;
+  max-width: 100%;
+  justify-self: center;
+  min-height: 0;
   display: grid;
-  grid-template-rows: repeat(2, minmax(0, 1fr));
+  grid-template-rows: repeat(2, auto);
 }
 
 .upcoming-notice {
@@ -127,21 +134,22 @@
 .today-verse {
   min-width: 0;
   min-height: 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: flex-start;
+  width: 100%;
+  max-width: 100%;
+  justify-self: center;
+  height: 22.5rem;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
   padding: 1.25rem clamp(0.25rem, 2vw, 2rem);
   text-align: left;
 }
 
 .today-verse + .today-verse {
-  border-top: 1px solid;
-  border-color: var(--border);
+  border-top: 1px solid var(--border);
 }
 
 .today-verse-reference {
-  margin: 0 0 0.75rem;
+  margin-bottom: 0.75rem;
   color: var(--navy-light);
   font-family: var(--zatam-font);
   font-size: var(--font-size-sm);
@@ -156,6 +164,14 @@
   white-space: pre-line;
 }
 
+.today-verse-copy {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.4rem;
+}
+
 .today-verse-text {
   color: var(--navy-dark);
   font-family: var(--zatam-font);
@@ -163,7 +179,7 @@
 }
 
 .today-verse-transliteration {
-  margin: 0.85rem 0 0;
+  margin: 0;
   color: var(--muted);
   font-family: var(--zatam-font);
   font-size: var(--font-size-base);
@@ -171,10 +187,12 @@
 
 .today-verse-games-row {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: flex-start;
   gap: 0.65rem;
-  width: min(100%, 42rem);
+  width: fit-content;
+  max-width: 100%;
   margin: 1rem 0 0;
   color: var(--navy-dark);
   font-size: var(--font-size-sm);
@@ -183,6 +201,7 @@
 
 .game-picker {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 0.45rem;
   min-width: 0;
@@ -230,27 +249,40 @@
   }
 
   .shlokas-layout {
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: auto auto auto;
+    grid-template-columns: min(85vw, 32rem);
+    grid-template-rows: auto auto;
+    justify-content: center;
     gap: 0.5rem;
   }
 
   .shlokas-heading {
     grid-column: 1;
     grid-row: 1;
-  }
-
-  .shlokas-date-navigation {
-    grid-column: 1;
-    grid-row: 2;
+    width: 100%;
   }
 
   .today-verses {
     grid-column: 1;
-    grid-row: 3;
+    grid-row: 2;
+    width: 100%;
+    grid-template-rows: auto auto;
   }
 
   .today-verse {
+    height: auto;
     padding: 1.25rem 0;
+    text-align: left;
+  }
+
+  .today-verse-copy {
+    justify-content: flex-start;
+  }
+
+  .today-verse-games-row {
+    justify-content: flex-start;
+  }
+
+  .upcoming-notice {
+    text-align: center;
   }
 }

@@ -149,6 +149,10 @@ function createVerseCard(verse, games) {
   transliteration.className = "today-verse-transliteration";
   transliteration.textContent = cleanShlokaText(verse.trans);
 
+  const copy = document.createElement("div");
+  copy.className = "today-verse-copy";
+  copy.append(text, transliteration);
+
   const gamesRow = document.createElement("div");
   gamesRow.className = "today-verse-games-row";
   const label = document.createElement("span");
@@ -159,13 +163,13 @@ function createVerseCard(verse, games) {
   chooser.setAttribute("role", "group");
   chooser.setAttribute("aria-label", "Choose a game");
 
-  games.slice(0, 5).forEach((game) => {
+  games.forEach((game) => {
     const option = document.createElement("a");
     option.className = "game-picker-option";
     option.setAttribute("aria-label", game.title.trim());
     option.title = game.title.trim();
     if (!/^https?:\/\//i.test(game.dir)) {
-      const gameDirectory = game.dir.replace(/\/index\.html$/i, "");
+      const gameDirectory = game.dir.replace(/\/[^/]+\.html$/i, "").replace(/\/+$/, "");
       const cover = document.createElement("img");
       cover.src = game.cover || `./${gameDirectory}/cover.jpg`;
       cover.alt = "";
@@ -184,6 +188,6 @@ function createVerseCard(verse, games) {
 
   gamesRow.append(label, chooser);
 
-  verseElement.append(reference, text, transliteration, gamesRow);
+  verseElement.append(reference, copy, gamesRow);
   return verseElement;
 }

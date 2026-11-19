@@ -18,7 +18,6 @@ const navbarCssUrl = new URL("./navbar.css", import.meta.url);
 // child folder such as:
 //
 //   /games/018-as/
-//   /games/050-asp/
 //   /games/057-gita-typing/
 //
 // =====================================================
