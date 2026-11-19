@@ -2,6 +2,14 @@
 
 Strands inside the Gita portal. This checkpoint replaces the original themed gameplay with two temporary Bhagavad Gita samples. It reuses the portal navbar and EN/SA language events.
 
+## Publish on the static portal
+
+After installing with `npm ci`, run `npm run publish:static` from this directory.
+Commit the regenerated `index.html` and `built/` files with the source changes.
+GitHub Pages serves those files at `/games/strands/` without running Vite.
+The Vite dev server serves `index.dev.html` at the normal Strands URL.
+Do not edit the generated `index.html` by hand.
+
 ## Run
 
 From `games/strands`, run `npm ci` if dependencies are not installed, then `npm run dev`.
@@ -47,4 +55,3 @@ Check manually: both sample URLs, shared EN/SA toggle, touch dragging, correct/i
 - Handling dates before the release schedule begins.
 - Unfinished progress resume and the agreed replay/no-repeat policy.
 - Approved Gita scoring, new Firebase integration, completion reporting and streak rules.
-- Production portal deployment integration. The local build produces the game HTML in `dist/games/strands/` plus hashed assets in `dist/assets/`; it is not a replacement deployment of the entire portal.

@@ -5,11 +5,12 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "tsc -b && vite build && node scripts/static-entry.mjs",
     "preview": "vite preview",
     "test:boards": "node --experimental-strip-types scripts/test-random-boards.mjs",
     "test:ci": "npm run test:gita && npm run build",
-    "test:gita": "node --experimental-strip-types scripts/test-gita-puzzles.mjs"
+    "test:gita": "node --experimental-strip-types scripts/test-gita-puzzles.mjs",
+    "publish:static": "npm run build && node scripts/static-entry.mjs --publish"
   },
   "dependencies": {
     "react": "^19.0.0",
