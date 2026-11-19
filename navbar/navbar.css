@@ -244,46 +244,6 @@
 }
 
 /* =====================================================
-   LANGUAGE BUTTON
-===================================================== */
-
-.zatam-lang-btn {
-  height: var(--button-height-sm);
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  padding: 0 1.125rem;
-
-  background: var(--white);
-
-  color: var(--text);
-
-  border: 1.5px solid var(--text);
-
-  border-radius: var(--radius-lg);
-
-  font-size: var(--font-size-body);
-  font-weight: 700;
-
-  cursor: pointer;
-
-  transition:
-    transform var(--transition),
-    box-shadow var(--transition),
-    background var(--transition);
-}
-
-.zatam-lang-btn:hover {
-  transform: translateY(-2px);
-
-  background: var(--cream);
-
-  box-shadow: var(--shadow-md);
-}
-
-/* =====================================================
    LOGGED OUT
 ===================================================== */
 
@@ -678,7 +638,6 @@
     bottom: 0;
   }
 
-  .zatam-lang-btn,
   .zatam-login-btn,
   .zatam-signup-btn {
     height: 36px;
