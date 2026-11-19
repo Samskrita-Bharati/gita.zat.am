@@ -31,14 +31,14 @@ export const menu = [
     cover: "./games/fw/cover.svg",
     desc: `Find Sanskrit words in the grid.`,
   },
-  {
-    id: 57,
-    title: "Gita Typing Game",
-    pickerLabel: "Typing",
-    dir: "games/057-gita-typing",
-    cover: "./games/057-gita-typing/cover.svg",
-    desc: `Practice typing on English (Harvard-Kyoto) transliteration of the shlokas from Bhagavad Gita`,
-  },
+  // {
+  //   id: 57,
+  //   title: "Gita Typing Game",
+  //   pickerLabel: "Typing",
+  //   dir: "games/057-gita-typing",
+  //   cover: "./games/057-gita-typing/cover.svg",
+  //   desc: `Practice typing on English (Harvard-Kyoto) transliteration of the shlokas from Bhagavad Gita`,
+  // },
   {
     id: 63,
     title: "Gita Strands",
