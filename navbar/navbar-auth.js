@@ -29,46 +29,6 @@ const languageNames = {
 };
 
 // =====================================================
-// NAVBAR TRANSLATIONS
-// =====================================================
-
-const navbarTranslations = {
-  en: {
-    navGames: "Daily Challenge",
-    navContest: "Calendar",
-    navLeaderboard: "Leaderboard",
-
-    login: "↪ Login",
-    signup: "Sign Up",
-
-    leaderboardDropdown: "Leaderboard",
-
-    profile: "Profile",
-    adminDashboard: "Admin Dashboard",
-    logout: "Logout",
-
-    langButton: "🌐 EN / SA",
-  },
-
-  sa: {
-    navGames: "Daily Challenge",
-    navContest: "Calendar",
-    navLeaderboard: "श्रेष्ठसूची",
-
-    login: "↪ प्रवेशः",
-    signup: "पञ्जीकरणम्",
-
-    leaderboardDropdown: "श्रेष्ठसूची",
-
-    profile: "परिचयः",
-    adminDashboard: "प्रशासनम्",
-    logout: "निर्गमः",
-
-    langButton: "🌐 SA / EN",
-  },
-};
-
-// =====================================================
 // DEFAULT PROFILE AVATAR
 // =====================================================
 
@@ -151,8 +111,6 @@ export async function initNavbarAuth() {
 
   const headerUserName = document.getElementById("navbar-user-name");
 
-  const langBtn = document.getElementById("zatamLangBtn");
-
   const loginBtn = document.getElementById("navbar-login-btn");
 
   const signupBtn = document.getElementById("navbar-signup-btn");
@@ -167,52 +125,6 @@ export async function initNavbarAuth() {
 
     return;
   }
-
-  // ===================================================
-  // EN / SA INTERFACE LANGUAGE
-  // ===================================================
-
-  let currentLanguage = localStorage.getItem("zatamLanguage") || "en";
-
-  function applyNavbarLanguage(emitEvent = true) {
-    const t = navbarTranslations[currentLanguage] || navbarTranslations.en;
-
-    document.querySelectorAll("[data-nav-i18n]").forEach((element) => {
-      const key = element.dataset.navI18n;
-
-      if (t[key]) {
-        element.textContent = t[key];
-      }
-    });
-
-    if (langBtn) {
-      langBtn.textContent = t.langButton;
-    }
-
-    localStorage.setItem("zatamLanguage", currentLanguage);
-
-    window.zatamLanguage = currentLanguage;
-
-    if (emitEvent) {
-      window.dispatchEvent(
-        new CustomEvent("zatam:languagechange", {
-          detail: {
-            language: currentLanguage,
-          },
-        }),
-      );
-    }
-  }
-
-  if (langBtn) {
-    langBtn.addEventListener("click", () => {
-      currentLanguage = currentLanguage === "en" ? "sa" : "en";
-
-      applyNavbarLanguage();
-    });
-  }
-
-  applyNavbarLanguage(false);
 
   // ===================================================
   // LOGIN / SIGNUP
