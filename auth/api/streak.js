@@ -35,7 +35,7 @@ export async function updateStreak(userUid) {
   if (streakChange) {
     await updateDoc(profileRef, {
       streak,
-      lastLogin: Timestamp.fromDate(today)
+      lastLogin: Timestamp.fromDate(today),
     });
   }
 
