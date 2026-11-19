@@ -32,6 +32,13 @@ export const menu = [
     dir: "games/057-gita-typing",
     desc: `Practice typing on English (Harvard-Kyoto) transliteration of the shlokas from Bhagavad Gita`,
   },
+  {
+  id: 63,
+  title: "Gita Strands",
+  dir: "games/strands",
+  cover: "./games/strands/cover.svg",
+  desc: "Connect Sanskrit letters to discover hidden words from the shloka.",
+},
 ];
 
 // =====================================================
