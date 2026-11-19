@@ -10,6 +10,7 @@ import {
 import { getCurrentUserProfile } from "../auth/api/auth-api.js";
 
 import { updateStreak } from "../auth/api/streak.js";
+import { resolveAvatarState, safePhotoURL } from "../auth/js/avatar-state.js";
 
 // Prevent duplicate initialization
 let navbarInitialized = false;
@@ -26,6 +27,46 @@ const languageNames = {
   ml: "Malayalam",
   te: "Telugu",
   ta: "Tamil",
+};
+
+// =====================================================
+// NAVBAR TRANSLATIONS
+// =====================================================
+
+const navbarTranslations = {
+  en: {
+    navGames: "Daily Challenge",
+    navContest: "Calendar",
+    navLeaderboard: "Leaderboard",
+
+    login: "↪ Login",
+    signup: "Sign Up",
+
+    leaderboardDropdown: "Leaderboard",
+
+    profile: "Profile",
+    adminDashboard: "Admin Dashboard",
+    logout: "Logout",
+
+    langButton: "🌐 EN / SA",
+  },
+
+  sa: {
+    navGames: "Daily Challenge",
+    navContest: "Calendar",
+    navLeaderboard: "श्रेष्ठसूची",
+
+    login: "↪ प्रवेशः",
+    signup: "पञ्जीकरणम्",
+
+    leaderboardDropdown: "श्रेष्ठसूची",
+
+    profile: "परिचयः",
+    adminDashboard: "प्रशासनम्",
+    logout: "निर्गमः",
+
+    langButton: "🌐 SA / EN",
+  },
 };
 
 // =====================================================
@@ -111,6 +152,8 @@ export async function initNavbarAuth() {
 
   const headerUserName = document.getElementById("navbar-user-name");
 
+  const langBtn = document.getElementById("zatamLangBtn");
+
   const loginBtn = document.getElementById("navbar-login-btn");
 
   const signupBtn = document.getElementById("navbar-signup-btn");
@@ -125,6 +168,52 @@ export async function initNavbarAuth() {
 
     return;
   }
+
+  // ===================================================
+  // EN / SA INTERFACE LANGUAGE
+  // ===================================================
+
+  let currentLanguage = localStorage.getItem("zatamLanguage") || "en";
+
+  function applyNavbarLanguage(emitEvent = true) {
+    const t = navbarTranslations[currentLanguage] || navbarTranslations.en;
+
+    document.querySelectorAll("[data-nav-i18n]").forEach((element) => {
+      const key = element.dataset.navI18n;
+
+      if (t[key]) {
+        element.textContent = t[key];
+      }
+    });
+
+    if (langBtn) {
+      langBtn.textContent = t.langButton;
+    }
+
+    localStorage.setItem("zatamLanguage", currentLanguage);
+
+    window.zatamLanguage = currentLanguage;
+
+    if (emitEvent) {
+      window.dispatchEvent(
+        new CustomEvent("zatam:languagechange", {
+          detail: {
+            language: currentLanguage,
+          },
+        }),
+      );
+    }
+  }
+
+  if (langBtn) {
+    langBtn.addEventListener("click", () => {
+      currentLanguage = currentLanguage === "en" ? "sa" : "en";
+
+      applyNavbarLanguage();
+    });
+  }
+
+  applyNavbarLanguage(false);
 
   // ===================================================
   // LOGIN / SIGNUP
@@ -166,6 +255,49 @@ export async function initNavbarAuth() {
 
       profileBtn.setAttribute("aria-expanded", "false");
     }
+  });
+
+  // Keep navbar/avatar in sync with the saved avatar choice. Build image
+  // elements through DOM APIs rather than interpolating remote URLs as HTML.
+  function renderNavbarAvatar(photoURL, displayName) {
+    const safeURL = safePhotoURL(photoURL);
+    for (const [mount, large] of [
+      [headerAvatar, false],
+      [dropdownAvatar, true],
+    ]) {
+      if (!mount) continue;
+      mount.replaceChildren();
+      if (!safeURL) {
+        const fallback = document.createElement("span");
+        fallback.className =
+          `zatam-profile-fallback ${large ? "large" : ""}`.trim();
+        fallback.textContent = "👤";
+        mount.appendChild(fallback);
+        continue;
+      }
+      const img = document.createElement("img");
+      img.src = safeURL;
+      img.alt = `${displayName || "User"} profile`;
+      img.onerror = () => {
+        img.remove();
+        const fallback = document.createElement("span");
+        fallback.className =
+          `zatam-profile-fallback ${large ? "large" : ""}`.trim();
+        fallback.textContent = "👤";
+        mount.appendChild(fallback);
+      };
+      mount.appendChild(img);
+    }
+  }
+
+  window.addEventListener("zatam:avatar-updated", (event) => {
+    const activeUser = auth.currentUser;
+    if (!activeUser) return;
+    const displayName =
+      activeUser.displayName?.split(" ")[0] ||
+      activeUser.email?.split("@")[0] ||
+      "Player";
+    renderNavbarAvatar(event.detail?.photoURL || "", displayName);
   });
 
   // ===================================================
@@ -216,35 +348,9 @@ export async function initNavbarAuth() {
         userEmailDropdown.textContent = user.email || "";
       }
 
-      // ===========================================
-      // AVATAR
-      // ===========================================
-
-      if (headerAvatar) {
-        if (user.photoURL) {
-          headerAvatar.innerHTML = `
-              <img
-                src="${user.photoURL}"
-                alt="${displayName}"
-              />
-            `;
-        } else {
-          headerAvatar.innerHTML = fallbackAvatarMarkup();
-        }
-      }
-
-      if (dropdownAvatar) {
-        if (user.photoURL) {
-          dropdownAvatar.innerHTML = `
-              <img
-                src="${user.photoURL}"
-                alt="${displayName}"
-              />
-            `;
-        } else {
-          dropdownAvatar.innerHTML = fallbackAvatarMarkup(true);
-        }
-      }
+      // Defer the avatar photo until we have read the Firestore source choice
+      // so a user who selected "default" never briefly sees their Google image.
+      renderNavbarAvatar("", displayName);
 
       // ===========================================
       // USER PROFILE / PREFERRED SCRIPT
@@ -252,6 +358,11 @@ export async function initNavbarAuth() {
 
       try {
         const profile = await getCurrentUserProfile();
+        if (auth.currentUser?.uid !== user.uid) return;
+        renderNavbarAvatar(
+          resolveAvatarState(user, profile).photoURL,
+          displayName,
+        );
 
         if (profile && profile.language) {
           window.zatPreferredLang = profile.language;
@@ -284,6 +395,7 @@ export async function initNavbarAuth() {
           }
         }
       } catch (error) {
+        renderNavbarAvatar(user.photoURL, displayName);
         console.error("Unable to load user profile:", error);
 
         if (usernameDisplay) {
