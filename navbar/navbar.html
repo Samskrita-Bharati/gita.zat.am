@@ -3,9 +3,9 @@
        LOGO
   ========================== -->
 
-  <a class="zatam-logo" data-route="index.html">
+  <a class="zatam-logo" data-route="index.html" aria-label="GG Zat.am - Home">
     <div class="zatam-logo-mark" aria-hidden="true">
-<img src="https://gg.zat.am/srikrishna-gg-wa.jpg">
+      <img src="https://gg.zat.am/srikrishna-gg-wa.jpg" alt="" />
     </div>
 
     <div class="zatam-logo-text">
@@ -18,14 +18,13 @@
   ========================== -->
 
   <nav class="zatam-nav">
-    <a data-route="index.html" data-nav-page="games" data-nav-i18n="navGames">
+    <a data-route="index.html" data-nav-page="games">
       Daily Challenge
     </a>
 
     <a
       data-route="calendar/index.html"
       data-nav-page="contest"
-      data-nav-i18n="navContest"
     >
       Calendar
     </a>
@@ -33,7 +32,6 @@
     <a
       data-route="leaderboard/index.html"
       data-nav-page="leaderboard"
-      data-nav-i18n="navLeaderboard"
     >
       Leaderboard
     </a>
@@ -44,16 +42,6 @@
   ========================== -->
 
   <div class="zatam-header-actions">
-    <!-- Zat.am2 style EN / SA toggle -->
-    <button
-      class="zatam-lang-btn"
-      id="zatamLangBtn"
-      type="button"
-      aria-label="Change language"
-    >
-      🌐 EN / SA
-    </button>
-
     <!-- =========================
          LOGGED OUT
     ========================== -->
@@ -65,7 +53,6 @@
         data-route="auth/login.html"
         data-cy="login-btn"
         type="button"
-        data-nav-i18n="login"
       >
         ↪ Login
       </button>
@@ -76,7 +63,6 @@
         data-route="auth/signup.html"
         data-cy="signup-btn"
         type="button"
-        data-nav-i18n="signup"
       >
         Sign Up
       </button>
@@ -131,7 +117,6 @@
           id="leaderboard-link-dropdown"
           data-route="leaderboard/index.html"
           data-cy="leaderboard-page-button"
-          data-nav-i18n="leaderboardDropdown"
         >
           Leaderboard
         </a>
@@ -140,7 +125,6 @@
           id="admin-link-dropdown"
           class="hidden"
           data-route="admin/index.html"
-          data-nav-i18n="adminDashboard"
         >
           Admin Dashboard
         </a>
@@ -149,7 +133,6 @@
           id="profile-link-dropdown"
           data-route="auth/profile.html"
           data-cy="profile-page-button"
-          data-nav-i18n="profile"
         >
           Profile
         </a>
@@ -159,7 +142,6 @@
           class="zatam-dropdown-logout"
           data-cy="logout-button"
           type="button"
-          data-nav-i18n="logout"
         >
           Logout
         </button>

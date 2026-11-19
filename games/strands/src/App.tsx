@@ -590,9 +590,9 @@ const hasInProgressRun = Boolean(
 
   }
 
-  if (loadError) return <main className="load-state"><h1>Gita Strands</h1><p>{loadError}</p></main>;
+  if (loadError) return <main className="load-state"><h1>सूत्रम् suutram </h1><p>{loadError}</p></main>;
 
-  if (!theme || !sourceTheme) return <main className="load-state"><h1>Gita Strands</h1><p>Loading puzzle data…</p></main>;
+  if (!theme || !sourceTheme) return <main className="load-state"><h1>सूत्रम् suutram </h1><p>Loading puzzle data…</p></main>;
 
   return (
 
