@@ -41,8 +41,8 @@ export const menu = [
   },
   {
     id: 63,
-    title: "Gita Strands",
-    pickerLabel: "Strands",
+    title: "सूत्रम् suutram",
+    pickerLabel: "Suutram",
     dir: "games/strands",
     cover: "./games/strands/cover.svg",
     desc: "Connect Sanskrit letters to discover hidden words from the shloka.",
