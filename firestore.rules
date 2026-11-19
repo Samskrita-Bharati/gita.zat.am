@@ -36,7 +36,7 @@ service cloud.firestore {
         && data.location is string && data.location.size() <= 250
         && data.preferencesSet is bool
         && data.createdAt is timestamp
-        && data.streak is int && data.streak >= 1 && data.streak <= 10000
+        && data.streak is int && data.streak >= 0 && data.streak <= 10000
         && (!('lastLogin' in data) || data.lastLogin is timestamp);
     }
 
@@ -89,7 +89,7 @@ service cloud.firestore {
           && validProfile(request.resource.data)
           && request.resource.data.createdAt == request.time
           && request.resource.data.preferencesSet == false
-          && request.resource.data.streak == 1
+          && request.resource.data.streak == 0
           && !('lastLogin' in request.resource.data);
 
         allow update: if docId == 'profile' && isOwner(userId)
