@@ -37,13 +37,11 @@ export function usePortalLanguage(): Language {
   }, []);
 
   useEffect(() => {
-    const title = document.querySelector('.strands-page-header h1');
-    const subtitle = document.querySelector('.strands-page-header p');
-    if (title) title.textContent = language === 'sa' ? 'गीता स्ट्रैण्ड्स्' : 'Gita Strands';
-    if (subtitle) subtitle.textContent = language === 'sa'
-      ? 'अक्षराणि संयोज्य गुप्तशब्दान् अन्वेषयतु।'
-      : 'Connect Sanskrit letters to discover the hidden words.';
-  }, [language]);
+  const subtitle = document.querySelector('.strands-page-header p');
+  if (subtitle) subtitle.textContent = language === 'sa'
+    ? 'अक्षराणि संयोज्य गुप्तशब्दान् अन्वेषयतु।'
+    : 'Connect Sanskrit letters to discover the hidden words.';
+}, [language]);
 
   return language;
 }
