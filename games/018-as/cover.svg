@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-labelledby="title"><title id="title">Arrange the Shloka</title><rect width="256" height="256" rx="32" fill="#f5ecdc"/>
+<rect x="9" y="9" width="238" height="238" rx="28" fill="none" stroke="#78552d" stroke-opacity=".30" stroke-width="2"/>
+<g fill="#fffdf8" stroke="#78552d" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">
+<rect x="58" y="61" width="105" height="31" rx="9"/>
+<rect x="58" y="113" width="105" height="31" rx="9"/>
+<rect x="58" y="165" width="105" height="31" rx="9"/>
+<path d="M77 77h63m-63 51h42m-42 52h52"/>
+<path d="M189 58v139m-13-125 13-14 14 14m-27 111 13 14 14-14" fill="none"/>
+</g></svg>

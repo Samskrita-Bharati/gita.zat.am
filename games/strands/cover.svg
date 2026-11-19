@@ -1,18 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="800" height="420" viewBox="0 0 800 420" role="img" aria-labelledby="title desc">
-<title id="title">Gita Strands</title><desc id="desc">Connect Sanskrit graphemes on a letter board to find hidden words.</desc>
-<rect width="800" height="420" fill="#fff8ec"/>
-<g fill="#fff" stroke="#e8d8c4" stroke-width="2">
-<rect x="70" y="55" width="105" height="95" rx="24"/><rect x="190" y="55" width="105" height="95" rx="24"/><rect x="310" y="55" width="105" height="95" rx="24"/>
-<rect x="70" y="165" width="105" height="95" rx="24"/><rect x="190" y="165" width="105" height="95" rx="24"/><rect x="310" y="165" width="105" height="95" rx="24"/>
-<rect x="70" y="275" width="105" height="95" rx="24"/><rect x="190" y="275" width="105" height="95" rx="24"/><rect x="310" y="275" width="105" height="95" rx="24"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-labelledby="title"><title id="title">Gita Strands</title><rect width="256" height="256" rx="32" fill="#f1eddf"/>
+<rect x="9" y="9" width="238" height="238" rx="28" fill="none" stroke="#776238" stroke-opacity=".30" stroke-width="2"/>
+<g fill="#fffdf8" stroke="#776238" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">
+<path d="M72 181l56-53 56 0v-53" fill="none" stroke="#776238" stroke-width="9"/>
+<g stroke-width="5">
+<circle cx="72" cy="75" r="10"/><circle cx="128" cy="75" r="10"/><circle cx="184" cy="75" r="12" fill="#776238"/>
+<circle cx="72" cy="128" r="10"/><circle cx="128" cy="128" r="12" fill="#776238"/><circle cx="184" cy="128" r="12" fill="#776238"/>
+<circle cx="72" cy="181" r="12" fill="#776238"/><circle cx="128" cy="181" r="10"/><circle cx="184" cy="181" r="10"/>
 </g>
-<path d="M122 102H242L362 212" stroke="#cce4d6" stroke-width="58" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-<g fill="#0b2c4f" text-anchor="middle" font-family="Noto Sans Devanagari, sans-serif" font-size="37">
-<text x="122" y="116">गी</text><text x="242" y="116">ता</text><text x="362" y="116">म</text>
-<text x="122" y="226">रा</text><text x="242" y="226">कृ</text><text x="362" y="226">शः</text>
-<text x="122" y="336">ध</text><text x="242" y="336">र्म</text><text x="362" y="336">णः</text>
-</g>
-<g fill="#0b2c4f" font-family="Georgia,serif"><text x="460" y="165" font-size="56" font-weight="bold">Gita</text><text x="460" y="227" font-size="56" font-weight="bold">Strands</text></g>
-<path d="M463 253H701" stroke="#ffb537" stroke-width="4"/>
-<text x="463" y="292" font-family="Arial,sans-serif" font-size="21" fill="#63758b">Connect. Discover. Learn.</text>
-</svg>
+</g></svg>

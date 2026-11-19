@@ -166,7 +166,6 @@ function createVerseCard(verse, games) {
   games.forEach((game) => {
     const option = document.createElement("a");
     option.className = "game-picker-option";
-    option.setAttribute("aria-label", game.title.trim());
     option.title = game.title.trim();
     if (!/^https?:\/\//i.test(game.dir)) {
       const gameDirectory = game.dir.replace(/\/[^/]+\.html$/i, "").replace(/\/+$/, "");
@@ -174,9 +173,20 @@ function createVerseCard(verse, games) {
       cover.src = game.cover || `./${gameDirectory}/cover.jpg`;
       cover.alt = "";
       cover.loading = "lazy";
-      cover.onerror = () => cover.remove();
-      option.append(cover);
+      cover.decoding = "async";
+      cover.width = 256;
+      cover.height = 256;
+      const thumbnail = document.createElement("span");
+      thumbnail.className = "game-picker-thumbnail";
+      thumbnail.append(cover);
+      cover.onerror = () => thumbnail.remove();
+      option.append(thumbnail);
     }
+    const caption = document.createElement("span");
+    caption.className = "game-picker-caption";
+    caption.textContent = game.pickerLabel || game.title.trim();
+    option.append(caption);
+
     const href = /^https?:\/\//i.test(game.dir)
       ? game.dir
       : `./${game.dir}${game.dir.endsWith(".html") ? "" : "/"}`;
