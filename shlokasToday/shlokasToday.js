@@ -171,7 +171,7 @@ function createVerseCard(verse, games) {
     if (!/^https?:\/\//i.test(game.dir)) {
       const gameDirectory = game.dir.replace(/\/[^/]+\.html$/i, "").replace(/\/+$/, "");
       const cover = document.createElement("img");
-      cover.src = `./${gameDirectory}/cover.jpg`;
+      cover.src = game.cover || `./${gameDirectory}/cover.jpg`;
       cover.alt = "";
       cover.loading = "lazy";
       cover.onerror = () => cover.remove();
