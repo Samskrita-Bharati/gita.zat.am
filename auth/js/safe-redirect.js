@@ -15,7 +15,7 @@ export function getSafeRedirect(search = window.location.search) {
     if (!url.pathname.startsWith(rootPath)) return null;
     const page = url.pathname.slice(rootPath.length);
     // These are the only pages the auth gate currently protects.
-    if (!/^(games\/(018-as|050-asp|057-gita-typing|fw|ma)(\/|$)|leaderboard(\/|$))/.test(page)) {
+    if (!/^(games\/(018-as|fw|059-fitb|z18)(\/|$)|leaderboard(\/|$))/.test(page)) {
       return null;
     }
     return url.pathname + url.search + url.hash;
