@@ -14,16 +14,10 @@ export const menu = [
     desc: `Unscramble Sanskrit vocabulary with the ZIM game.`,
   },
   {
-    id: 50,
-    title: "Auto श्लोकपाठक:",
-    dir: "games/050-asp",
-    desc: `Auto Reader for Shloka from श्रीमद् भगवद्गीता `,
-  },
-  {
-    id: 57,
-    title: "Gita Typing Game",
-    dir: "games/057-gita-typing",
-    desc: `Practice typing on English (Harvard-Kyoto) transliteration of the shlokas from Bhagavad Gita`,
+    id: 59,
+    title: "Fill in the Blank",
+    dir: "games/059-fitb",
+    desc: `Complete the daily shloka by filling in the missing words.`,
   },
   {
     id: 61,
@@ -33,11 +27,10 @@ export const menu = [
     desc: `Find Sanskrit words in the grid.`,
   },
   {
-    id: 62,
-    title: "Audio Match",
-    dir: "games/ma/index.html",
-    cover: "./games/assets/bp26c.png",
-    desc: `Match Sanskrit words with their sounds.`,
+    id: 57,
+    title: "Gita Typing Game",
+    dir: "games/057-gita-typing",
+    desc: `Practice typing on English (Harvard-Kyoto) transliteration of the shlokas from Bhagavad Gita`,
   },
 ];
 
@@ -54,7 +47,7 @@ const sectionCenter = document.querySelector(".section-center");
 // Change this array anytime to change featured games.
 // =====================================================
 
-const featuredGameIds = [18, 50, 57, 61, 62];
+const featuredGameIds = [18, 57, 61];
 
 // =====================================================
 // SLIDER STATE

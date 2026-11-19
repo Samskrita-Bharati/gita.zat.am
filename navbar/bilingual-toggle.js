@@ -29,7 +29,7 @@ function initBilingualToggle() {
 
     // If global bilingual is ON but this page URL doesn't yet have
     // a `t` parameter, automatically add the user's preferred
-    // language code so games like fw.html, ma.html, fnd.html pick it up.
+    // language code so supported game pages can pick it up.
     if (!currentT && globalOn && preferred) {
       params.set("t", preferred);
       var newQueryAuto = params.toString();

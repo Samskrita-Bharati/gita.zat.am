@@ -163,7 +163,7 @@ function createVerseCard(verse, games) {
   chooser.setAttribute("role", "group");
   chooser.setAttribute("aria-label", "Choose a game");
 
-  games.slice(0, 5).forEach((game) => {
+  games.forEach((game) => {
     const option = document.createElement("a");
     option.className = "game-picker-option";
     option.setAttribute("aria-label", game.title.trim());
