@@ -185,14 +185,6 @@
   font-size: var(--font-size-base);
 }
 
-.shloka-width-measure {
-  position: absolute;
-  visibility: hidden;
-  white-space: pre;
-  font-family: var(--zatam-font);
-  font-size: var(--font-size-verse);
-}
-
 .today-verse-games-row {
   display: flex;
   flex-wrap: wrap;
@@ -256,7 +248,7 @@
   }
 
   .shlokas-layout {
-    grid-template-columns: min(85vw, 100%, var(--shloka-width-reference, 32rem));
+    grid-template-columns: min(85vw, 32rem);
     grid-template-rows: auto auto;
     justify-content: center;
     gap: 0.5rem;

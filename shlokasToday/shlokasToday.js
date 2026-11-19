@@ -7,20 +7,6 @@ export async function initializeShlokasToday(games = []) {
   const nextButton = document.getElementById("nextShlokaDay");
   if (!container || !dateValue || !previousButton || !nextButton) return;
 
-  const widthMeasure = document.createElement("span");
-  widthMeasure.className = "shloka-width-measure";
-  widthMeasure.textContent = "अथ व्यवस्थितान् दृष्ट्वा धार्तराष्ट्रान्कपिध्वजः।";
-  document.body.append(widthMeasure);
-
-  function updateShlokaWidthReference() {
-    const width = widthMeasure.getBoundingClientRect().width;
-    document.documentElement.style.setProperty("--shloka-width-reference", `${width}px`);
-  }
-
-  updateShlokaWidthReference();
-  window.addEventListener("resize", updateShlokaWidthReference, { passive: true });
-  document.fonts?.ready.then(updateShlokaWidthReference);
-
   try {
     const response = await fetch(new URL("../assets/bhagavad-gita-verses.json", import.meta.url));
     if (!response.ok) throw new Error(`Verse data request failed: ${response.status}`);
