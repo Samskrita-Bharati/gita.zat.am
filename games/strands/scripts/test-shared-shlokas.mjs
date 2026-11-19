@@ -35,45 +35,52 @@ try {
     assert(!seen.has(text.normalize('NFC')), `Ambiguous shared text for ID ${record.id}`);
     seen.add(text.normalize('NFC'));
     const words = splitShlokaWords(text);
-    const puzzle = buildGitaPuzzle({ id: record.id, chapter: record.ch, verse: record.vn, text, words });
-    assert.equal(puzzle.text, text);
-    assert.equal(puzzle.verseId, record.id);
-    assert(puzzle.targets.length >= 1 && puzzle.targets.length <= 3);
-    assert.equal(puzzle.rows, 4);
-    assert.equal(puzzle.cols, 4);
-    assert(puzzle.targets.reduce((sum, word) => sum + word.tokens.length, 0) <= 16);
-    assert.equal(new Set(puzzle.targets.map(t => t.word)).size, puzzle.targets.length);
-    for (const target of puzzle.targets) {
-      assert(!/[।॥०-९0-9\s.]/u.test(target.word));
-      assert(target.tokens.length >= 2);
-      assert.deepEqual(target.tokens, splitWordIntoGraphemes(target.word));
-    }
-    const board = generateBoard(puzzle, 1);
-    assert.deepEqual(board, generateBoard(puzzle, 1));
-    const refreshed = generateBoard(puzzle, 2);
-    assert.deepEqual(refreshed.targets.map(t => t.id).sort(), board.targets.map(t => t.id).sort());
-    if (JSON.stringify(board.grid) !== JSON.stringify(refreshed.grid)) changedLayoutCount++;
-    for (const target of refreshed.targets) {
-      assert.equal(targetForPath(refreshed, target.path)?.id, target.id);
-      assert.notEqual(targetForPath(refreshed, [...target.path].reverse())?.id, target.id);
-    }
-    const occupied = new Set();
-    for (const row of board.grid) assert(row.every(Boolean));
-    for (const target of board.targets) {
-      assert.equal(target.path.map(c => board.grid[c.row][c.col]).join(''), target.word);
-      assert.equal(targetForPath(board, target.path)?.id, target.id);
-      assert.notEqual(targetForPath(board, [...target.path].reverse())?.id, target.id);
-      target.path.forEach((cell, index) => {
-        const key = `${cell.row}:${cell.col}`;
-        assert(!occupied.has(key)); occupied.add(key);
-        if (index) {
-          const previous = target.path[index - 1];
-          assert.equal(Math.max(Math.abs(cell.row - previous.row), Math.abs(cell.col - previous.col)), 1);
-        }
-      });
+    for (const size of [4, 6]) {
+      const puzzle = buildGitaPuzzle({ id: record.id, chapter: record.ch, verse: record.vn, text, words }, size);
+      assert.equal(puzzle.text, text);
+      assert.equal(puzzle.verseId, record.id);
+      assert.equal(puzzle.id, `gita-${record.id}-v${PUZZLE_VERSION}${size === 4 ? '' : '-6x6'}`);
+      assert(puzzle.targets.length >= 1 && puzzle.targets.length <= 3);
+      assert.equal(puzzle.rows, size);
+      assert.equal(puzzle.cols, size);
+      assert(puzzle.targets.reduce((sum, word) => sum + word.tokens.length, 0) <= size ** 2);
+      assert.equal(new Set(puzzle.targets.map(t => t.word)).size, puzzle.targets.length);
+      for (const target of puzzle.targets) {
+        assert(!/[।॥०-९0-9\s.]/u.test(target.word));
+        assert(target.tokens.length >= 2);
+        assert.deepEqual(target.tokens, splitWordIntoGraphemes(target.word));
+      }
+      const board = generateBoard(puzzle, 1);
+      assert.deepEqual(board, generateBoard(puzzle, 1));
+      const refreshed = generateBoard(puzzle, 2);
+      assert.deepEqual(refreshed.targets.map(t => t.id).sort(), board.targets.map(t => t.id).sort());
+      if (JSON.stringify(board.grid) !== JSON.stringify(refreshed.grid)) changedLayoutCount++;
+      for (const target of refreshed.targets) {
+        assert.equal(targetForPath(refreshed, target.path)?.id, target.id);
+        assert.notEqual(targetForPath(refreshed, [...target.path].reverse())?.id, target.id);
+      }
+      const occupied = new Set();
+      assert.equal(board.grid.length, size);
+      for (const row of board.grid) {
+        assert.equal(row.length, size);
+        assert(row.every(Boolean));
+      }
+      for (const target of board.targets) {
+        assert.equal(target.path.map(c => board.grid[c.row][c.col]).join(''), target.word);
+        assert.equal(targetForPath(board, target.path)?.id, target.id);
+        assert.notEqual(targetForPath(board, [...target.path].reverse())?.id, target.id);
+        target.path.forEach((cell, index) => {
+          const key = `${cell.row}:${cell.col}`;
+          assert(!occupied.has(key)); occupied.add(key);
+          if (index) {
+            const previous = target.path[index - 1];
+            assert.equal(Math.max(Math.abs(cell.row - previous.row), Math.abs(cell.col - previous.col)), 1);
+          }
+        });
+      }
     }
   }
-  assert(changedLayoutCount > records.length * 0.98, 'New seeds should substantially vary boards');
+  assert(changedLayoutCount > records.length * 2 * 0.98, 'New seeds should substantially vary boards');
   const random = seededRandom(17);
   const filler = Array.from({ length: 1000 }, () => randomAkshara(random));
   for (const cell of filler) {
@@ -119,7 +126,7 @@ try {
     assert.equal((await loadShlokaPuzzle(`?id=${records.length}`)).verseId, records.length);
     assert.equal((await loadShlokaPuzzle('?id=1')).verseId, 1);
   }
-  realLog(`PASS: ${records.length} shared verses, fixed 4x4 boards, forward-only paths, layout variation on reload, random akshara filler, graphemes/punctuation, single-shloka links, URL validation, past/future fallback, schedule start, and fetch-error retry (${requests} data requests).`);
+  realLog(`PASS: ${records.length} shared verses, 4×4 and 6×6 boards, forward-only paths, layout variation on reload, random akshara filler, graphemes/punctuation, single-shloka links, URL validation, past/future fallback, schedule start, and fetch-error retry (${requests} data requests).`);
 } finally {
   globalThis.fetch = realFetch; globalThis.Date = RealDate; console.log = realLog;
 }

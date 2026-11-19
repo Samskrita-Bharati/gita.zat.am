@@ -2,7 +2,7 @@ import type { GitaPuzzle } from './gitaContentService';
 import type { ScoreBreakdown } from '../types/gameTypes';
 
 type SharedScores = {
-  initGameScore(options: { gameId: string; gameName: string; levelId: number; levelName: string }): unknown;
+  initGameScore(options: { gameId: string; gameName: string; levelId: string; levelName: string }): unknown;
   submitGameScore(score: number, options: { metrics: Record<string, string | number> }): Promise<{ ok: boolean; reason?: string }>;
 };
 
@@ -20,14 +20,22 @@ export function leaderboardScore(raw: number, maximum: number): number {
 }
 
 export function prepareStrandsScoreRun(
-  puzzle: Pick<GitaPuzzle, 'verseId' | 'reference'>,
+  puzzle: Pick<GitaPuzzle, 'verseId' | 'reference' | 'rows' | 'cols'>,
   load = loadSharedScores,
 ) {
   let cancelled = false;
   let submission: Promise<ScoreStatus> | undefined;
+
   const ready = load().then(api => {
     if (cancelled) return null;
-    api.initGameScore({ gameId: 'strands', gameName: 'Gita Strands', levelId: puzzle.verseId, levelName: `Shloka ${puzzle.reference}` });
+
+    api.initGameScore({
+      gameId: 'strands',
+      gameName: 'Gita Strands',
+      levelId: `${puzzle.reference}-${puzzle.rows}x${puzzle.cols}`,
+      levelName: `Shloka ${puzzle.reference} – ${puzzle.rows}×${puzzle.cols}`,
+    });
+
     return api;
   }).catch(() => null);
 

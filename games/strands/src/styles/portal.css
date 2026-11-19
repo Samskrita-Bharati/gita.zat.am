@@ -164,3 +164,47 @@ body.gita-strands-page .strands-page-header h1 {
   #root .board-wrap { width: min(100%, 420px); }
   #root .strands-hints > button { min-height: 44px; }
 }
+
+#root .theme-banner,
+#root .theme-meta { flex-wrap: wrap; }
+
+#root .strands-size-toggle {
+  display: inline-flex;
+  gap: 3px;
+  padding: 3px;
+  border: 1px solid #b9d5e4;
+  border-radius: 10px;
+  background: #f4f9fc;
+}
+
+#root .strands-size-toggle button {
+  min-width: 48px;
+  min-height: 34px;
+  padding: 3px 8px;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  background: transparent;
+  color: #234c66;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+#root .strands-size-toggle button[aria-pressed="true"] {
+  border-color: #8bb5ca;
+  background: #dceef7;
+}
+
+#root .strands-size-toggle button:focus-visible { outline: 2px solid #234c66; outline-offset: 2px; }
+#root .strands-size-toggle button:disabled { opacity: .55; cursor: default; }
+#root .strand-board[data-board-size="6"] { gap: clamp(4px, 1.2vw, 7px); }
+#root .strand-board[data-board-size="6"] .letter-cell { font-size: clamp(.9rem, 3.5vw, 1.3rem); }
+#root .path-overlay .guide-path.found-guide { stroke-dasharray: none; stroke-width: 4; }
+#root .path-overlay .guide-path.found-guide:not(.spangram-guide) {
+  stroke: #28734e;
+  marker-end: url(#guide-arrow-found);
+}
+#root #guide-arrow-found path { fill: #28734e; }
+
+@media (max-width: 700px) {
+  #root .strands-size-toggle button { min-height: 44px; }
+}

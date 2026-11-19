@@ -34,7 +34,7 @@ export default function StrandBoard({
   const selectionRef = useRef<Cell[]>(selection);
   const draggingRef = useRef(false);
   const [linePoints, setLinePoints] = useState<Point[]>([]);
-  const [guideLines, setGuideLines] = useState<{id:string; points:Point[]; spangram:boolean}[]>([]);
+  const [guideLines, setGuideLines] = useState<{id:string; points:Point[]; spangram:boolean; found:boolean}[]>([]);
 
   useEffect(() => { selectionRef.current = selection; }, [selection]);
 
@@ -74,7 +74,7 @@ export default function StrandBoard({
       setLinePoints(selection.map(centerForCell));
       const cellWidth = board.querySelector<HTMLElement>('.letter-cell')?.offsetWidth ?? 0;
       setGuideLines(
-        revealedTargets.map((target) => {
+        theme.targets.filter((target) => found.has(target.id) || showAnswers || revealed.has(target.id)).map((target) => {
           const points = target.path.map(centerForCell);
           const end = points.at(-1);
           const previous = points.at(-2);
@@ -87,7 +87,7 @@ export default function StrandBoard({
               end.y -= (end.y - previous.y) * trim / length;
             }
           }
-          return { id: target.id, spangram: target.featured, points };
+          return { id: target.id, spangram: target.featured, found: found.has(target.id), points };
         }),
       );
     };
@@ -95,7 +95,7 @@ export default function StrandBoard({
     const observer = new ResizeObserver(updatePaths);
     observer.observe(board);
     return () => observer.disconnect();
-  }, [selection, theme, revealed, showAnswers]);
+  }, [selection, theme, found, revealed, showAnswers]);
 
   function begin(cell: Cell, pointerId: number, target: HTMLElement) {
     if (disabled) return;
@@ -143,6 +143,7 @@ export default function StrandBoard({
       <div
         ref={boardRef}
         className={`strand-board ${disabled ? 'board-disabled' : ''} ${feedback ? `board-feedback-${feedback}` : ''} ${showAnswers ? 'answer-mode' : ''}`}
+        data-board-size={theme.cols}
         style={{ gridTemplateColumns: `repeat(${theme.cols}, 1fr)` }}
         onPointerMove={(event) => {
           if (!draggingRef.current || disabled) return;
@@ -165,6 +166,9 @@ export default function StrandBoard({
               <marker id="guide-arrow-blue" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
                 <path d="M 0 0 L 10 5 L 0 10 z" />
               </marker>
+              <marker id="guide-arrow-found" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="5" markerHeight="5" orient="auto">
+                <path d="M 0 0 L 10 5 L 0 10 z" />
+              </marker>
               <marker id="guide-arrow-gold" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
                 <path d="M 0 0 L 10 5 L 0 10 z" />
               </marker>
@@ -173,9 +177,8 @@ export default function StrandBoard({
             {guideLines.map((line) => (
               <polyline
                 key={line.id}
-                className={`guide-path ${line.spangram ? 'spangram-guide' : ''}`}
+                className={`guide-path ${line.spangram ? 'spangram-guide' : ''} ${line.found ? 'found-guide' : ''}`}
                 points={line.points.map((p) => `${p.x},${p.y}`).join(' ')}
-                markerEnd={`url(#${line.spangram ? 'guide-arrow-gold' : 'guide-arrow-blue'})`}
               />
             ))}
 

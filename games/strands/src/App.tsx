@@ -5,8 +5,8 @@ import type {
   ScoreBreakdown,
   Theme,
 } from './types/gameTypes';
-import { loadShlokaPuzzle } from './services/gitaContentService';
-import type { GitaPuzzle } from './services/gitaContentService';
+import { BOARD_SIZES, buildGitaPuzzle, loadShlokaContent } from './services/gitaContentService';
+import type { BoardSize, GitaPuzzle } from './services/gitaContentService';
 
 import { pathText, targetForPath } from './utils/board';
 
@@ -72,7 +72,9 @@ function loadBestScores() {
 
 export default function App() {
 
-  const [sourceTheme,setSourceTheme] = useState<GitaPuzzle>();
+  const [puzzles, setPuzzles] = useState<Record<BoardSize, GitaPuzzle>>();
+  const [boardSize, setBoardSize] = useState<BoardSize>(4);
+  const sourceTheme = puzzles?.[boardSize];
   const [loadError,setLoadError] = useState('');
 
   const [selection,setSelection] = useState<Cell[]>([]);
@@ -99,6 +101,7 @@ export default function App() {
   const [message,setMessage] = useState('');
 
   const [done,setDone] = useState(false);
+  const [resultsDismissed, setResultsDismissed] = useState(false);
 
   const [breakdown,setBreakdown] = useState<ScoreBreakdown|null>(null);
 
@@ -152,9 +155,9 @@ const foundRequiredCount = useMemo(
 
   useEffect(() => {
 
-    loadShlokaPuzzle()
+    loadShlokaContent()
 
-      .then(setSourceTheme)
+      .then((shloka) => setPuzzles({ 4: buildGitaPuzzle(shloka, 4), 6: buildGitaPuzzle(shloka, 6) }))
 
       .catch((error) => setLoadError(error instanceof Error ? error.message : String(error)));
 
@@ -202,6 +205,7 @@ const foundRequiredCount = useMemo(
     setMessage(readyMessage());
 
     setDone(false);
+    setResultsDismissed(false);
 
     setBreakdown(null);
 
@@ -213,6 +217,15 @@ const foundRequiredCount = useMemo(
 
     setAnswerMode(false);
 
+  }
+
+  function changeBoardSize(size: BoardSize) {
+    if (size === boardSize || pendingScore.current) return;
+    const hasMoves = found.size > 0 || hintsUsed > 0 || shlokaRevealed;
+    if (!done && !answerMode && hasMoves && !window.confirm(language === 'sa'
+      ? 'आकारपरिवर्तनेन अयं प्रयासः पुनरारभ्यते। आकारं परिवर्तयतु वा?'
+      : 'Changing the grid size starts a new attempt. Switch sizes?')) return;
+    setBoardSize(size);
   }
 
   function restartCurrentTheme() {
@@ -550,8 +563,6 @@ const hasInProgressRun = Boolean(
 
     setSelection([]);
 
-    setFound(new Set());
-
     setRevealed(new Set(theme.targets.map((target) => target.id)));
 
     setWordPoints(0);
@@ -599,7 +610,19 @@ const hasInProgressRun = Boolean(
 
           <div className="theme-meta">
 
-            <b>{theme.rows} × {theme.cols}</b>
+            <div className="strands-size-toggle" role="group" aria-label={language === 'sa' ? 'कोष्ठकस्य आकारः' : 'Grid size'}>
+              {BOARD_SIZES.map((size) => (
+                <button
+                  key={size}
+                  type="button"
+                  aria-pressed={boardSize === size}
+                  disabled={submittingScore}
+                  onClick={() => changeBoardSize(size)}
+                >
+                  {size}×{size}
+                </button>
+              ))}
+            </div>
 
             <b>{theme.targets.length} {tr(language, 'words')}</b>
 
@@ -672,6 +695,8 @@ const hasInProgressRun = Boolean(
             />
 
             <StrandBoard
+
+              key={`${theme.id}:${boardVersion}`}
 
               theme={theme}
 
@@ -747,7 +772,7 @@ const hasInProgressRun = Boolean(
 
       <ResultsModal
 
-        open={done}
+        open={done && !resultsDismissed}
 
         theme={theme.titleSanskrit}
 
@@ -759,6 +784,7 @@ const hasInProgressRun = Boolean(
         submittingScore={submittingScore}
 
         onReplay={restartCurrentTheme}
+        onViewBoard={() => setResultsDismissed(true)}
 
         onBack={() => window.location.assign(new URL('../../', window.location.href))}
 
