@@ -69,12 +69,7 @@ let featuredPaused = false;
 // =====================================================
 
 window.addEventListener("DOMContentLoaded", function () {
-  // Only run homepage UI code when the homepage elements exist.
-  if (!sectionCenter) {
-    return;
-  }
-
-  diplayMenuItems(menu);
+  if (sectionCenter) diplayMenuItems(menu);
   initializeShlokasToday(menu);
 });
 
