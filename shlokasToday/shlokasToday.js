@@ -149,6 +149,10 @@ function createVerseCard(verse, games) {
   transliteration.className = "today-verse-transliteration";
   transliteration.textContent = cleanShlokaText(verse.trans);
 
+  const copy = document.createElement("div");
+  copy.className = "today-verse-copy";
+  copy.append(text, transliteration);
+
   const gamesRow = document.createElement("div");
   gamesRow.className = "today-verse-games-row";
   const label = document.createElement("span");
@@ -184,6 +188,6 @@ function createVerseCard(verse, games) {
 
   gamesRow.append(label, chooser);
 
-  verseElement.append(reference, text, transliteration, gamesRow);
+  verseElement.append(reference, copy, gamesRow);
   return verseElement;
 }
