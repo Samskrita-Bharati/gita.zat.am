@@ -1,6 +1,13 @@
 <!DOCTYPE html>
 <html>
 <head>
+	<!-- Require login before showing the game -->
+	<style>
+		html:not(.gg-authenticated) {
+			visibility: hidden !important;
+		}
+	</style>
+	<script type="module" src="../shared/auth-guard.js"></script>
 	<meta charset="utf-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
 	<title>BodhaPlay scrambler</title>
