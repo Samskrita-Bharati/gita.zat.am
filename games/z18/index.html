@@ -55,6 +55,7 @@
 		let emitter;
 		let score = 0;
 		let totalMoves = 0;
+		let giveUpCount = 0;
 		let wordTransitioning = false;
 		let rowFontSize = 20;
 		let rowTextOffset = 42;
@@ -87,11 +88,44 @@
 				font: "Arial",
 				color: themeColors.success,
 				bold: true,
-				width: rowTextWidth,
+				labelWidth: rowTextWidth,
 			}).pos(rowTextOffset, 0, LEFT, CENTER, row.box);
-			new Label({ text: "Move:", size: rowFontSize, font: "Arial", color: themeColors.accentBlue, align: RIGHT, width: moveLabelWidth })
+			new Label({ text: "Move(s)", size: Math.max(10, rowFontSize - 1), font: "Arial", color: themeColors.accentBlue, align: RIGHT, labelWidth: moveLabelWidth })
 				.pos(moveRightPadding + moveNumberWidth + moveColumnGap, 0, RIGHT, CENTER, row.box);
-			new Label({ text: String(movesForWord), size: rowFontSize, font: "Arial", color: black, align: RIGHT, width: moveNumberWidth })
+			new Label({ text: String(movesForWord), size: Math.max(10, rowFontSize - 1), font: "Arial", color: black, align: RIGHT, labelWidth: moveNumberWidth })
+				.pos(moveRightPadding, 0, RIGHT, CENTER, row.box);
+			S.update();
+		}
+		function giveUpCurrentWord() {
+			if (wordTransitioning || !scrambler) return;
+			wordTransitioning = true;
+			const finishedScrambler = scrambler;
+			const word = words[currentWordIndex];
+			const wordLength = splitWordIntoGraphemes(word).length;
+			totalMoves += score + wordLength;
+			giveUpCount++;
+			window.setTimeout(function () {
+				try {
+					finishedScrambler?.dispose?.();
+				} catch (error) {
+					console.warn("[z18] Could not dispose skipped scrambler:", error);
+				}
+				scrambler = null;
+				startNextWord();
+			}, 0);
+			const row = rows[currentWordIndex];
+			row.scrambledLabel.dispose();
+			new Label({
+				text: word,
+				size: rowFontSize,
+				font: "Arial",
+				color: themeColors.danger,
+				bold: true,
+				labelWidth: rowTextWidth,
+			}).pos(rowTextOffset, 0, LEFT, CENTER, row.box);
+			new Label({ text: "Revealed", size: Math.max(10, rowFontSize - 1), font: "Arial", color: themeColors.navy, align: RIGHT, labelWidth: moveLabelWidth })
+				.pos(moveRightPadding + moveNumberWidth + moveColumnGap, 0, RIGHT, CENTER, row.box);
+			new Label({ text: `-${GAME_CONFIG.revealedWordPenalty} point`, size: Math.max(10, rowFontSize - 1), font: "Arial", color: themeColors.danger, align: RIGHT, labelWidth: moveNumberWidth })
 				.pos(moveRightPadding, 0, RIGHT, CENTER, row.box);
 			S.update();
 		}
@@ -117,7 +151,7 @@
 			if (remainingWords.length === 0) {
 				const totalLetters = words.reduce((count, word) => count + splitWordIntoGraphemes(word).length, 0);
 				const extraMoves = Math.max(0, totalMoves - totalLetters);
-				const finalScore = scoreFromPenalties({ mistakes: extraMoves, mistakePenalty: 2 });
+				const finalScore = scoreFromPenalties({ mistakes: extraMoves, hints: giveUpCount, mistakePenalty: 2, hintPenalty: GAME_CONFIG.revealedWordPenalty });
 				const end = new Pane({
 					content: `Score : ${finalScore} / 100\nMoves : ${totalMoves}\n\n`,
 					backgroundColor: themeColors.creamDark,
@@ -151,7 +185,7 @@
 				end.noMouse();
 				timeout(1, () => end.mouse());
 				submitGameScore(finalScore, {
-					metrics: { totalMoves, totalLetters, extraMoves, shlokaId: gameId ?? "daily" },
+					metrics: { totalMoves, totalLetters, extraMoves, giveUpCount, shlokaId: gameId ?? "daily" },
 				}).then((result) => {
 					status.text = result.ok ? "Score saved ✓" : "Sign in to save your score.";
 					S.update();
@@ -223,7 +257,11 @@
 		} catch (error) {
 			console.error("[z18] Could not load chapter and verse:", error);
 		}
+		// Verse-ending danda markers are punctuation, not part of the final word.
+		// Remove them before measuring or splitting the word into graphemes.
 		const eligibleWords = splitShlokaWords(shlokaText)
+			.map((word) => word.replace(/[।॥|]+$/u, ""))
+			.filter(Boolean)
 			.filter((word) => {
 				const graphemeCount = splitWordIntoGraphemes(word).length;
 				return graphemeCount >= GAME_CONFIG.minWordGraphemes
@@ -231,10 +269,6 @@
 			});
 		words = sampleWords(eligibleWords, GAME_CONFIG.randomWordCount);
 		scrambledGraphemesByWord = words.map((word) => scrambleGraphemes(splitWordIntoGraphemes(word)));
-		words.forEach((word, index) => {
-			console.log(`${index + 1}. ${word}`, splitWordIntoGraphemes(word));
-		});
-		console.groupEnd();
 		if (words.length === 0) {
 			document.body.textContent = "No shloka found for this id.";
 			throw new Error("No shloka text available for this game.");
@@ -263,10 +297,17 @@
 			rowFontSize = Math.max(rowFontSizeFloor, 20 * widthScale);
 			rowTextOffset = isCompactViewport ? 70 * widthScale : 42 * widthScale;
 			moveRightPadding = Math.max(10, 16 * widthScale);
-			moveNumberWidth = rowFontSize * 2.1; // room for three digits
-			moveLabelWidth = rowFontSize * 3.1;
+			const preferredMoveNumberWidth = rowFontSize * 4.8;
+			const preferredMoveLabelWidth = rowFontSize * 4.6;
 			moveColumnGap = Math.max(4, 8 * widthScale);
-			rowTextWidth = Math.max(0, W - rowTextOffset - moveRightPadding - moveNumberWidth - moveLabelWidth - moveColumnGap - 10 * widthScale);
+			const minWordWidth = Math.max(36, 48 * widthScale);
+			const maxRightColumnWidth = Math.max(0, W - rowTextOffset - moveRightPadding - minWordWidth - 10 * widthScale);
+			const columnScale = Math.min(1, maxRightColumnWidth / (preferredMoveNumberWidth + preferredMoveLabelWidth + moveColumnGap));
+			moveNumberWidth = preferredMoveNumberWidth * columnScale;
+			moveLabelWidth = preferredMoveLabelWidth * columnScale;
+			moveColumnGap *= columnScale;
+			const rightColumnWidth = moveNumberWidth + moveLabelWidth + moveColumnGap;
+			rowTextWidth = Math.max(1, W - rowTextOffset - moveRightPadding - rightColumnWidth - 10 * widthScale);
 			const bar = new Rectangle(W, barHeight, themeColors.navy, null, 0, 10 * widthScale).addTo();
 			F.makeIcon({ box: themeColors.navy }).scaleTo(bar, 90, 90).loc(10 * widthScale, 3 * widthScale);
 			const referenceText = verseReference
@@ -276,17 +317,40 @@
 			rows = [];
 			const listTop = isCompactViewport
 				? Math.min(H * 0.62, Math.max(barHeight + 190 * widthScale, H * 0.52))
-				: H * 0.65;
-			const listHeight = H - listTop;
+				: H * 0.56;
+			const giveUpButtonHeight = Math.max(34, 42 * widthScale);
+			const listGap = 8 * widthScale;
+			const buttonLift = Math.max(0, giveUpButtonHeight / 2 - listGap);
+			const listHeight = H - listTop - giveUpButtonHeight - listGap;
 			loop(words.length, i => {
 				const row = { box: new Container(W, rowHeight) };
 				new Label(`${i + 1}.`, rowFontSize, "Arial", black)
 					.pos(12 * widthScale, 0, LEFT, CENTER, row.box);
-				row.scrambledLabel = new Label({ text: scrambledGraphemesByWord[i].join(" "), size: rowFontSize, font: "Arial", color: themeColors.danger, width: rowTextWidth })
+				row.scrambledLabel = new Label({ text: scrambledGraphemesByWord[i].join(" "), size: rowFontSize, font: "Arial", color: themeColors.navy, labelWidth: rowTextWidth })
 					.pos(rowTextOffset, 0, LEFT, CENTER, row.box);
 				row.box.mouseChildren = false;
 				rows.push(row);
 			});
+			const giveUpButtonWidth = Math.max(150, 190 * widthScale);
+			const giveUpLabelSize = Math.max(11, Math.min(18, (giveUpButtonWidth - 24) / 10, (giveUpButtonHeight - 8) * 0.55));
+			new Button({
+				width: giveUpButtonWidth,
+				height: giveUpButtonHeight,
+				label: new Label({
+					text: "Complete for me",
+					size: giveUpLabelSize,
+					font: "Arial",
+					color: themeColors.white,
+					align: CENTER,
+					valign: CENTER,
+					labelWidth: giveUpButtonWidth - 16,
+				}),
+				backgroundColor: themeColors.navy,
+				rollBackgroundColor: themeColors.navyDark,
+				downBackgroundColor: themeColors.navyDark,
+				color: themeColors.white,
+				corner: 10,
+			}).pos(0, listTop - buttonLift, CENTER, TOP).on("click", giveUpCurrentWord);
 			new List({
 				backdropColor: themeColors.creamDark,
 				corner: 14,
@@ -308,7 +372,7 @@
 				dropHeight: rowHeight,
 				dropHitTest: "reg",
 				dropEnd: false
-			}).loc(0, listTop);
+			}).loc(0, listTop + giveUpButtonHeight + listGap);
 			remainingWords = words.map((word, index) => ({ word, index }));
 			startNextWord();
 			emitter = new Emitter({
