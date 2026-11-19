@@ -1,43 +1,76 @@
-import {
-  doc,
-  getDoc,
-  updateDoc,
-  Timestamp,
-} from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
-import { db } from "./firebase-config.js";
+import { doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
+import { getDailySchedule } from "../../shlokasToday/daily-schedule.mjs";
+import { db, serverTimestamp } from "./firebase-config.js";
+
+const versesUrl = new URL("../../assets/bhagavad-gita-verses.json", import.meta.url);
+
+async function loadVerses() {
+  const response = await fetch(versesUrl);
+  if (!response.ok) {
+    throw new Error(`Verse data request failed: ${response.status}`);
+  }
+  return response.json();
+}
+
+function getDateKey(date) {
+  return [
+    date.getFullYear(),
+    String(date.getMonth() + 1).padStart(2, "0"),
+    String(date.getDate()).padStart(2, "0"),
+  ].join("-");
+}
+
+function getYearMonth(date) {
+  return `${date.getFullYear()}${String(date.getMonth() + 1).padStart(2, "0")}`;
+}
+
+export async function getCompletedShlokaIds(userUid, yearMonth) {
+  const progressRef = doc(db, "shlokaProgress", `${userUid}_${yearMonth}`);
+  const progressSnap = await getDoc(progressRef);
+  const completedShlokas = progressSnap.exists()
+    ? progressSnap.data().completedShlokas
+    : [];
+
+  return Array.isArray(completedShlokas) ? completedShlokas : [];
+}
 
 export async function updateStreak(userUid) {
-  let streakChange = true;
+  const today = new Date();
+  const todayDateKey = getDateKey(today);
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
+
   const profileRef = doc(db, "users", userUid, "public", "profile");
   const snap = await getDoc(profileRef);
+  const data = snap.exists() ? snap.data() : {};
+  const currentStreak = data.streak || 0;
+  const lastLoginDate = data.lastLogin?.toDate
+    ? getDateKey(data.lastLogin.toDate())
+    : null;
 
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
-  let streak = 1;
-  let lastLogin = null;
-
-  if (snap.exists()) {
-    const data = snap.data();
-    streak = data.streak || 0;
-    lastLogin = data.lastLogin ? data.lastLogin.toDate() : null;
+  if (lastLoginDate === todayDateKey) {
+    return currentStreak;
   }
 
-  if (lastLogin) {
-    lastLogin.setHours(0, 0, 0, 0);
-    const diffDays = Math.floor((today - lastLogin) / (1000 * 60 * 60 * 24));
-
-    if (diffDays === 1) streak += 1;
-    else if (diffDays > 1) streak = 1;
-    else streakChange = false;
+  if (lastLoginDate && lastLoginDate > todayDateKey) {
+    console.error("[streak] Invalid future lastLogin date:", lastLoginDate);
+    return currentStreak;
   }
 
-  if (streakChange) {
-    await updateDoc(profileRef, {
-      streak,
-      lastLogin: Timestamp.fromDate(today),
-    });
-  }
+  const verses = await loadVerses();
+  const yesterdayShlokaIds = getDailySchedule(verses, yesterday).verses
+    .map(({ id }) => Number(id));
+  const completedShlokaIds = await getCompletedShlokaIds(userUid, getYearMonth(yesterday));
+  // Days without scheduled shlokas count as a successful streak day.
+  const isYesterdayCompleted = yesterdayShlokaIds.length === 0
+    || yesterdayShlokaIds.every((id) => completedShlokaIds.includes(id));
+
+  const streak = isYesterdayCompleted ? currentStreak + 1 : 0;
+
+  await updateDoc(profileRef, {
+    streak,
+    lastLogin: serverTimestamp(),
+  });
 
   return streak;
 }
