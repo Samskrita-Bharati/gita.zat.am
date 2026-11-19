@@ -26,12 +26,18 @@
         <div class="shlokas-heading">
           <h2 class="shlokas-title">
             <span class="shlokas-title-line">Shlokas for</span>
-            <span class="shlokas-title-line" id="shlokasDateValue">Today</span>
           </h2>
-          <div class="shlokas-accent" aria-hidden="true"></div>
           <nav class="shlokas-date-navigation" aria-label="Choose a date">
             <a id="previousShlokaDay" href="#" aria-label="Previous day">&lt;&lt;</a>
+            <h2 class="shlokas-title shlokas-date-title">
+              <span class="shlokas-title-line" id="shlokasDateValue">Today</span>
+            </h2>
             <a id="nextShlokaDay" href="#" aria-label="Next day">&gt;&gt;</a>
+          </nav>
+          <div class="shlokas-accent" aria-hidden="true"></div>
+          <nav aria-label="About and game instructions" style="display: flex; gap: 12px; margin-top: 12px">
+            <button class="play-btn" id="aboutBtn" type="button">📖 About</button>
+            <button class="play-btn" id="howToPlayBtn" type="button" style="background: var(--white); color: var(--navy) !important; border: 1px solid var(--border)">🎮 How to Play</button>
           </nav>
         </div>
 
@@ -40,6 +46,17 @@
         </div>
       </div>
     </section>
+
+    <dialog id="infoDialog" aria-labelledby="infoDialogTitle">
+      <header class="info-dialog-header">
+        <form method="dialog">
+          <button class="info-dialog-close" type="submit" aria-label="Close">X</button>
+        </form>
+        <h2 id="infoDialogTitle"></h2>
+      </header>
+      <div id="infoDialogIntro"></div>
+      <div id="infoDialogContent"></div>
+    </dialog>
 
     <footer style="text-align: center; padding: 20px">
       <a href="./legal/privacy.html" target="_blank">Privacy Policy</a>
