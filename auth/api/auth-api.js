@@ -80,12 +80,16 @@ export const ensureUserDocument = async (user, extraData = {}) => {
   ]);
 
   const { displayName, email } = user;
+  // Display names longer than 120 chars cannot pass validProfile().
+  const safeName = String(displayName || extraData?.name || "").slice(0, 120);
 
   // Never allow callers to override isAdmin from the client
   const { isAdmin, ...safeExtraData } = extraData || {};
 
   // Track if this is a new user
-  const isNewUser = !accountSnap.exists() && !profileSnap.exists();
+  // Incomplete sign-ups can have a private account but no public profile.
+  // Treat those as new so the missing profile is recovered on next login.
+  const isNewUser = !profileSnap.exists();
 
   if (!accountSnap.exists()) {
     await setDoc(accountRef, {
@@ -97,14 +101,14 @@ export const ensureUserDocument = async (user, extraData = {}) => {
 
   if (!profileSnap.exists()) {
     await setDoc(profileRef, {
-      name: displayName || safeExtraData.name || "",
+      name: safeName,
       language: safeExtraData.language || "1", // Default language
       country: safeExtraData.country || "",
       region: safeExtraData.region || "",
       location: safeExtraData.location || "",
       preferencesSet: false, // Default preferences set to False
       createdAt: serverTimestamp(),
-      streak: 0,
+      streak: 1, // Must match Firestore profile-creation rules.
     });
   }
 
