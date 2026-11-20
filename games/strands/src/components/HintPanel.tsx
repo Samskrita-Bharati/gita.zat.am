@@ -3,7 +3,6 @@ import type { Language } from '../types/gameTypes';
 import { tr } from '../i18n';
 
 type Props = {
-  hintsRemaining: number;
   wordHintCost: number;
   shlokaHintCost: number;
   canHint: boolean;
@@ -18,7 +17,7 @@ type Props = {
 };
 
 export default function HintPanel({
-  hintsRemaining, wordHintCost, shlokaHintCost, canHint, activeWordHint,
+ wordHintCost, shlokaHintCost, canHint, activeWordHint,
   canReadShloka, shlokaText, onHint, onRevealShloka, language,
   onShowAnswer, canShowAnswer
 }: Props) {
@@ -28,11 +27,16 @@ export default function HintPanel({
     <section className="strands-hints" aria-labelledby="strands-hints-title">
       <h2 id="strands-hints-title">{tr(language, 'hints')}</h2>
       <button type="button" className="hint-btn" onClick={onHint} disabled={!canHint}>
-        {sa ? '१. शब्दमार्गः' : '1. Show a word path'} <span>−{wordHintCost}</span>
-      </button>
-      <p>{activeWordHint
-        ? (sa ? 'नीलमार्गम् अनुसरतु।' : 'Follow the blue arrow.')
-        : (sa ? `${hintsRemaining} अवशिष्टाः` : `${hintsRemaining} path hints left`)}</p>
+  {activeWordHint
+        ? (sa ? '१. अग्रिमाक्षरं दर्शयतु' : '1. Highlight next letter')
+        : (sa ? '१. प्रथमाक्षरं दर्शयतु' : '1. Highlight first letter')}
+      {' '}<span>−{wordHintCost}</span>
+    </button>
+    <p>
+      {sa
+        ? 'प्रत्येकसूचनया एकम् अक्षरं प्रकाशितं भवति।'
+        : 'Each click highlights one more cell of the same word.'}
+    </p>
       <button type="button" className="hint-btn" disabled={!canReadShloka} onClick={() => {
         onRevealShloka();
         dialog.current?.showModal();
