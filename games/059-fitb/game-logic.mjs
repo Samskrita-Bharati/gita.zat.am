@@ -154,36 +154,81 @@ export function createRun(puzzle, now = Date.now()) {
     puzzle,
     choices: puzzle.answers.map(() => null),
     locked: puzzle.answers.map(() => false),
+    feedback: puzzle.answers.map(() => null),
     submissions: 0,
     deadline: now + 60000,
     finished: false,
     score: null,
   };
 }
+
 export function checkRun(run, now = Date.now()) {
-  if (run.finished) return "finished";
+  if (run.finished) {
+    return "finished";
+  }
+
   if (now >= run.deadline) {
     run.finished = true;
     run.score = 0;
+
     return "timeout";
   }
-  if (run.choices.some((w, i) => !run.locked[i] && w === null))
+
+  const hasEmptyBlank = run.choices.some(
+    (word, index) =>
+      !run.locked[index] && word === null,
+  );
+
+  if (hasEmptyBlank) {
     return "incomplete";
+  }
+
   run.submissions++;
-  run.choices.forEach((word, i) => {
-    if (normalize(word || "") === normalize(run.puzzle.answers[i]))
-      run.locked[i] = true;
+
+  const answerWords = new Set(
+    run.puzzle.answers.map(normalize),
+  );
+
+  run.feedback = run.choices.map((word, index) => {
+    const chosenWord = normalize(word ?? "");
+    const expectedWord = normalize(
+      run.puzzle.answers[index],
+    );
+
+    if (chosenWord === expectedWord) {
+      run.locked[index] = true;
+
+      return "correct";
+    }
+
+    if (answerWords.has(chosenWord)) {
+      return "misplaced";
+    }
+
+    return "incorrect";
   });
+
   if (run.locked.every(Boolean)) {
     run.finished = true;
     run.score = SCORES[run.submissions - 1];
+
     return "won";
   }
+
   if (run.submissions >= 5) {
     run.finished = true;
     run.score = 0;
+
     return "lost";
   }
-  run.choices = run.choices.map((word, i) => (run.locked[i] ? word : null));
+
+  // Keep green and yellow words.
+  // Only unrelated, incorrect words return to the pool.
+  run.choices = run.choices.map((word, index) =>
+    run.feedback[index] === "incorrect"
+      ? null
+      : word,
+  );
+
   return "retry";
 }

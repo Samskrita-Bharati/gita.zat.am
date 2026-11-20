@@ -107,3 +107,17 @@
   overflow-wrap: anywhere;
   line-height: 1.9;
 }
+
+.blank.misplaced {
+  background: #fff3bf;
+  border-color: #b77900;
+  border-style: solid;
+  color: #714b00;
+}
+
+.blank.incorrect {
+  background: var(--danger-soft);
+  border-color: var(--danger);
+  border-style: solid;
+  color: var(--danger);
+}

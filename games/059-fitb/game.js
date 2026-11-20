@@ -40,7 +40,30 @@ function render() {
     }
     const button = document.createElement("button");
     button.type = "button";
-    button.className = `blank${selected === slot && !run.finished ? " selected" : ""}${run.locked[slot] ? " locked" : ""}`;
+    const feedback = run.feedback?.[slot];
+
+    button.className = [
+      "blank",
+      selected === slot && !run.finished
+        ? "selected"
+        : "",
+      run.locked[slot] ? "locked" : "",
+      feedback === "misplaced" ? "misplaced" : "",
+      feedback === "incorrect" ? "incorrect" : "",
+    ]
+      .filter(Boolean)
+      .join(" ");
+
+    const feedbackDescription =
+      feedback === "correct"
+        ? "Correct word and position."
+        : feedback === "misplaced"
+          ? "Answer word, but in the wrong position."
+          : feedback === "incorrect"
+            ? "Not one of the missing answer words."
+            : "";
+
+    button.title = feedbackDescription;
     button.textContent = run.choices[slot] || `【 ${slot + 1} 】`;
     button.disabled = run.locked[slot] || run.finished;
     button.setAttribute(
@@ -48,6 +71,12 @@ function render() {
       `Blank ${slot + 1}: ${run.choices[slot] || "empty"}${run.locked[slot] ? ", correct and locked" : ""}`,
     );
     button.setAttribute("aria-pressed", String(selected === slot));
+      if (feedbackDescription) {
+        button.setAttribute(
+          "aria-label",
+          `${button.getAttribute("aria-label")}. ${feedbackDescription}`,
+        );
+      }
     button.onclick = () => {
       if (!active()) return;
       selected = slot;
@@ -62,16 +91,47 @@ function render() {
     button.textContent = word;
     const used = run.choices.includes(word);
     button.className = `word${used ? " used" : ""}`;
-    button.disabled = used || run.finished;
+        const lockedWord = run.choices.some(
+      (chosenWord, index) =>
+        chosenWord === word && run.locked[index],
+    );
+
+    button.disabled = lockedWord || run.finished;
     button.onclick = () => {
-      if (!active() || run.locked[selected]) return;
-      run.choices[selected] = word;
-      const next = run.choices.findIndex(
-        (w, i) => !run.locked[i] && w === null,
-      );
-      if (next >= 0) selected = next;
-      render();
-    };
+    if (!active() || run.locked[selected]) {
+      return;
+    }
+
+    const targetSlot = selected;
+    const previousSlot = run.choices.indexOf(word);
+
+    if (previousSlot === targetSlot) {
+      return;
+    }
+
+    // If the word already occupies an editable blank,
+    // swap it with the target blank's current choice.
+    if (previousSlot >= 0) {
+      run.choices[previousSlot] =
+        run.choices[targetSlot];
+
+      run.feedback[previousSlot] = null;
+    }
+
+    run.choices[targetSlot] = word;
+    run.feedback[targetSlot] = null;
+
+    const nextEmptySlot = run.choices.findIndex(
+      (choice, index) =>
+        !run.locked[index] && choice === null,
+    );
+
+    if (nextEmptySlot >= 0) {
+      selected = nextEmptySlot;
+    }
+
+    render();
+  };
     $("pool").append(button);
   });
   $("retries").textContent =
@@ -350,17 +410,30 @@ $("check").onclick = () => {
   }
   selected = run.locked.findIndex((value) => !value);
   say(
-    `${run.locked.filter(Boolean).length} of 3 words locked. Choose again for the remaining blanks. ${5 - run.submissions} submission${5 - run.submissions === 1 ? "" : "s"} left.`,
-    "error",
+    "Green: correct and locked. " +
+      "Yellow: answer word in the wrong position. " +
+      "Red: incorrect word cleared. " +
+      `${5 - run.submissions} submissions left.`,
+    "info",
   );
   render();
 };
 
 $("clear").onclick = () => {
   if (!active()) return;
-  run.choices = run.choices.map((w, i) => (run.locked[i] ? w : null));
+
+  run.choices = run.choices.map((word, index) =>
+    run.locked[index] ? word : null,
+  );
+
+  run.feedback = run.feedback.map((feedback, index) =>
+    run.locked[index] ? "correct" : null,
+  );
+
   selected = run.locked.findIndex((value) => !value);
+
   render();
+
   say("Unchecked choices cleared. Correct words remain locked.");
 };
 
