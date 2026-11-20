@@ -1,8 +1,8 @@
 # Arrange सुभाषितम्
 
-A Sanskrit word-order game. Each round presents one subhāṣita (saying) split
-into segments. Place the numbered cards onto the matching segments to rebuild
-the saying in its original order.
+A Sanskrit word-order game using the two Bhagavad Gita shlokas scheduled for
+the current local date. Place the numbered cards onto the matching words to
+rebuild the selected shloka in its original order.
 
 ## How to play
 
@@ -11,8 +11,14 @@ the saying in its original order.
 2. A correct match locks the card in place. A wrong match costs 5 points.
 3. Complete every match to see your final score and save it to the leaderboard
    when signed in.
-4. Use **Next shloka** to move through all 16 sayings. You can open a specific
-   saying with `?snum=0` through `?snum=15` in the URL.
+4. A URL such as `?id=1` selects that shloka when it is scheduled for today. Missing, invalid,
+   or past IDs fall back to today's first shloka; IDs beyond today's second
+   fall back to today's second shloka.
+
+The game uses the shared `getShlokaTextFromUrl()` and `splitShlokaWords()`
+functions. Verse punctuation is removed from the playable words. A completed
+shloka is marked in the current browser's calendar; the score submission also
+includes the shloka ID and date when it can be saved to the leaderboard.
 
 ## Scoring
 
@@ -25,19 +31,20 @@ the saying in its original order.
 
 ## Run locally
 
-From the repository root, start the site:
+From the repository root, serve the site over HTTP, for example:
 
 ```sh
-npm install
-npm run dev
+npx http-server . -p 8000 -c-1
 ```
 
-Open the URL printed by Vite, then visit `/games/018-as/`.
+Then open `http://localhost:8000/games/018-as/`. The game requires sign-in.
 
 ## Files
 
-- `index.html` contains the game, sayings, interaction logic, scoring, and
+- `index.html` contains the game interaction logic, scoring, and
   leaderboard integration.
+- `daily-shloka.mjs` selects today's verse and prepares its words using the
+  shared shloka utilities.
 - `../../css/global.css` provides shared design tokens and base styles.
 - `../shared/game-theme.css` provides the shared Zat.am game shell.
 - `ordering-game.css` provides the game-specific board layout and styling.

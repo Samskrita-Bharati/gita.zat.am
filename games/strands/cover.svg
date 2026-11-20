@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-labelledby="title"><title id="title">Gita Strands</title><rect width="256" height="256" rx="32" fill="#f1eddf"/>
+<rect x="9" y="9" width="238" height="238" rx="28" fill="none" stroke="#776238" stroke-opacity=".30" stroke-width="2"/>
+<g fill="#fffdf8" stroke="#776238" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">
+<path d="M72 181l56-53 56 0v-53" fill="none" stroke="#776238" stroke-width="9"/>
+<g stroke-width="5">
+<circle cx="72" cy="75" r="10"/><circle cx="128" cy="75" r="10"/><circle cx="184" cy="75" r="12" fill="#776238"/>
+<circle cx="72" cy="128" r="10"/><circle cx="128" cy="128" r="12" fill="#776238"/><circle cx="184" cy="128" r="12" fill="#776238"/>
+<circle cx="72" cy="181" r="12" fill="#776238"/><circle cx="128" cy="181" r="10"/><circle cx="184" cy="181" r="10"/>
+</g>
+</g></svg>

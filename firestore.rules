@@ -1,3 +1,4 @@
+
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -35,7 +36,7 @@ service cloud.firestore {
         && data.location is string && data.location.size() <= 250
         && data.preferencesSet is bool
         && data.createdAt is timestamp
-        && data.streak is int && data.streak >= 1 && data.streak <= 10000
+        && data.streak is int && data.streak >= 0 && data.streak <= 10000
         && (!('lastLogin' in data) || data.lastLogin is timestamp);
     }
 
@@ -88,7 +89,7 @@ service cloud.firestore {
           && validProfile(request.resource.data)
           && request.resource.data.createdAt == request.time
           && request.resource.data.preferencesSet == false
-          && request.resource.data.streak == 1
+          && request.resource.data.streak == 0
           && !('lastLogin' in request.resource.data);
 
         allow update: if docId == 'profile' && isOwner(userId)
@@ -104,7 +105,7 @@ service cloud.firestore {
     }
 
     function supportedGame(gameId) {
-      return gameId in ['018-as', '050-asp', '057-gita-typing', 'fw', 'ma'];
+     return gameId in ['018-as', '057-gita-typing', 'fw', 'z18', '059-fitb', 'strands'];
     }
 
     function leaderboardDocument(gameId) {
@@ -206,12 +207,86 @@ service cloud.firestore {
       }
     }
 
+    // ==========================================================
+    // SHLOKA PROGRESS — PRESERVED FROM TEAMMATE'S LATEST RULES
+    // ==========================================================
+
+    // Document ID must strictly follow the {userId}_{YYYYMM} format.
+    function isOwnShlokaDoc(docId) {
+      return signedIn()
+        && docId.matches('^' + request.auth.uid + '_[0-9]{4}(0[1-9]|1[0-2])$');
+    }
+
+    // Validate the shlokaProgress payload structure and size limits.
+    function validShlokaProgress(data) {
+      return data.keys().hasAll(['completedShlokas'])
+        && data.keys().hasOnly(['completedShlokas'])
+        && data.completedShlokas is list
+        && data.completedShlokas.size() <= 100;
+    }
+
+    match /shlokaProgress/{docId} {
+      // Allow owners and admins to fetch individual monthly records; prevent collection scans.
+      allow get: if isOwnShlokaDoc(docId) || isAdmin();
+      allow list: if false;
+
+      // Owners can create or update their own monthly progress document.
+      allow create, update: if isOwnShlokaDoc(docId)
+        && validShlokaProgress(request.resource.data);
+
+      // Restrict deletion to administrators.
+      allow delete: if isAdmin();
+    }
+
+    // ==========================================================
+    // GG ADMIN DASHBOARD — NEW PERMISSIONS
+    // ==========================================================
+
+    // Allow administrators to perform collection-group queries across
+    // users/{uid}/public/profile for dashboard statistics.
+    // Existing individual-profile read/write rules remain unchanged.
+    match /{parentPath=**}/public/{docId} {
+      allow list: if isAdmin();
+    }
+
+    // Record game-page visits independently of the scoring system.
+    // Regular users can create events for themselves, but cannot read
+    // other users' visits, modify events, or delete events.
+    match /gameVisits/{eventId} {
+      allow get, list: if isAdmin();
+
+      allow create: if signedIn()
+        && request.resource.data.keys().hasAll([
+          'uid', 'gameId', 'gameName', 'path', 'visitedAt'
+        ])
+        && request.resource.data.keys().hasOnly([
+          'uid', 'gameId', 'gameName', 'path', 'visitedAt'
+        ])
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.gameId is string
+        && request.resource.data.gameId.matches('^[a-zA-Z0-9_-]{1,80}$')
+        && request.resource.data.gameName is string
+        && request.resource.data.gameName.size() > 0
+        && request.resource.data.gameName.size() <= 120
+        && request.resource.data.path is string
+        && request.resource.data.path.size() <= 250
+        && request.resource.data.path.matches('^.*/games/' + request.resource.data.gameId + '(/.*)?$')
+        && request.resource.data.visitedAt == request.time;
+
+      allow update, delete: if false;
+    }
+
+    // ==========================================================
+    // ADMIN LOGS — PRESERVED
+    // ==========================================================
+
     match /admin-logs/{logId} {
       allow get, list: if isAdmin();
       // Admin logs need a trusted server writer when implemented.
       allow create, update, delete: if false;
     }
 
+    // Deny all other access.
     match /{document=**} {
       allow read, write: if false;
     }

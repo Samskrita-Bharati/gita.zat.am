@@ -2,6 +2,9 @@ import {
   auth,
   onAuthStateChanged,
   signOut,
+  db,
+  doc,
+  getDoc,
 } from "../auth/api/firebase-config.js";
 
 import { getCurrentUserProfile } from "../auth/api/auth-api.js";
@@ -23,44 +26,6 @@ const languageNames = {
   ml: "Malayalam",
   te: "Telugu",
   ta: "Tamil",
-};
-
-// =====================================================
-// NAVBAR TRANSLATIONS
-// =====================================================
-
-const navbarTranslations = {
-  en: {
-    navGames: "Daily Challenge",
-    navContest: "Calendar",
-    navLeaderboard: "Leaderboard",
-
-    login: "↪ Login",
-    signup: "Sign Up",
-
-    leaderboardDropdown: "Leaderboard",
-
-    profile: "Profile",
-    logout: "Logout",
-
-    langButton: "🌐 EN / SA",
-  },
-
-  sa: {
-    navGames: "Daily Challenge",
-    navContest: "Calendar",
-    navLeaderboard: "श्रेष्ठसूची",
-
-    login: "↪ प्रवेशः",
-    signup: "पञ्जीकरणम्",
-
-    leaderboardDropdown: "श्रेष्ठसूची",
-
-    profile: "परिचयः",
-    logout: "निर्गमः",
-
-    langButton: "🌐 SA / EN",
-  },
 };
 
 // =====================================================
@@ -146,8 +111,6 @@ export async function initNavbarAuth() {
 
   const headerUserName = document.getElementById("navbar-user-name");
 
-  const langBtn = document.getElementById("zatamLangBtn");
-
   const loginBtn = document.getElementById("navbar-login-btn");
 
   const signupBtn = document.getElementById("navbar-signup-btn");
@@ -155,58 +118,13 @@ export async function initNavbarAuth() {
   const profileLink = document.getElementById("profile-link-dropdown");
 
   const leaderboardLink = document.getElementById("leaderboard-link-dropdown");
+  const adminLink = document.getElementById("admin-link-dropdown");
 
   if (!loggedOut || !loggedIn || !profileBtn || !dropdown) {
     console.error("Navbar auth elements are missing.");
 
     return;
   }
-
-  // ===================================================
-  // EN / SA INTERFACE LANGUAGE
-  // ===================================================
-
-  let currentLanguage = localStorage.getItem("zatamLanguage") || "en";
-
-  function applyNavbarLanguage(emitEvent = true) {
-    const t = navbarTranslations[currentLanguage] || navbarTranslations.en;
-
-    document.querySelectorAll("[data-nav-i18n]").forEach((element) => {
-      const key = element.dataset.navI18n;
-
-      if (t[key]) {
-        element.textContent = t[key];
-      }
-    });
-
-    if (langBtn) {
-      langBtn.textContent = t.langButton;
-    }
-
-    localStorage.setItem("zatamLanguage", currentLanguage);
-
-    window.zatamLanguage = currentLanguage;
-
-    if (emitEvent) {
-      window.dispatchEvent(
-        new CustomEvent("zatam:languagechange", {
-          detail: {
-            language: currentLanguage,
-          },
-        }),
-      );
-    }
-  }
-
-  if (langBtn) {
-    langBtn.addEventListener("click", () => {
-      currentLanguage = currentLanguage === "en" ? "sa" : "en";
-
-      applyNavbarLanguage();
-    });
-  }
-
-  applyNavbarLanguage(false);
 
   // ===================================================
   // LOGIN / SIGNUP
@@ -256,6 +174,24 @@ export async function initNavbarAuth() {
 
   onAuthStateChanged(auth, async (user) => {
     if (user) {
+      // The navigation link is a convenience only. /admin/ and Firestore
+      // independently verify the isAdmin role before exposing any data.
+      if (adminLink) {
+        adminLink.classList.add("hidden");
+        getDoc(doc(db, "users", user.uid, "private", "account"))
+          .then((snap) => {
+            if (
+              auth.currentUser?.uid === user.uid &&
+              snap.exists() &&
+              snap.data().isAdmin === true
+            ) {
+              adminLink.classList.remove("hidden");
+            }
+          })
+          .catch(() => {
+            /* Missing permissions: keep admin link hidden. */
+          });
+      }
       loggedOut.classList.add("hidden");
 
       loggedIn.classList.remove("hidden");
@@ -371,6 +307,7 @@ export async function initNavbarAuth() {
         }
       }
     } else {
+      if (adminLink) adminLink.classList.add("hidden");
       loggedOut.classList.remove("hidden");
 
       loggedIn.classList.add("hidden");
@@ -411,9 +348,7 @@ export async function initNavbarAuth() {
 
     profileUrl.searchParams.set(
       "from",
-      currentPath.includes("/games/")
-        ? "games"
-        : "home",
+      currentPath.includes("/games/") ? "games" : "home",
     );
 
     profileLink.href = profileUrl.href;
@@ -430,9 +365,7 @@ export async function initNavbarAuth() {
 
     leaderboardUrl.searchParams.set(
       "from",
-      currentPath.includes("/games/")
-        ? "games"
-        : "home",
+      currentPath.includes("/games/") ? "games" : "home",
     );
 
     leaderboardLink.href = leaderboardUrl.href;

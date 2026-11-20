@@ -2,6 +2,7 @@
   min-height: clamp(28rem, 64vh, 40rem);
   display: grid;
   align-items: center;
+  justify-items: center;
   padding: clamp(1rem, 2vw, 1.75rem) clamp(1.25rem, 4vw, 3rem);
   background:
     radial-gradient(circle at 24% 72%, transparent 0 46px, color-mix(in srgb, var(--gold-light) 38%, transparent) 47px 50px, transparent 51px),
@@ -13,19 +14,23 @@
 }
 
 .shlokas-layout {
-  width: min(75rem, 100%);
+  width: fit-content;
+  max-width: 100%;
   margin: 0 auto;
   display: grid;
-  grid-template-columns: minmax(18rem, 1.15fr) minmax(0, 2fr);
+  grid-template-columns: fit-content(30rem) fit-content(40rem);
   grid-template-rows: 1fr auto;
   align-items: center;
-  column-gap: clamp(2rem, 5vw, 5rem);
+  column-gap: clamp(1.5rem, 3vw, 2.5rem);
   row-gap: 1rem;
 }
 
 .shlokas-heading {
   grid-column: 1;
   grid-row: 1 / 3;
+  width: fit-content;
+  max-width: 100%;
+  justify-self: center;
   text-align: left;
 }
 
@@ -40,30 +45,145 @@
 
 .shlokas-title-line {
   display: block;
-  white-space: nowrap;
 }
 
 .shlokas-date-navigation {
-  grid-column: 2;
-  grid-row: 2;
   display: flex;
-  justify-content: space-between;
+  align-items: flex-end;
+  justify-content: center;
+  gap: clamp(0.5rem, 2vw, 1.25rem);
+  width: fit-content;
+  margin-top: 1rem;
+}
+
+.shlokas-date-title {
+  text-align: center;
+  white-space: nowrap;
 }
 
 .shlokas-accent {
   width: 4.25rem;
   height: 0.3rem;
-  margin-top: 1rem;
+  margin: 0.75rem auto 0;
   background: var(--gold);
   border-radius: var(--radius-pill);
+}
+
+#infoDialog {
+  width: min(38rem, calc(100% - 2rem));
+  max-height: min(80vh, 48rem);
+  padding: 0 1.5rem 1.5rem;
+  color: var(--text);
+  background: var(--cream);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+  font-size: var(--font-size-base);
+  overflow: hidden;
+  display: none;
+  flex-direction: column;
+}
+
+#infoDialog[open] {
+  display: flex;
+}
+
+#infoDialog h2,
+#infoDialog h3 {
+  font-size: var(--font-size-base);
+}
+
+#infoDialog h2 {
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+}
+
+.info-dialog-header {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1.25rem 0 0.75rem;
+  background: var(--cream);
+}
+
+#infoDialogIntro {
+  flex: 0 0 auto;
+}
+
+#infoDialogContent {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.info-dialog-header form {
+  margin: 0;
+  margin-left: auto;
+  order: 1;
+}
+
+.info-dialog-close {
+  width: 1.75rem;
+  height: 1.75rem;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--navy-dark);
+  line-height: 1;
+}
+
+.info-game-list {
+  display: grid;
+  gap: 1rem;
+  margin: 1rem 0;
+}
+
+.info-game-intro {
+  margin: 0;
+}
+
+.info-game {
+  padding: 0.875rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.info-game-header {
+  display: grid;
+  grid-template-columns: 4rem minmax(0, 1fr);
+  align-items: center;
+  gap: 0.875rem;
+}
+
+.info-game-header img {
+  width: 4rem;
+  height: 4rem;
+  object-fit: contain;
+}
+
+.info-game-header h3 {
+  min-width: 0;
+}
+
+.info-game-copy {
+  min-width: 0;
+}
+
+.info-game-description {
+  margin-top: 0.25rem;
 }
 
 .today-verses {
   grid-column: 2;
   grid-row: 1;
-  height: 42rem;
+  width: fit-content;
+  max-width: 100%;
+  justify-self: center;
+  min-height: 0;
   display: grid;
-  grid-template-rows: repeat(2, minmax(0, 1fr));
+  grid-template-rows: repeat(2, auto);
 }
 
 .upcoming-notice {
@@ -127,21 +247,22 @@
 .today-verse {
   min-width: 0;
   min-height: 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: flex-start;
+  width: 100%;
+  max-width: 100%;
+  justify-self: center;
+  min-height: 22.5rem;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
   padding: 1.25rem clamp(0.25rem, 2vw, 2rem);
   text-align: left;
 }
 
 .today-verse + .today-verse {
-  border-top: 1px solid;
-  border-color: var(--border);
+  border-top: 1px solid var(--border);
 }
 
 .today-verse-reference {
-  margin: 0 0 0.75rem;
+  margin-bottom: 0.75rem;
   color: var(--navy-light);
   font-family: var(--zatam-font);
   font-size: var(--font-size-sm);
@@ -156,6 +277,14 @@
   white-space: pre-line;
 }
 
+.today-verse-copy {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.4rem;
+}
+
 .today-verse-text {
   color: var(--navy-dark);
   font-family: var(--zatam-font);
@@ -163,18 +292,16 @@
 }
 
 .today-verse-transliteration {
-  margin: 0.85rem 0 0;
+  margin: 0;
   color: var(--muted);
   font-family: var(--zatam-font);
   font-size: var(--font-size-base);
 }
 
 .today-verse-games-row {
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 0.65rem;
-  width: min(100%, 42rem);
+  display: grid;
+  gap: 0.6rem;
+  min-width: 0;
   margin: 1rem 0 0;
   color: var(--navy-dark);
   font-size: var(--font-size-sm);
@@ -182,39 +309,59 @@
 }
 
 .game-picker {
-  display: flex;
-  align-items: center;
-  gap: 0.45rem;
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 0.55rem;
   min-width: 0;
 }
 
 .game-picker-option {
-  display: block;
-  overflow: hidden;
-  flex: 0 0 2.4rem;
-  width: 2.4rem;
-  height: 2.4rem;
-  padding: 0;
+  display: flex;
+  min-width: 0;
+  min-height: 44px;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.4rem 0.25rem 0.5rem;
   border: 1px solid var(--border);
-  border-radius: 50%;
+  border-radius: 0.8rem;
   background: var(--white);
   color: var(--navy-dark);
+  text-align: center;
   text-decoration: none;
-  cursor: pointer;
-  transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+  transition: border-color 160ms ease;
 }
 
-.game-picker-option img {
+.game-picker-thumbnail {
+  display: block;
+  overflow: hidden;
+  width: min(100%, 3.65rem);
+  aspect-ratio: 1;
+  border: 1px solid var(--border);
+  border-radius: 0.65rem;
+  background: var(--cream);
+}
+
+.game-picker-thumbnail img {
   display: block;
   width: 100%;
   height: 100%;
-  border-radius: inherit;
   object-fit: cover;
 }
 
-.game-picker-option:hover {
-  transform: translateY(-1px);
+.game-picker-caption {
+  font-size: 0.75rem;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+.game-picker-option:is(:hover, :focus-visible) {
   border-color: var(--gold);
+}
+
+.game-picker-option:focus-visible {
+  outline: 2px solid var(--navy-dark);
+  outline-offset: 2px;
 }
 
 .verses-loading {
@@ -230,27 +377,41 @@
   }
 
   .shlokas-layout {
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: auto auto auto;
+    grid-template-columns: min(85vw, 32rem);
+    grid-template-rows: auto auto;
+    justify-content: center;
     gap: 0.5rem;
   }
 
   .shlokas-heading {
     grid-column: 1;
     grid-row: 1;
-  }
-
-  .shlokas-date-navigation {
-    grid-column: 1;
-    grid-row: 2;
+    width: 100%;
   }
 
   .today-verses {
     grid-column: 1;
-    grid-row: 3;
+    grid-row: 2;
+    width: 100%;
+    grid-template-rows: auto auto;
   }
 
   .today-verse {
+    min-height: 0;
     padding: 1.25rem 0;
+    text-align: left;
+  }
+
+  .today-verse-copy {
+    justify-content: flex-start;
+  }
+
+  .game-picker {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    row-gap: 0.8rem;
+  }
+
+  .upcoming-notice {
+    text-align: center;
   }
 }

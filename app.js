@@ -4,34 +4,48 @@ export const menu = [
   {
     id: 18,
     title: "Arrange सुभाषितम्  ",
+    pickerLabel: "Arrange",
     dir: "games/018-as",
-    desc: ` Order the words of a सुभाषितम्  in correct sequence! <pre>subhaaShitam</pre>`,
+    cover: "./games/018-as/cover.svg",
+    desc: ` Order the words of a सुभाषितम्  in correct sequence!`,
   },
   {
-    id: 50,
-    title: "Auto श्लोकपाठक:",
-    dir: "games/050-asp",
-    desc: `Auto Reader for Shloka from श्रीमद् भगवद्गीता `,
+    id: 19,
+    title: "BodhaPlay: शब्दावली",
+    pickerLabel: "Scramble",
+    dir: "games/z18",
+    cover: "./games/z18/cover.svg",
+    desc: `Unscramble Sanskrit vocabulary.`,
   },
   {
-    id: 57,
-    title: "Gita Typing Game",
-    dir: "games/057-gita-typing",
-    desc: `Practice typing on English (Harvard-Kyoto) transliteration of the shlokas from Bhagavad Gita`,
+    id: 59,
+    title: "Fill in the Blank",
+    dir: "games/059-fitb",
+    cover: "./games/059-fitb/cover.svg",
+    desc: `Complete the daily shloka by filling in the missing words.`,
   },
   {
     id: 61,
     title: "Word Search",
     dir: "games/fw/index.html",
-    cover: "./games/assets/bp26c.png",
+    cover: "./games/fw/cover.svg",
     desc: `Find Sanskrit words in the grid.`,
   },
+  // {
+  //   id: 57,
+  //   title: "Gita Typing Game",
+  //   pickerLabel: "Typing",
+  //   dir: "games/057-gita-typing",
+  //   cover: "./games/057-gita-typing/cover.svg",
+  //   desc: `Practice typing on English (Harvard-Kyoto) transliteration of the shlokas from Bhagavad Gita`,
+  // },
   {
-    id: 62,
-    title: "Audio Match",
-    dir: "games/ma/index.html",
-    cover: "./games/assets/bp26c.png",
-    desc: `Match Sanskrit words with their sounds.`,
+    id: 63,
+    title: "सूत्रम् suutram",
+    pickerLabel: "Suutram",
+    dir: "games/strands",
+    cover: "./games/strands/cover.svg",
+    desc: "Connect Sanskrit letters to discover hidden words from the shloka.",
   },
 ];
 
@@ -48,7 +62,7 @@ const sectionCenter = document.querySelector(".section-center");
 // Change this array anytime to change featured games.
 // =====================================================
 
-const featuredGameIds = [18, 50, 57, 61, 62];
+const featuredGameIds = [18, 57, 61];
 
 // =====================================================
 // SLIDER STATE
@@ -63,13 +77,9 @@ let featuredPaused = false;
 // =====================================================
 
 window.addEventListener("DOMContentLoaded", function () {
-  // Only run homepage UI code when the homepage elements exist.
-  if (!sectionCenter) {
-    return;
-  }
-
-  diplayMenuItems(menu);
+  if (sectionCenter) diplayMenuItems(menu);
   initializeShlokasToday(menu);
+  initInfoDialog();
 });
 
 // =====================================================
@@ -451,5 +461,58 @@ function initHowItWorksModal() {
     if (event.key === "Escape" && overlay.classList.contains("visible")) {
       closeModal();
     }
+  });
+}
+
+function initInfoDialog() {
+  const dialog = document.getElementById("infoDialog");
+  const title = document.getElementById("infoDialogTitle");
+  const introContent = document.getElementById("infoDialogIntro");
+  const content = document.getElementById("infoDialogContent");
+  const aboutButton = document.getElementById("aboutBtn");
+  const howToPlayButton = document.getElementById("howToPlayBtn");
+
+  if (!dialog || !title || !introContent || !content || !aboutButton || !howToPlayButton) return;
+
+  function openDialog(label, intro, body) {
+    title.textContent = label;
+    introContent.replaceChildren(intro);
+    content.replaceChildren(body);
+    dialog.showModal();
+    content.scrollTop = 0;
+  }
+
+  aboutButton.addEventListener("click", function () {
+    const placeholder = document.createElement("p");
+    placeholder.className = "info-game-intro";
+    placeholder.textContent = "TBD";
+    openDialog("About", placeholder, document.createElement("div"));
+  });
+
+  howToPlayButton.addEventListener("click", function () {
+    const gameList = document.createElement("div");
+    gameList.className = "info-game-list";
+
+    const intro = document.createElement("p");
+    intro.className = "info-game-intro";
+    intro.lang = "en";
+    intro.textContent = "Two shlokas are featured each day. Explore and practice them through the games below.";
+
+    menu.forEach(function (game) {
+      const item = document.createElement("article");
+      item.className = "info-game";
+      item.innerHTML = `
+        <div class="info-game-header">
+          <img src="${getGameCover(game)}" alt="${game.title} cover" />
+          <div class="info-game-copy">
+            <h3>${game.title.trim()}</h3>
+            <div class="info-game-description">${game.desc}</div>
+          </div>
+        </div>
+      `;
+      gameList.append(item);
+    });
+
+    openDialog("How to Play", intro, gameList);
   });
 }

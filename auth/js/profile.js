@@ -392,8 +392,7 @@ if (backLink) {
 
   if (origin === "games") {
     backLink.href = "../calendar/index.html";
-    backLink.innerHTML =
-      '<span aria-hidden="true">🎮</span> Back to Games';
+    backLink.innerHTML = '<span aria-hidden="true">🎮</span> Back to Games';
   } else {
     backLink.href = "../index.html";
     backLink.innerHTML = '<span aria-hidden="true">🎮</span> Back to Games';
