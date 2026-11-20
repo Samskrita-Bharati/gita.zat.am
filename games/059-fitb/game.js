@@ -103,6 +103,25 @@ function setLeaderboardMessage(message, kind = "info") {
   element.textContent = message;
 }
 
+function showShlokaMeaning() {
+  const meaning = source?.verse?.meaning;
+
+  const hasMeaning =
+    typeof meaning === "string" &&
+    meaning.trim().length > 0;
+
+  $("meaningText").textContent = hasMeaning
+    ? meaning
+        .trim()
+        .split(";")
+        .map((entry) => entry.trim())
+        .filter(Boolean)
+        .join("\n")
+    : "An English meaning is not available for this shloka.";
+
+  $("meaningSection").hidden = false;
+}
+
 async function saveFinishedRun(
   completedRun,
   outcome,
@@ -216,6 +235,7 @@ function finish(outcome) {
   );
 
   render();
+  showShlokaMeaning();
 
   setLeaderboardMessage(
     "Checking today's best score…",
@@ -269,6 +289,8 @@ async function start() {
     $("intro").hidden = true;
     $("board").hidden = false;
     $("result").hidden = true;
+    $("meaningSection").hidden = true;
+    $("meaningText").textContent = "";
 
     $("time").textContent = "1:00";
     $("time").classList.remove("time-warning");

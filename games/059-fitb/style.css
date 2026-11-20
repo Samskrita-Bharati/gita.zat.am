@@ -90,3 +90,20 @@
     line-height: 2.6;
   }
 }
+
+.shloka-meaning {
+  margin-top: 1.5rem;
+  border-left: 4px solid var(--gold);
+}
+
+.meaning-description {
+  margin-bottom: 0.75rem;
+  color: var(--muted);
+  font-size: var(--font-size-base);
+}
+
+#meaningText {
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+  line-height: 1.9;
+}
