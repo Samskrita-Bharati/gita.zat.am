@@ -12,14 +12,14 @@
     <main class="daily-challenges-page">
       <header class="daily-challenges-header">
         <span class="daily-challenges-eyebrow">Zat.am Community</span>
-        <h1>Daily Challenges</h1>
-        <p>Build your Sanskrit learning streak, one day at a time.</p>
+        <h1>Shloka Schedule</h1>
+        <p>Pick a shloka to play a game. See if you can complete them all!</p>
       </header>
       <section class="calendar" aria-label="Daily challenges calendar">
         <div class="calendar-heading">
-          <a class="calendar-nav" id="previousMonth" aria-label="Previous month">&larr;</a>
+          <a class="calendar-nav" id="previousMonth" href="#" aria-label="Previous month">&lt;&lt;</a>
           <h2 id="monthHeading" aria-live="polite"></h2>
-          <a class="calendar-nav" id="nextMonth" aria-label="Next month">&rarr;</a>
+          <a class="calendar-nav" id="nextMonth" href="#" aria-label="Next month">&gt;&gt;</a>
         </div>
         <p id="calendarLoadStatus" class="calendar-load-status" role="status"></p>
         <div class="calendar-grid" id="calendarGrid" role="grid"></div>
@@ -30,6 +30,7 @@
         <div id="selectedDateVerses" aria-live="polite">Loading shlokas…</div>
       </section>
     </main>
+    <div class="game-picker" id="gamePicker" role="group" aria-label="Choose a game" hidden></div>
     <script type="module" src="../navbar/navbar-loader.js"></script>
     <script type="module" src="./calendar.js"></script>
   </body>

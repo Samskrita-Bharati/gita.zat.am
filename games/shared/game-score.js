@@ -195,6 +195,21 @@ async function updateShlokaProgress(uid, assignment) {
   await setDoc(doc(db, "shlokaProgress", `${uid}_${month}`), {
     completedShlokas: arrayUnion(id),
   }, { merge: true });
+
+  // Keep the calendar's per-session copy in sync when it has already been read.
+  try {
+    const cacheKey = `gita.shlokaProgress.v1.${uid}_${month}`;
+    const cached = sessionStorage.getItem(cacheKey);
+    if (cached !== null) {
+      const completedShlokas = JSON.parse(cached);
+      if (Array.isArray(completedShlokas) && !completedShlokas.some((value) => String(value) === String(id))) {
+        completedShlokas.push(id);
+        sessionStorage.setItem(cacheKey, JSON.stringify(completedShlokas));
+      }
+    }
+  } catch {
+    // Session cache is optional; the Firestore write above is authoritative.
+  }
 }
 
 async function getAuthenticatedUser() {
