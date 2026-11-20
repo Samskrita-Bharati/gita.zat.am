@@ -121,7 +121,7 @@ body.zatam-themed-game.zatam-ordering-game {
 }
 
 .zatam-ordering-game #cardSlots::before {
-  content: "Shloka words";
+  content: "Shloka parts";
 }
 
 .zatam-ordering-game #cardPile > div,

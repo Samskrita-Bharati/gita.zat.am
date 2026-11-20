@@ -2,6 +2,22 @@ import { getDailySchedule } from "../../shlokasToday/daily-schedule.mjs";
 import { cleanShlokaText } from "../../shlokasToday/shlokasToday.js";
 import { getShlokaTextFromUrl, splitShlokaWords } from "../shared/shloka-utils.js";
 
+export function groupShlokaWords(words) {
+  if (!words.length) return [];
+  // Use four parts for shorter verses and five for longer ones, distributing
+  // whole words as evenly as possible while preserving their original order.
+  const count = Math.min(words.length, words.length > 12 ? 5 : 4);
+  const baseSize = Math.floor(words.length / count);
+  const extra = words.length % count;
+  let offset = 0;
+  return Array.from({ length: count }, (_, index) => {
+    const size = baseSize + (index < extra ? 1 : 0);
+    const part = words.slice(offset, offset + size).join(" ");
+    offset += size;
+    return part;
+  });
+}
+
 export async function loadTodaysShloka(search = window.location.search, today = new Date()) {
   const response = await fetch(new URL("../../assets/bhagavad-gita-verses.json", import.meta.url));
   if (!response.ok) throw new Error("Could not load the shloka data.");
@@ -23,7 +39,7 @@ export async function loadTodaysShloka(search = window.location.search, today = 
     throw new Error("Today's shloka changed while loading. Please refresh the page.");
   }
   // Verse punctuation is not a separate word in this ordering game.
-  const words = splitShlokaWords(text).map((word) => word.replace(/[।॥|]/gu, "")).filter(Boolean);
+  const words = groupShlokaWords(splitShlokaWords(text).map((word) => word.replace(/[।॥|]/gu, "")).filter(Boolean));
   if (!words.length) throw new Error("This shloka does not contain any playable words.");
   const date = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
   return { verse, words, date, todayIds: schedule.verses.map((item) => item.id) };

@@ -1,7 +1,7 @@
 # Arrange सुभाषितम्
 
 A Sanskrit word-order game using the two Bhagavad Gita shlokas scheduled for
-the current local date. Place the numbered cards onto the matching words to
+the current local date. Place the numbered cards onto the matching parts to
 rebuild the selected shloka in its original order.
 
 ## How to play
@@ -16,7 +16,8 @@ rebuild the selected shloka in its original order.
    fall back to today's second shloka.
 
 The game uses the shared `getShlokaTextFromUrl()` and `splitShlokaWords()`
-functions. Verse punctuation is removed from the playable words. A completed
+functions. Verse punctuation is removed and consecutive words are grouped into
+four parts for shorter verses or five parts for longer verses. A completed
 shloka is marked in the current browser's calendar; the score submission also
 includes the shloka ID and date when it can be saved to the leaderboard.
 

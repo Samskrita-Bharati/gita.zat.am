@@ -261,7 +261,7 @@ selectedCard=null;
   $('#cardPile').html( '' );
   $('#cardSlots').html( '' );
 
-  // Create one number card for every word in the saying.
+  // Create one number card for each part of the shloka.
   for ( var i=0; i<words.length; i++ ) {
     var cardNumber = i + 1;
     var card = $('<div></div>')
@@ -392,7 +392,7 @@ function matchCardToSlot(slot, card) {
     <p class="mangalam">॥ श्रीः ॥</p>
     <span class="zatam-game-eyebrow">क्रमक्रीडा</span>
     <h1 class="zatam-game-title">सुभाषितम्</h1>
-    <p class="zatam-game-subtitle">Arrange today’s shloka in its proper order.</p>
+    <p class="zatam-game-subtitle">Arrange today’s shloka in its proper order. Select a number, then select the matching part.</p>
   </header>
 
   <p id="dailyGameStatus" class="ordering-selection-status" role="status">Loading today’s shloka…</p>
