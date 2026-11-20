@@ -104,20 +104,15 @@ function setLeaderboardMessage(message, kind = "info") {
 }
 
 function showShlokaMeaning() {
-  const meaning = source?.verse?.meaning;
+  const translation = source?.verse?.translation;
 
-  const hasMeaning =
-    typeof meaning === "string" &&
-    meaning.trim().length > 0;
+  const hasTranslation =
+    typeof translation === "string" &&
+    translation.trim().length > 0;
 
-  $("meaningText").textContent = hasMeaning
-    ? meaning
-        .trim()
-        .split(";")
-        .map((entry) => entry.trim())
-        .filter(Boolean)
-        .join("\n")
-    : "An English meaning is not available for this shloka.";
+  $("meaningText").textContent = hasTranslation
+    ? translation.trim()
+    : "An English translation is not available for this shloka.";
 
   $("meaningSection").hidden = false;
 }
