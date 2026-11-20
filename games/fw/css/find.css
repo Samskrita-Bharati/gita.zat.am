@@ -44,7 +44,15 @@ body {
 }
 
 #nFound {
-  font-size: 1.3em;
+  font-size: 1.0em;
+}
+
+#totalWords{
+  font-size: 1.0em;
+}
+
+#slash{
+  font-size: 18px;
 }
 
 #refreshLink {
@@ -161,7 +169,7 @@ body {
 }
 
 #grid td.selectedCell {
-  background-color: #aa7777;
+  background-color: #f4bfa5 !important;
 }
 
 #grid td .markers {
@@ -352,6 +360,7 @@ body {
   #grid {
     width: 80vw !important;
     height: 80vw !important;
+    user-select: none;
   }
 
   #grid td {
@@ -582,4 +591,41 @@ input:checked + .slider:before {
     transform: translateY(110vh) rotate(540deg);
     opacity: 0.9;
   }
+}
+
+.fw-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px
+}
+
+#wordsFoundContainer{
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  position: relative;
+  left: 130px;
+  white-space: nowrap; 
+
+  padding: 1px 1.25rem;
+  border: 1px solid var(--navy);
+  border-radius: var(--radius-sm);
+  background: var(--white);
+  color: var(--navy);
+  cursor: pointer;
+}
+
+#fwRetry{
+    display: flex;
+  align-items: center;
+  gap: 5px;
+  position: relative;
+  right: 135px;
+  white-space: nowrap;
+}
+
+#fwRetry svg {
+  width: 18px;
+  height: 18px;
 }
