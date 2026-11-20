@@ -3,6 +3,11 @@ import {
   getDocs,
   doc,
   getDoc,
+  query,
+  orderBy,
+  documentId,
+  limit,
+  startAfter,
 } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
 
 import { db } from "../auth/api/firebase-config.js";
@@ -71,6 +76,24 @@ export function checkFetchRequirements(
   return false;
 }
 
+// Cache the exact query result for a short period so switching between tabs,
+// ranking order and level filters does not download the same histories again.
+// Expiry permits new submissions from other browser sessions to appear.
+const HISTORY_CACHE_TTL_MS = 30_000;
+const historyCache = new Map();
+
+export function invalidateLeaderboardCache(gameId = null) {
+  if (!gameId) {
+    historyCache.clear();
+    return;
+  }
+  for (const key of historyCache.keys()) {
+    if (key.startsWith(`${gameId}::`) || key.startsWith("Global::")) {
+      historyCache.delete(key);
+    }
+  }
+}
+
 /*
 =====================================================
 GET RAW LEADERBOARD HISTORY
@@ -78,6 +101,18 @@ GET RAW LEADERBOARD HISTORY
 */
 
 export async function getRawData(start, end, selectedGame) {
+  const cacheKey = `${selectedGame}::${start === 0 ? "all" : `${start}::${end}`}`;
+  const cached = historyCache.get(cacheKey);
+  if (cached && cached.expiry > Date.now()) return cached.promise;
+  const promise = fetchRawData(start, end, selectedGame);
+  historyCache.set(cacheKey, { promise, expiry: Date.now() + HISTORY_CACHE_TTL_MS });
+  promise.catch(() => {
+    if (historyCache.get(cacheKey)?.promise === promise) historyCache.delete(cacheKey);
+  });
+  return promise;
+}
+
+async function fetchRawData(start, end, selectedGame) {
   const historyDocuments = [];
 
   /* ALL DATES */
@@ -333,4 +368,30 @@ function formatRawData(entries, attemptMeta, selectedGame) {
       };
     })
     .filter((record) => record && !record.gameId.startsWith("bp26-"));
+}
+
+
+/** Fetch a bounded page of monthly documents using a server-side Firestore
+ * cursor. This is genuine document pagination, not per-attempt pagination:
+ * existing GG history stores attempts inside monthly document maps.
+ * An indexed per-attempt collection is required for UID-specific pagination.
+ */
+export async function getMonthlyHistoryPage(gameId, { cursor = null, pageSize = 3 } = {}) {
+  const size = Math.max(1, Math.min(6, Number(pageSize) || 3));
+  const historyRef = collection(db, "leaderboards", gameId, "gameHistory");
+  const constraints = [orderBy(documentId(), "desc"), limit(size)];
+  if (cursor) constraints.push(startAfter(cursor));
+  const snap = await getDocs(query(historyRef, ...constraints));
+  const entries = {};
+  const meta = {};
+  for (const monthly of snap.docs) {
+    Object.assign(entries, monthly.data()?.entries || {});
+    Object.assign(meta, monthly.data()?.attemptMeta || {});
+  }
+  return {
+    records: formatRawData(entries, meta, gameId),
+    cursor: snap.docs.at(-1) || null,
+    hasMore: snap.size === size,
+    monthsRead: snap.size,
+  };
 }

@@ -211,6 +211,18 @@ service cloud.firestore {
         && validOwnAttempt(gameId, newKey);
     }
 
+    // Admins may remove entries during a game reset without gaining the
+    // ability to append fabricated scores or modify unrelated collections.
+    function validAdminHistoryCleanup() {
+      return request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['entries', 'attemptMeta', 'updatedAt'])
+        && request.resource.data.entries is map
+        && request.resource.data.attemptMeta is map
+        && request.resource.data.entries.diff(resource.data.entries).addedKeys().size() == 0
+        && request.resource.data.attemptMeta.diff(resource.data.attemptMeta).addedKeys().size() == 0
+        && request.resource.data.updatedAt == request.time;
+    }
+
     match /leaderboards/{gameId} {
       allow get, list: if signedIn();
 
@@ -236,8 +248,9 @@ service cloud.firestore {
           && validNewHistory(gameId);
         allow update: if signedIn() && leaderboardDocument(gameId)
           && monthId.matches('^[0-9]{4}-(0[1-9]|1[0-2])$')
-          && validAppendedHistory(gameId);
-        // The existing admin reset feature deletes monthly history docs.
+          && (validAppendedHistory(gameId) || (isAdmin() && validAdminHistoryCleanup()));
+        // Admin resets delete one game's monthly history docs and remove
+        // matching entries from Global, keeping rankings consistent.
         allow delete: if isAdmin();
       }
     }
