@@ -8,6 +8,7 @@ type Props = {
   selection: Cell[];
   found: Set<string>;
   revealed: Set<string>;
+  hintCellCount: number;
   disabled: boolean;
   onChange: (path: Cell[]) => void;
   onSubmit: (path: Cell[]) => void;
@@ -23,6 +24,7 @@ export default function StrandBoard({
   selection,
   found,
   revealed,
+  hintCellCount,
   disabled,
   onChange,
   onSubmit,
@@ -49,9 +51,12 @@ export default function StrandBoard({
     )
     ));
 
-  const revealedTargets = theme.targets.filter((target) => showAnswers || revealed.has(target.id));
   const revealCells = new Set(
-    revealedTargets.flatMap((target) => target.path.map(cellKey)),
+    theme.targets.flatMap((target) => {
+      if (showAnswers) return target.path.map(cellKey);
+      if (!revealed.has(target.id) || found.has(target.id)) return [];
+      return target.path.slice(0, hintCellCount).map(cellKey);
+    }),
   );
 
   function centerForCell(cell: Cell): Point {
@@ -74,7 +79,7 @@ export default function StrandBoard({
       setLinePoints(selection.map(centerForCell));
       const cellWidth = board.querySelector<HTMLElement>('.letter-cell')?.offsetWidth ?? 0;
       setGuideLines(
-        theme.targets.filter((target) => found.has(target.id) || showAnswers || revealed.has(target.id)).map((target) => {
+        theme.targets.filter((target) => found.has(target.id) || showAnswers).map((target) => {
           const points = target.path.map(centerForCell);
           const end = points.at(-1);
           const previous = points.at(-2);
@@ -95,7 +100,7 @@ export default function StrandBoard({
     const observer = new ResizeObserver(updatePaths);
     observer.observe(board);
     return () => observer.disconnect();
-  }, [selection, theme, found, revealed, showAnswers]);
+  }, [selection, theme, found, showAnswers]);
 
   function begin(cell: Cell, pointerId: number, target: HTMLElement) {
     if (disabled) return;
