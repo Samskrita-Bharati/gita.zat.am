@@ -1,0 +1,17 @@
+{
+  "name": "gg-zatam-avatar-upload",
+  "main": "worker.js",
+  "compatibility_date": "2026-11-01",
+  "workers_dev": true,
+  "vars": {
+    "FIREBASE_WEB_API_KEY": "AIzaSyDSWtsf3Cj06lZh5f4XX2wiuZtLMxm1IPw",
+    "ALLOWED_ORIGINS": "https://gg.zat.am,http://localhost:5500,http://127.0.0.1:5500,http://127.0.0.1:5504"
+  },
+  "ratelimits": [
+    {
+      "name": "AVATAR_RATE_LIMITER",
+      "namespace_id": "38419",
+      "simple": { "limit": 5, "period": 60 }
+    }
+  ]
+}

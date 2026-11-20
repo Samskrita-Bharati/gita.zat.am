@@ -89,7 +89,7 @@ export default function App() {
 
   const [wordPoints,setWordPoints] = useState(0);
 
-  const [hintsRemaining,setHintsRemaining] = useState(0);
+  const [hintCellCount, setHintCellCount] = useState(0);
 
   const [hintsUsed,setHintsUsed] = useState(0);
   const [shlokaRevealed, setShlokaRevealed] = useState(false);
@@ -180,7 +180,7 @@ const foundRequiredCount = useMemo(
 
   }
 
-  function resetRun(nextTheme = theme) {
+  function resetRun() {
     scoreRun.current?.cancel();
     scoreRun.current = null;
 
@@ -196,7 +196,7 @@ const foundRequiredCount = useMemo(
     setHintsUsed(0);
     setShlokaRevealed(false);
 
-    setHintsRemaining(nextTheme?.startingHints ?? 0);
+    setHintCellCount(0);
 
     setStarted(true);
 
@@ -234,7 +234,7 @@ const foundRequiredCount = useMemo(
 
   useEffect(() => {
 
-    if (theme) resetRun(theme);
+    if (theme) resetRun();
 
     // Each level/replay starts fresh; only completed levels and best scores persist.
 
@@ -525,18 +525,30 @@ const hasInProgressRun = Boolean(
   }
 
   const canUseHints = Boolean(theme && started && !done && !answerMode && !tutorialOpen);
-  const canUsePathHint = canUseHints && hintsRemaining > 0 && revealed.size === 0;
+  const activeHintTarget = requiredTargets.find(
+    (target) => revealed.has(target.id) && !found.has(target.id),
+  );
+  const hintTarget = activeHintTarget ?? requiredTargets.find(
+    (target) => !found.has(target.id),
+  );
+  const visibleHintCellCount = activeHintTarget ? hintCellCount : 0;
+  const canUseCellHint =
+    canUseHints &&
+    hintTarget !== undefined &&
+    visibleHintCellCount < hintTarget.path.length;
 
   function useHint() {
-    if (!theme || !canUsePathHint) return;
-    const target = requiredTargets.find((item) => !found.has(item.id));
-    if (!target) return;
-    setHintsRemaining((count) => count - 1);
+    if (!theme || !hintTarget || !canUseCellHint) return;
+
+    const nextCount = visibleHintCellCount + 1;
+    setRevealed(new Set([hintTarget.id]));
+    setHintCellCount(nextCount);
     setHintsUsed((count) => count + 1);
-    setRevealed(new Set([target.id]));
-    setMessage(language === 'sa'
-      ? `नीलमार्गम् अनुसरतु। अन्तिमाङ्काः −${theme.hintPenalty}।`
-      : `Follow the blue arrow. Final score −${theme.hintPenalty}.`);
+    setMessage(
+      language === 'sa'
+        ? `कोष्ठम् ${nextCount} प्रकाशितम्। अन्तिमाङ्काः −${theme.hintPenalty}।`
+        : `Cell ${nextCount} highlighted. Final score −${theme.hintPenalty}.`,
+    );
   }
 
   function revealShloka() {
@@ -570,7 +582,7 @@ const hasInProgressRun = Boolean(
     setHintsUsed(0);
     setShlokaRevealed(false);
 
-    setHintsRemaining(theme.startingHints);
+    setHintCellCount(0);
 
     setStarted(false);
 
@@ -706,6 +718,8 @@ const hasInProgressRun = Boolean(
 
               revealed={revealed}
 
+              hintCellCount={visibleHintCellCount}
+
               disabled={!started || done || answerMode || tutorialOpen}
 
               onChange={setSelection}
@@ -750,11 +764,11 @@ const hasInProgressRun = Boolean(
               language={language}
             />
             <HintPanel
-              hintsRemaining={hintsRemaining}
+              
               wordHintCost={theme.hintPenalty}
               shlokaHintCost={SHLOKA_HINT_COST}
-              canHint={canUsePathHint}
-              activeWordHint={!answerMode && revealed.size > 0}
+              canHint={canUseCellHint}
+              activeWordHint={Boolean(activeHintTarget)}
               canReadShloka={canUseHints}
               shlokaText={shlokaRevealed ? sourceTheme.text : null}
               onHint={useHint}
