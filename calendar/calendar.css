@@ -195,7 +195,7 @@
 }
 
 .day.today {
-  border: 2px solid var(--navy);
+  border: 2px solid var(--gold);
 }
 
 .day.today .day-number {
