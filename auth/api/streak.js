@@ -48,9 +48,6 @@ export async function updateStreak(userUid) {
     ? getDateKey(data.lastLogin.toDate())
     : null;
 
-  console.log("[streak] profile exists:", snap.exists());
-  console.log("[streak] lastLogin date:", lastLoginDate);
-
   if (lastLoginDate === todayDateKey) {
     return currentStreak;
   }
@@ -60,14 +57,10 @@ export async function updateStreak(userUid) {
     return currentStreak;
   }
 
-  console.log("[streak] yesterday date:", getDateKey(yesterday));
-
   const verses = await loadVerses();
   const yesterdayShlokaIds = getDailySchedule(verses, yesterday).verses
     .map(({ id }) => Number(id));
   const completedShlokaIds = await getCompletedShlokaIds(userUid, getYearMonth(yesterday));
-  console.log("[streak] yesterday shloka IDs:", yesterdayShlokaIds);
-  console.log("[streak] completed shloka IDs from database:", completedShlokaIds);
   const isYesterdayCompleted = yesterdayShlokaIds.length === 0
     || yesterdayShlokaIds.every((id) => completedShlokaIds.includes(id));
 
@@ -77,6 +70,6 @@ export async function updateStreak(userUid) {
     streak,
     lastLogin: serverTimestamp(),
   });
-  console.log("[streak] streak check saved for:", todayDateKey);
+
   return streak;
 }
