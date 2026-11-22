@@ -59,7 +59,9 @@ loginForm.addEventListener("submit", async (e) => {
 
     setTimeout(() => {
       window.location.assign(
-        profile && profile.preferencesSet ? getDestination() : getPreferencesUrl(),
+        profile && profile.preferencesSet
+          ? getDestination()
+          : getPreferencesUrl(),
       );
     }, 1000);
   } catch (error) {
@@ -79,7 +81,9 @@ googleSignInBtn.addEventListener("click", async () => {
     message.style.color = "green";
 
     setTimeout(() => {
-      window.location.assign(isNewUser ? getPreferencesUrl() : getDestination());
+      window.location.assign(
+        isNewUser ? getPreferencesUrl() : getDestination(),
+      );
     }, 1000);
   } catch (error) {
     console.error(error);

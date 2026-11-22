@@ -61,6 +61,7 @@ export async function updateStreak(userUid) {
   const yesterdayShlokaIds = getDailySchedule(verses, yesterday).verses
     .map(({ id }) => Number(id));
   const completedShlokaIds = await getCompletedShlokaIds(userUid, getYearMonth(yesterday));
+  // Days without scheduled shlokas count as a successful streak day.
   const isYesterdayCompleted = yesterdayShlokaIds.length === 0
     || yesterdayShlokaIds.every((id) => completedShlokaIds.includes(id));
 

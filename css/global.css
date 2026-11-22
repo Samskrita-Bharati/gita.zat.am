@@ -6,6 +6,10 @@ Gita.zat.am Global Styles
 
 :root {
 
+  /* Sitewide responsive tiers (viewport width):
+     large: > 1000px; medium: 761px–1000px; small: <= 760px.
+     Keep media query conditions aligned with these boundaries. */
+
   /* Brand palette */
   --navy: #0b2b4f;
   --navy-dark: #09264a;
@@ -344,7 +348,7 @@ textarea:disabled {
   box-shadow: var(--shadow-md);
 }
 
-@media (max-width: 950px) {
+@media (max-width: 1000px) {
   .section-center { gap: 1.75rem; }
 }
 

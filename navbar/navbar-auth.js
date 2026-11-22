@@ -2,6 +2,9 @@ import {
   auth,
   onAuthStateChanged,
   signOut,
+  db,
+  doc,
+  getDoc,
 } from "../auth/api/firebase-config.js";
 
 import { getCurrentUserProfile } from "../auth/api/auth-api.js";
@@ -41,6 +44,7 @@ const navbarTranslations = {
     leaderboardDropdown: "Leaderboard",
 
     profile: "Profile",
+    adminDashboard: "Admin Dashboard",
     logout: "Logout",
 
     langButton: "🌐 EN / SA",
@@ -57,6 +61,7 @@ const navbarTranslations = {
     leaderboardDropdown: "श्रेष्ठसूची",
 
     profile: "परिचयः",
+    adminDashboard: "प्रशासनम्",
     logout: "निर्गमः",
 
     langButton: "🌐 SA / EN",
@@ -155,6 +160,7 @@ export async function initNavbarAuth() {
   const profileLink = document.getElementById("profile-link-dropdown");
 
   const leaderboardLink = document.getElementById("leaderboard-link-dropdown");
+  const adminLink = document.getElementById("admin-link-dropdown");
 
   if (!loggedOut || !loggedIn || !profileBtn || !dropdown) {
     console.error("Navbar auth elements are missing.");
@@ -256,6 +262,24 @@ export async function initNavbarAuth() {
 
   onAuthStateChanged(auth, async (user) => {
     if (user) {
+      // The navigation link is a convenience only. /admin/ and Firestore
+      // independently verify the isAdmin role before exposing any data.
+      if (adminLink) {
+        adminLink.classList.add("hidden");
+        getDoc(doc(db, "users", user.uid, "private", "account"))
+          .then((snap) => {
+            if (
+              auth.currentUser?.uid === user.uid &&
+              snap.exists() &&
+              snap.data().isAdmin === true
+            ) {
+              adminLink.classList.remove("hidden");
+            }
+          })
+          .catch(() => {
+            /* Missing permissions: keep admin link hidden. */
+          });
+      }
       loggedOut.classList.add("hidden");
 
       loggedIn.classList.remove("hidden");
@@ -371,6 +395,7 @@ export async function initNavbarAuth() {
         }
       }
     } else {
+      if (adminLink) adminLink.classList.add("hidden");
       loggedOut.classList.remove("hidden");
 
       loggedIn.classList.add("hidden");
@@ -411,9 +436,7 @@ export async function initNavbarAuth() {
 
     profileUrl.searchParams.set(
       "from",
-      currentPath.includes("/games/")
-        ? "games"
-        : "home",
+      currentPath.includes("/games/") ? "games" : "home",
     );
 
     profileLink.href = profileUrl.href;
@@ -430,9 +453,7 @@ export async function initNavbarAuth() {
 
     leaderboardUrl.searchParams.set(
       "from",
-      currentPath.includes("/games/")
-        ? "games"
-        : "home",
+      currentPath.includes("/games/") ? "games" : "home",
     );
 
     leaderboardLink.href = leaderboardUrl.href;

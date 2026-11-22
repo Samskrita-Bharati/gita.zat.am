@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-labelledby="title"><title id="title">Word Scramble</title><rect width="256" height="256" rx="32" fill="#eeeaf3"/>
+<rect x="9" y="9" width="238" height="238" rx="28" fill="none" stroke="#635276" stroke-opacity=".30" stroke-width="2"/>
+<g fill="#fffdf8" stroke="#635276" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">
+<path d="M63 86h20c34 0 55 84 89 84h25m-16-15 17 15-17 16M63 170h20c34 0 55-84 89-84h25m-16-15 17 15-17 16" fill="none"/>
+<circle cx="63" cy="86" r="5" fill="#635276"/><circle cx="63" cy="170" r="5" fill="#635276"/>
+</g></svg>

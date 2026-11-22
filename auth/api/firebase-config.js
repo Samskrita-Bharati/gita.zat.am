@@ -24,10 +24,7 @@ import {
   serverTimestamp,
 } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
 
-import {
-  getAnalytics,
-  isSupported,
-} from "https://www.gstatic.com/firebasejs/12.8.0/firebase-analytics.js";
+import "../../analytics/site-analytics.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDSWtsf3Cj06lZh5f4XX2wiuZtLMxm1IPw",
@@ -44,12 +41,8 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// Analytics is optional, and must never block Authentication/Firestore.
-isSupported()
-  .then((supported) => {
-    if (supported) getAnalytics(app);
-  })
-  .catch((error) => console.warn("Firebase Analytics unavailable:", error));
+// Website measurement is initialized once by analytics/site-analytics.js.
+// Firebase Auth/Firestore always remain on gg-zatam regardless of GA4 ID.
 
 export {
   auth,

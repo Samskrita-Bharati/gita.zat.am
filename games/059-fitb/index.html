@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Fill in the Blank | Gita.zat.am</title>
+    <link rel="stylesheet" href="../../css/global.css" />
+    <link rel="stylesheet" href="../shared/game-theme.css" />
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body data-page="games" class="zatam-themed-game">
+    <div id="navbar-mount"></div>
+    <main class="zatam-game-shell fill-shell">
+      <header class="zatam-game-header">
+        <span class="zatam-game-eyebrow">Daily shloka challenge</span>
+        <h1 class="zatam-game-title">Fill in the Blank</h1>
+        <p class="zatam-game-subtitle">
+          Three missing words. Nine choices. One minute.
+        </p>
+      </header>
+      <section class="zatam-game-instructions" aria-label="How to play">
+        <p>
+          Select a blank, then choose a word. Fill all three blanks and check
+          your answer. Correct words lock in place; only incorrect words need
+          another try.
+        </p>
+        <p>
+          Five submissions total, no hints. Scores: 100 · 85 · 65 · 50 · 35.
+          Running out of time or submissions scores 0. The timer continues
+          through retries.
+        </p>
+      </section>
+      <div class="zatam-game-stats">
+        <div class="zatam-game-stat">
+          <span class="zatam-game-stat-label">Time left</span
+          ><span class="zatam-game-stat-value" id="time" role="timer"
+            >1:00</span
+          >
+        </div>
+        <div class="zatam-game-stat">
+          <span class="zatam-game-stat-label">Retries used</span
+          ><span class="zatam-game-stat-value" id="retries">0 / 4</span>
+        </div>
+        <div class="zatam-game-stat">
+          <span class="zatam-game-stat-label">Possible score</span
+          ><span class="zatam-game-stat-value" id="score">100</span>
+        </div>
+      </div>
+      <section class="zatam-game-play-area" aria-label="Shloka puzzle">
+        <div id="intro" class="intro">
+          <h2>Ready to complete the shloka?</h2>
+          <p>The challenge appears when you start.</p>
+          <button
+            id="start"
+            class="zatam-game-btn zatam-game-btn-primary"
+            disabled
+          >
+            Loading shloka…
+          </button>
+        </div>
+        <div id="board" hidden>
+          <p
+            id="verse"
+            lang="sa"
+            aria-label="Shloka with three missing words"
+          ></p>
+          <h2 class="pool-title">Choose a word</h2>
+          <div id="pool" lang="sa" aria-label="Word choices"></div>
+          <div class="zatam-game-actions">
+            <button id="check" class="zatam-game-btn zatam-game-btn-primary">
+              Check Answer</button
+            ><button id="clear" class="zatam-game-btn zatam-game-btn-secondary">
+              Clear Unchecked Words
+            </button>
+          </div>
+        </div>
+        <p
+          id="status"
+          role="status"
+          aria-live="polite"
+          class="zatam-game-status zatam-game-status-info"
+        >
+          Loading the selected shloka…
+        </p>
+      </section>
+      <section id="result" class="zatam-game-result" hidden>
+        <h2 id="resultTitle" class="zatam-game-result-title"></h2>
+        <p id="finalScore" class="zatam-game-result-score"></p>
+        <p id="details"></p>
+        <p class="save-note">Score shown for this round only.</p>
+        <div class="zatam-game-actions">
+          <button id="again" class="zatam-game-btn zatam-game-btn-primary">
+            Play Again</button
+          ><a
+            href="../../index.html"
+            class="zatam-game-btn zatam-game-btn-secondary"
+            >Back to Shlokas</a
+          >
+        </div>
+      </section>
+    </main>
+    <script type="module" src="./game.js"></script>
+    <script type="module" src="../../navbar/navbar-loader.js"></script>
+  </body>
+</html>
