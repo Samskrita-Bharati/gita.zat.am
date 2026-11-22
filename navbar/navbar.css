@@ -95,6 +95,12 @@
   position: relative;
 }
 
+.zatam-logo-mark img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
 .zatam-logo-circle {
   position: absolute;
 
