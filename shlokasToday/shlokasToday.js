@@ -20,6 +20,7 @@ export async function initializeShlokasToday(games = []) {
     viewedDate.setHours(0, 0, 0, 0);
 
     function renderDay() {
+      stopVerseAudio();
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       const startDate = new Date(SCHEDULE_START.year, SCHEDULE_START.month - 1, SCHEDULE_START.day);
@@ -132,6 +133,52 @@ export function cleanShlokaText(value = "") {
     .replace(/(?:॥|।{1,2})?\s*\d+\.\d+\s*(?:॥|।{1,2})?\s*$/u, "")
     .trim();
 }
+let activeVerseAudio = null;
+
+function stopVerseAudio() {
+  if (!activeVerseAudio) return;
+
+  const { audio, button } = activeVerseAudio;
+  activeVerseAudio = null;
+  audio.pause();
+  button.textContent = "Play audio";
+}
+
+function createVerseAudioButton(verse) {
+  const audioUrl = `https://gita-online.github.io/recitation/${verse.ch}_${verse.vn}.mp3`;
+
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "today-verse-audio";
+  button.textContent = "Play audio";
+
+  button.addEventListener("click", async () => {
+    if (activeVerseAudio?.button === button) {
+      stopVerseAudio();
+      return;
+    }
+
+    stopVerseAudio();
+
+    const audio = new Audio(audioUrl);
+    activeVerseAudio = { audio, button };
+    button.textContent = "Stop audio";
+
+    audio.addEventListener("ended", () => {
+      if (activeVerseAudio?.audio === audio) stopVerseAudio();
+    }, { once: true });
+
+    try {
+      await audio.play();
+    } catch {
+      if (activeVerseAudio?.audio !== audio) return;
+      stopVerseAudio();
+      button.textContent = "Audio unavailable · retry";
+    }
+  });
+
+  return button;
+}
 
 function createVerseCard(verse, games) {
   const verseElement = document.createElement("article");
@@ -140,6 +187,7 @@ function createVerseCard(verse, games) {
   const reference = document.createElement("p");
   reference.className = "today-verse-reference";
   reference.textContent = `Chapter ${verse.ch}, Verse ${verse.vn}`;
+  reference.append(createVerseAudioButton(verse));
 
   const text = document.createElement("p");
   text.className = "today-verse-text";
