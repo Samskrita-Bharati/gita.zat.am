@@ -104,6 +104,49 @@ test("Strands and ZIM share actions are contextual and do not modify scoring fun
   );
   assert.match(strands, /card\.insertBefore\(shareButton, actions\)/);
   assert.match(strands, /openCompletedScoreShare\(\)/);
-  assert.match(z18, /shareResult\.on\("click", \(\) => openScoreShare/);
+  assert.match(
+    z18,
+    /z18-result-share"\)\.addEventListener\("click", \(\) => openScoreShare/,
+  );
   assert.match(z18, /submitGameScore\(finalScore/);
+});
+
+test("Z18 finished-score dialog is responsive and keeps scoring/replay intact", () => {
+  const source = readFileSync(
+    new URL("../games/z18/index.html", import.meta.url),
+    "utf8",
+  );
+  assert.match(source, /z18-result-overlay/);
+  assert.match(source, /z18-result-secondary-actions/);
+  assert.match(source, /grid-template-columns: repeat\(2,minmax\(0,1fr\)\)/);
+  assert.match(source, /role=\"status\" aria-live=\"polite\"/);
+  assert.doesNotMatch(source, /const end = new Pane\(/);
+  assert.match(
+    source,
+    /scoreFromPenalties\(\{ mistakes: extraMoves, hints: giveUpCount, mistakePenalty: 2, hintPenalty: GAME_CONFIG.revealedWordPenalty \}\)/,
+  );
+  assert.match(source, /submitGameScore\(finalScore, \{/);
+  assert.match(source, /window\.location\.reload\(\)/);
+});
+
+test("share checkbox resolves the signed-in public profile name and reacts to late profile loading", () => {
+  const shareSource = readFileSync(
+    new URL("../games/shared/score-share.js", import.meta.url),
+    "utf8",
+  );
+  const navbar = readFileSync(
+    new URL("../navbar/navbar-auth.js", import.meta.url),
+    "utf8",
+  );
+  assert.match(navbar, /publishShareIdentity\(user, profile\)/);
+  assert.match(navbar, /publishShareIdentity\(null\)/);
+  assert.match(navbar, /savedName \|\| authName/);
+  assert.match(shareSource, /currentPlayerName\(\) \|\| data\.playerName/);
+  assert.match(
+    shareSource,
+    /window\.addEventListener\('zatam:share-identity', activeIdentityListener\)/,
+  );
+  assert.match(shareSource, /checkbox\.disabled = !nextName/);
+  assert.match(shareSource, /checkbox\.checked = false/);
+  assert.doesNotMatch(shareSource, /\.email\.split\('@'\)/);
 });

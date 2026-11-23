@@ -15,6 +15,7 @@ let formerFocus = null;
 let previewObjectUrl = null;
 let previewFile = null;
 let modalVersion = 0;
+let activeIdentityListener = null;
 
 function safeString(value, limit = 120) {
   return String(value ?? "")
@@ -63,6 +64,13 @@ export function normalizeShareResult(input = {}) {
         ? new URL("leaderboard/", APP_URL).href
         : url,
   };
+}
+
+// Identity is broadcast by the shared navbar, which already reads the
+// signed-in player's public Firestore profile. Never use email as the name.
+function currentPlayerName() {
+  if (typeof window === "undefined") return "";
+  return safeString(window.zatamShareIdentity?.playerName, 64);
 }
 
 function loadCss() {
@@ -319,6 +327,10 @@ function shareText(data) {
 }
 
 function closeModal() {
+  if (activeIdentityListener && typeof window !== "undefined") {
+    window.removeEventListener("zatam:share-identity", activeIdentityListener);
+    activeIdentityListener = null;
+  }
   if (!modal) return;
   modal.remove();
   modal = null;
@@ -373,6 +385,9 @@ export function openScoreShare(input = {}) {
   const data = normalizeShareResult(input);
   closeModal();
   loadCss();
+  // Always prefer the current user's saved public display name over an empty
+  // or outdated Firebase Auth displayName passed by an individual game.
+  data.playerName = currentPlayerName() || data.playerName;
   formerFocus = document.activeElement;
   modalVersion++;
   const version = modalVersion;
@@ -411,7 +426,12 @@ export function openScoreShare(input = {}) {
     checkbox,
     document.createTextNode(" Include my display name on the card"),
   );
-  if (!data.playerName) privacy.title = "No display name available";
+  const nameHint = element(
+    "p",
+    "gg-share-name-hint",
+    "Add a display name in your profile to enable this option.",
+  );
+  nameHint.hidden = Boolean(data.playerName);
   const actions = element("div", "gg-share-actions");
   const native = element("button", "gg-share-primary", "Share image to apps");
   native.type = "button";
@@ -456,6 +476,7 @@ export function openScoreShare(input = {}) {
     description,
     preview,
     privacy,
+    nameHint,
     actions,
     socialHeading,
     socials,
@@ -538,6 +559,19 @@ export function openScoreShare(input = {}) {
       );
     }
   }
+  // The navbar can finish fetching the profile after a game result opens.
+  // Enable the opt-in checkbox as soon as the saved name becomes available.
+  activeIdentityListener = (event) => {
+    if (modal !== overlay) return;
+    const nextName = safeString(event.detail?.playerName, 64);
+    if (nextName === data.playerName) return;
+    data.playerName = nextName;
+    checkbox.disabled = !nextName;
+    nameHint.hidden = Boolean(nextName);
+    if (!nextName) checkbox.checked = false;
+    if (checkbox.checked || !nextName) void renderPreview();
+  };
+  window.addEventListener("zatam:share-identity", activeIdentityListener);
   checkbox.addEventListener("change", () => {
     void renderPreview();
   });
