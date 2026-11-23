@@ -79,6 +79,14 @@
   transform: translateY(-1px);
 }
 
+.calendar-nav.disabled,
+.calendar-nav[aria-disabled="true"] {
+  color: var(--border);
+  background: var(--cream);
+  cursor: not-allowed;
+  transform: none;
+}
+
 .calendar-nav:focus-visible {
   outline: 3px solid var(--gold);
   outline-offset: 2px;
@@ -127,8 +135,6 @@
   text-decoration: none;
 }
 
-.day-link:hover, .day.selected { background: var(--cream-dark); }
-.day-link:focus-visible { outline: 3px solid var(--gold); outline-offset: -3px; }
 .day-verses { font-size: var(--font-size-sm); font-weight: 700; color: var(--navy-light); }
 
 .calendar-details {
@@ -149,6 +155,29 @@
 .calendar-verse-transliteration { white-space: pre-line; color: var(--muted); }
 .completion-note { color: var(--muted); font-size: var(--font-size-base); }
 .verse-completion { color: var(--success); font-weight: 700; }
+.verse-reference-link { color: var(--navy-light); text-decoration: underline; text-underline-offset: 2px; }
+.verse-reference-link:hover { color: var(--navy); }
+.verse-reference-link.completed, .verse-completion-mark { color: var(--success); }
+.verse-reference-link:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; border-radius: var(--radius-sm); }
+.game-picker-option:focus-visible { outline: none; }
+.game-picker {
+  position: fixed;
+  z-index: 1000;
+  display: flex;
+  width: max-content;
+  max-width: calc(100vw - 16px);
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0.625rem;
+  background: var(--cream);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+}
+.game-picker[hidden] { display: none; }
+.game-picker-option { display: grid; width: 52px; height: 52px; place-items: center; border-radius: var(--radius-md); transition: background var(--transition), transform var(--transition); }
+.game-picker-option:hover { background: var(--cream-dark); transform: translateY(-1px); }
+.game-picker-option img { width: 48px; height: 48px; object-fit: contain; border-radius: var(--radius-sm); }
 
 .day:nth-child(7n) {
   border-right: 0;
@@ -165,10 +194,14 @@
   font-weight: 700;
 }
 
+.day.today {
+  border: 2px solid var(--gold);
+}
+
 .day.today .day-number {
-  background: var(--navy);
-  color: var(--white);
-  box-shadow: var(--shadow-md);
+  background: transparent;
+  color: var(--text);
+  box-shadow: none;
 }
 
 @media (max-width: 600px) {

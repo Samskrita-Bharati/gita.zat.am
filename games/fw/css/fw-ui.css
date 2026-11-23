@@ -6,7 +6,7 @@
   margin: 1.5rem auto;
   padding: 0;
   overflow: visible;
-  color: var(--text);
+  color: var(--text); 
 }
 
 #fwGameShell .fw-layout {
@@ -187,13 +187,14 @@
 }
 
 #fwGameShell .fw-actions button {
-  min-height: 44px;
-  padding: 0.375rem 1rem;
+  /* min-height: 44px; */
+  padding: 1px 1.25rem;
   border: 1px solid var(--navy);
   border-radius: var(--radius-sm);
   background: var(--white);
   color: var(--navy);
   font-weight: 700;
+  cursor: pointer;
 }
 
 #fwGameShell #fwStart {
@@ -248,13 +249,13 @@
   border-radius: var(--radius-sm);
   color: var(--navy);
   background: var(--cream-dark);
-  font-weight: 700;
+  font-weight: 700; 
 }
 
 #fwGameShell #hintLink button img {
   width: 22px;
   height: 26px;
-  object-fit: contain;
+  object-fit: contain;  
 }
 
 #fwGameShell #hintLink button:disabled {
