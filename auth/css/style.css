@@ -80,7 +80,7 @@ h2 {
 .social-login button {
   background-color: var(--white);
   border: var(--border) 1px solid;
-  color:  var(--muted);
+  color: var(--muted);
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -93,12 +93,10 @@ i {
   color: var(--muted);
   font-size: var(--font-size-lg);
   margin-right: 0.5rem;
-
 }
 
 .google-icon {
   font-size: var(--font-size-2xl);
-
 }
 .social-login button:hover {
   background-color: var(--cream);
@@ -171,7 +169,6 @@ a:hover {
   border-radius: var(--radius-xs);
   font-size: var(--font-size-base);
 }
-
 
 .user-message {
   font-size: var(--font-size-sm);
