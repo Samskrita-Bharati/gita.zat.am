@@ -416,8 +416,24 @@ export function openScoreShare(input = {}) {
   const preview = element("div", "gg-share-preview");
   const image = element("img");
   image.alt = "Scorecard preview";
-  const loading = element("p", "gg-share-loading", "Creating your scorecard…");
-  preview.append(image, loading);
+  preview.append(image);
+  // Keep progress feedback separate from the PNG preview. The previous design
+  // overlaid the loading text on the card whenever the player opted in to a name.
+  const renderStatus = element("div", "gg-share-render-status");
+  renderStatus.setAttribute("role", "status");
+  renderStatus.setAttribute("aria-live", "polite");
+  renderStatus.setAttribute("aria-atomic", "true");
+  const renderSpinner = element("span", "gg-share-render-spinner");
+  renderSpinner.setAttribute("aria-hidden", "true");
+  const renderLabel = element("span", "gg-share-render-label");
+  renderStatus.append(renderSpinner, renderLabel);
+  function updateRenderStatus(state, message) {
+    renderStatus.dataset.state = state;
+    renderSpinner.hidden = state !== "loading";
+    renderLabel.textContent = message;
+    preview.setAttribute("aria-busy", state === "loading" ? "true" : "false");
+    preview.classList.toggle("gg-share-preview-updating", state === "loading");
+  }
   const privacy = element("label", "gg-share-privacy");
   const checkbox = document.createElement("input");
   checkbox.type = "checkbox";
@@ -475,6 +491,7 @@ export function openScoreShare(input = {}) {
     top,
     description,
     preview,
+    renderStatus,
     privacy,
     nameHint,
     actions,
@@ -497,7 +514,12 @@ export function openScoreShare(input = {}) {
   async function renderPreview() {
     const localVersion = version;
     const run = ++previewRun;
-    loading.hidden = false;
+    updateRenderStatus(
+      "loading",
+      image.hasAttribute("src")
+        ? "Updating scorecard…"
+        : "Preparing scorecard…",
+    );
     native.disabled = true;
     download.disabled = true;
     copyImage.disabled = true;
@@ -505,6 +527,7 @@ export function openScoreShare(input = {}) {
     socials
       .querySelectorAll("button")
       .forEach((button) => (button.disabled = true));
+    setNotice(notice, "");
     try {
       const canvas = await createScorecard(data, {
         includeName: checkbox.checked,
@@ -528,7 +551,7 @@ export function openScoreShare(input = {}) {
         type: "image/png",
       });
       image.src = previewObjectUrl;
-      loading.hidden = true;
+      updateRenderStatus("ready", "Ready to share");
       native.disabled = false;
       download.disabled = false;
       socials
@@ -545,8 +568,10 @@ export function openScoreShare(input = {}) {
       );
     } catch (error) {
       if (localVersion !== modalVersion || run !== previewRun) return;
-      loading.textContent =
-        "Preview unavailable. You can still share the game link.";
+      updateRenderStatus(
+        "error",
+        "Preview unavailable. You can still share the game link.",
+      );
       native.disabled = false;
       native.textContent = "Copy game link";
       socials
