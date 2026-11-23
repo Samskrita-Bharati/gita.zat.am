@@ -256,7 +256,7 @@
   width: 22px;
   height: 26px;
   object-fit: contain;  
-}
+} 
 
 #fwGameShell #hintLink button:disabled {
   opacity: .55;
