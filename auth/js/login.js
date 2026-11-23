@@ -2,13 +2,14 @@ import {
   login,
   signInWithGoogle,
   ensureUserDocument,
+  getCurrentUserProfile,
 } from "../api/auth-api.js";
 import {
   sendEmailVerification,
   signOut,
   auth,
 } from "../api/firebase-config.js";
-
+import { authErrorMessage } from "./auth-error-messages.js";
 import {
   getDestination,
   getPreferencesUrl,
@@ -22,106 +23,110 @@ const emailInput = document.getElementById("signin-email");
 const passwordInput = document.getElementById("signin-password");
 const message = document.getElementById("message");
 const resendVerificationBtn = document.getElementById("resend-verification");
+const googleSignInBtn = document.getElementById("google-signin");
+const emailSignInBtn = loginForm.querySelector('button[type="submit"]');
 
-let unverifiedUser = null;
+let unverifiedEmail = null;
+let busy = false;
 
-loginForm.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const email = emailInput.value.trim();
-  const password = passwordInput.value;
+function showMessage(text, isError = false) {
+  message.textContent = text;
+  message.style.color = isError ? "red" : "green";
+  message.setAttribute("role", "status");
+  message.setAttribute("aria-live", "polite");
+}
+
+function setBusy(value) {
+  busy = value;
+  emailSignInBtn.disabled = value;
+  googleSignInBtn.disabled = value;
+}
+
+function redirectForProfile(profile) {
+  const target = profile?.preferencesSet === true
+    ? getDestination()
+    : getPreferencesUrl();
+  setTimeout(() => window.location.assign(target), 1000);
+}
+
+loginForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  if (busy) return;
+  setBusy(true);
+  resendVerificationBtn.style.display = "none";
+  unverifiedEmail = null;
 
   try {
-    const userCred = await login(email, password);
+    const userCred = await login(emailInput.value.trim(), passwordInput.value);
     const user = userCred.user;
-
-    // Check if email is verified
     if (!user.emailVerified) {
-      unverifiedUser = user;
-      resendVerificationBtn.style.display = "block"; // Show resend button
-
-      message.innerHTML =
-        "Please verify your email before logging in. Check your inbox for the verification link.";
-      message.style.color = "red";
-
+      unverifiedEmail = user.email;
+      resendVerificationBtn.style.display = "block";
+      showMessage("Please verify your email before signing in. Check your inbox or use Resend Verification Email.", true);
       await signOut(auth);
-
       return;
     }
 
     await ensureUserDocument(user);
-
-    // Check if preferences are set
-    const { getCurrentUserProfile } = await import("../api/auth-api.js");
     const profile = await getCurrentUserProfile();
-
-    message.innerHTML = "Login successful! Redirecting...";
-    message.style.color = "green";
-
-    setTimeout(() => {
-      window.location.assign(
-        profile && profile.preferencesSet
-          ? getDestination()
-          : getPreferencesUrl(),
-      );
-    }, 1000);
+    showMessage("Sign-in successful! Redirecting...");
+    redirectForProfile(profile);
   } catch (error) {
-    console.error(error);
-    message.innerHTML = "Invalid email or password.";
-    message.style.color = "red";
+    console.error("Email sign-in failed:", error);
+    showMessage(authErrorMessage(error, "login"), true);
+  } finally {
+    setBusy(false);
   }
 });
 
-const googleSignInBtn = document.getElementById("google-signin");
 googleSignInBtn.addEventListener("click", async () => {
+  if (busy) return;
+  setBusy(true);
   try {
-    const cred = await signInWithGoogle();
-    const isNewUser = await ensureUserDocument(cred.user);
-    console.log("isNewUser:", isNewUser, "Type:", typeof isNewUser);
-    message.innerHTML = "Login successful! Redirecting...";
-    message.style.color = "green";
-
-    setTimeout(() => {
-      window.location.assign(
-        isNewUser ? getPreferencesUrl() : getDestination(),
-      );
-    }, 1000);
+    const credential = await signInWithGoogle();
+    await ensureUserDocument(credential.user);
+    const profile = await getCurrentUserProfile();
+    showMessage("Google sign-in successful! Redirecting...");
+    redirectForProfile(profile);
   } catch (error) {
-    console.error(error);
-
-    message.innerHTML = "Google sign-in failed. Please try again.";
-
-    message.style.color = "red";
+    console.error("Google sign-in or profile setup failed:", error);
+    showMessage(authErrorMessage(error, "google"), true);
+  } finally {
+    setBusy(false);
   }
 });
 
-// Resend verification email handler
-if (resendVerificationBtn) {
-  resendVerificationBtn.addEventListener("click", async (e) => {
-    e.preventDefault();
+// The sign-in flow signs out unverified users. Re-authenticate briefly to
+// resend their verification email; sending from an old signed-out User
+// object fails on many Firebase SDK versions.
+resendVerificationBtn.addEventListener("click", async (event) => {
+  event.preventDefault();
+  if (busy) return;
+  if (!unverifiedEmail) {
+    showMessage("Please try signing in first.", true);
+    return;
+  }
+  if (emailInput.value.trim() !== unverifiedEmail || !passwordInput.value) {
+    showMessage("Please enter the same email and password to resend verification.", true);
+    return;
+  }
 
-    if (!unverifiedUser) {
-      message.innerHTML = "Please try logging in first.";
-      message.style.color = "red";
-      return;
+  setBusy(true);
+  try {
+    const credential = await login(unverifiedEmail, passwordInput.value);
+    if (credential.user.emailVerified) {
+      showMessage("Your email is already verified. Please sign in normally.");
+    } else {
+      await sendEmailVerification(credential.user);
+      showMessage("Verification email sent! Please check your inbox.");
     }
-
-    try {
-      await sendEmailVerification(unverifiedUser);
-
-      message.innerHTML = "Verification email sent! Please check your inbox.";
-      message.style.color = "green";
-    } catch (error) {
-      console.error(error);
-
-      // Handle rate limiting error
-      if (error.code === "auth/too-many-requests") {
-        message.innerHTML =
-          "Too many requests. Please wait a few minutes and try again.";
-      } else {
-        message.innerHTML =
-          "Failed to send verification email. Please try again.";
-      }
-      message.style.color = "red";
+  } catch (error) {
+    console.error("Resend verification failed:", error);
+    showMessage(authErrorMessage(error, "login"), true);
+  } finally {
+    try { await signOut(auth); } catch (error) {
+      console.warn("Failed to sign out after verification attempt:", error);
     }
-  });
-}
+    setBusy(false);
+  }
+});

@@ -1,56 +1,164 @@
 import { getDailySchedule, SCHEDULE_START } from "../shlokasToday/daily-schedule.mjs";
 import { cleanShlokaText } from "../shlokasToday/shlokasToday.js";
+import { auth, onAuthStateChanged } from "../auth/api/firebase-config.js";
+import { getCompletedShlokaIds } from "../auth/api/streak.js";
 
-const params = new URLSearchParams(window.location.search);
 const today = new Date();
 const grid = document.getElementById("calendarGrid");
 const details = document.getElementById("selectedDateVerses");
-const completionPrefix = "gita.calendar.completed.v1.";
+const gamePicker = document.getElementById("gamePicker");
+const progressCachePrefix = "gita.shlokaProgress.v1.";
 let loadedVerses;
+let completedShlokaIds = new Set();
+let loadedProgressMonth = "";
+let progressRequestId = 0;
+const progressReadsInFlight = new Map();
 
-function completionKey(date, verse) {
-  return `${completionPrefix}${dateKey(date)}.${verse.id}`;
+const cleanUrl = new URL(window.location.href);
+cleanUrl.searchParams.delete("month");
+cleanUrl.searchParams.delete("date");
+window.history.replaceState(null, "", `${cleanUrl.pathname}${cleanUrl.search}${cleanUrl.hash}`);
+
+const games = [
+  { dir: "01-wordSearch/index.html", cover: "01-wordSearch/cover.svg", title: "Word Search" },
+  { dir: "02-arrange", cover: "02-arrange/cover.svg", title: "Arrange" },
+  { dir: "057-gita-typing", cover: "057-gita-typing/cover.svg", title: "Gita Typing" },
+  { dir: "04-suutram", cover: "04-suutram/cover.svg", title: "Suutram" },
+  { dir: "05-fillBlank", cover: "05-fillBlank/cover.svg", title: "Fill in the Blank" },
+  { dir: "06-wordScramble", cover: "06-wordScramble/cover.svg", title: "BodhaPlay" },
+];
+
+function showGamePicker(anchor, verse) {
+  gamePicker.replaceChildren();
+  games.forEach((game) => {
+    const link = document.createElement("a");
+    link.className = "game-picker-option";
+    link.href = `../games/${game.dir}${game.dir.endsWith(".html") ? "" : "/"}?id=${encodeURIComponent(verse.id)}`;
+    link.setAttribute("aria-label", game.title);
+    link.title = game.title;
+    const icon = document.createElement("img");
+    icon.src = `../games/${game.cover}`;
+    icon.alt = game.title;
+    link.appendChild(icon);
+    gamePicker.appendChild(link);
+  });
+  gamePicker.hidden = false;
+  const rect = anchor.getBoundingClientRect();
+  const width = gamePicker.offsetWidth;
+  const height = gamePicker.offsetHeight;
+  gamePicker.style.left = `${Math.max(8, Math.min(rect.left, window.innerWidth - width - 8))}px`;
+  gamePicker.style.top = `${Math.max(8, rect.top - height - 8)}px`;
+  gamePicker.querySelector("a")?.focus({ preventScroll: true });
 }
 
-function isCompleted(date, verse) {
-  try {
-    return localStorage.getItem(completionKey(date, verse)) === "1";
-  } catch {
-    return false;
+document.addEventListener("click", (event) => {
+  if (!gamePicker.hidden && !gamePicker.contains(event.target) && !event.target.closest(".verse-reference-link")) {
+    gamePicker.hidden = true;
   }
+});
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") gamePicker.hidden = true;
+});
+
+function isCompleted(verse) {
+  return completedShlokaIds.has(String(verse.id));
 }
 
 function dateKey(date) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 }
 
-function parseDate(value) {
-  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value || "");
-  if (!match) return null;
-  const [, year, month, day] = match.map(Number);
-  if (year < 100 || month < 1 || month > 12 || day < 1) return null;
-  const result = new Date(year, month - 1, day);
-  return result.getFullYear() === year && result.getMonth() === month - 1 && result.getDate() === day ? result : null;
+const selectedDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+let visibleMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1);
+const firstCalendarMonth = new Date(SCHEDULE_START.year, SCHEDULE_START.month - 1, 1);
+const lastCalendarMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1);
+
+function getYearMonth(date) {
+  return `${date.getFullYear()}${String(date.getMonth() + 1).padStart(2, "0")}`;
 }
 
-function parseMonth(value) {
-  return /^\d{4}-\d{2}$/.test(value || "") ? parseDate(`${value}-01`) : null;
+function readProgressCache(userUid, month) {
+  try {
+    const cached = sessionStorage.getItem(`${progressCachePrefix}${userUid}_${month}`);
+    if (cached === null) return null;
+    const ids = JSON.parse(cached);
+    return Array.isArray(ids) ? ids : null;
+  } catch {
+    return null;
+  }
 }
 
-const requestedDate = parseDate(params.get("date"));
-const requestedMonth = parseMonth(params.get("month"));
-const selectedDate = requestedDate || (requestedMonth &&
-  (requestedMonth.getFullYear() !== today.getFullYear() || requestedMonth.getMonth() !== today.getMonth())
-  ? requestedMonth : new Date(today.getFullYear(), today.getMonth(), today.getDate()));
-const visibleMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1);
-
-function urlFor(date, selectDay) {
-  const next = new URLSearchParams(window.location.search);
-  next.set("month", dateKey(date).slice(0, 7));
-  if (selectDay) next.set("date", dateKey(date));
-  else next.delete("date");
-  return `${window.location.pathname}?${next.toString()}`;
+function writeProgressCache(userUid, month, ids) {
+  try {
+    sessionStorage.setItem(`${progressCachePrefix}${userUid}_${month}`, JSON.stringify(ids));
+  } catch (error) {
+    console.warn("[calendar] Could not cache shloka progress for this session:", error);
+  }
 }
+
+function getCachedCompletedShlokas(userUid, month) {
+  const cached = readProgressCache(userUid, month);
+  if (cached !== null) return Promise.resolve(cached);
+
+  const key = `${userUid}_${month}`;
+  if (progressReadsInFlight.has(key)) return progressReadsInFlight.get(key);
+
+  const request = getCompletedShlokaIds(userUid, month)
+    .then((ids) => {
+      writeProgressCache(userUid, month, ids);
+      return ids;
+    })
+    .finally(() => progressReadsInFlight.delete(key));
+  progressReadsInFlight.set(key, request);
+  return request;
+}
+
+async function loadCompletedShlokas(user = auth.currentUser) {
+  const month = getYearMonth(visibleMonth);
+  const requestId = ++progressRequestId;
+  if (loadedProgressMonth !== month) {
+    completedShlokaIds = new Set();
+    loadedProgressMonth = month;
+    renderCalendar(loadedVerses);
+  }
+  if (!user) {
+    completedShlokaIds = new Set();
+    renderCalendar(loadedVerses);
+    return;
+  }
+
+  try {
+    const ids = await getCachedCompletedShlokas(user.uid, month);
+    if (requestId !== progressRequestId || getYearMonth(visibleMonth) !== month || auth.currentUser?.uid !== user.uid) return;
+    completedShlokaIds = new Set(ids.map(String));
+    renderCalendar(loadedVerses);
+  } catch (error) {
+    if (requestId !== progressRequestId) return;
+    completedShlokaIds = new Set();
+    renderCalendar(loadedVerses);
+    console.error("[calendar] Could not load shloka progress:", error);
+  }
+}
+
+onAuthStateChanged(auth, (user) => {
+  void loadCompletedShlokas(user);
+});
+window.addEventListener("focus", () => void loadCompletedShlokas());
+
+document.getElementById("previousMonth").addEventListener("click", (event) => {
+  event.preventDefault();
+  if (visibleMonth <= firstCalendarMonth) return;
+  visibleMonth = new Date(visibleMonth.getFullYear(), visibleMonth.getMonth() - 1, 1);
+  renderCalendar(loadedVerses);
+  void loadCompletedShlokas();
+});
+document.getElementById("nextMonth").addEventListener("click", (event) => {
+  event.preventDefault();
+  if (visibleMonth >= lastCalendarMonth) return;
+  visibleMonth = new Date(visibleMonth.getFullYear(), visibleMonth.getMonth() + 1, 1);
+  renderCalendar(loadedVerses);
+  void loadCompletedShlokas();
+});
 
 function renderCalendar(verses) {
   const year = visibleMonth.getFullYear();
@@ -59,8 +167,16 @@ function renderCalendar(verses) {
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   const cellCount = Math.ceil((firstDay + daysInMonth) / 7) * 7;
   document.getElementById("monthHeading").textContent = new Intl.DateTimeFormat("en", { month: "long", year: "numeric" }).format(visibleMonth);
-  document.getElementById("previousMonth").href = urlFor(new Date(year, month - 1, 1), false);
-  document.getElementById("nextMonth").href = urlFor(new Date(year, month + 1, 1), false);
+  const previousMonth = document.getElementById("previousMonth");
+  const nextMonth = document.getElementById("nextMonth");
+  const previousDisabled = visibleMonth <= firstCalendarMonth;
+  const nextDisabled = visibleMonth >= lastCalendarMonth;
+  previousMonth.setAttribute("aria-disabled", String(previousDisabled));
+  previousMonth.tabIndex = previousDisabled ? -1 : 0;
+  previousMonth.classList.toggle("disabled", previousDisabled);
+  nextMonth.setAttribute("aria-disabled", String(nextDisabled));
+  nextMonth.tabIndex = nextDisabled ? -1 : 0;
+  nextMonth.classList.toggle("disabled", nextDisabled);
   grid.replaceChildren();
 
   ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].forEach((weekday) => {
@@ -80,27 +196,41 @@ function renderCalendar(verses) {
       const date = new Date(year, month, number);
       const key = dateKey(date);
       if (key === dateKey(today)) cell.classList.add("today");
-      if (key === dateKey(selectedDate)) cell.classList.add("selected");
-      const link = document.createElement("a");
-      link.className = "day-link";
-      link.href = urlFor(date, true);
-      link.setAttribute("aria-label", new Intl.DateTimeFormat("en", { dateStyle: "full" }).format(date));
-      if (key === dateKey(selectedDate)) link.setAttribute("aria-current", "date");
+      const dayContent = document.createElement("div");
+      dayContent.className = "day-link";
       const dayNumber = document.createElement("span");
       dayNumber.className = "day-number";
       dayNumber.textContent = number;
-      link.appendChild(dayNumber);
-      if (verses) {
+      dayContent.appendChild(dayNumber);
+      if (verses && date <= selectedDate) {
         const schedule = getDailySchedule(verses, date);
         const references = document.createElement("span");
         references.className = "day-verses";
-        references.textContent = schedule.verses.map((verse) => `${verse.ch}.${verse.vn}${isCompleted(date, verse) ? " ✓" : ""}`).join(" · ");
-        if (schedule.verses.length) {
-          link.setAttribute("aria-label", `${link.getAttribute("aria-label")}: ${schedule.verses.map((verse) => `chapter ${verse.ch}, verse ${verse.vn}${isCompleted(date, verse) ? ", completed" : ""}`).join("; ")}`);
-        }
-        link.appendChild(references);
+        schedule.verses.forEach((verse, index) => {
+          if (index) references.appendChild(document.createElement("br"));
+          const reference = document.createElement("a");
+          reference.className = "verse-reference-link";
+          const completed = isCompleted(verse);
+          if (completed) reference.classList.add("completed");
+          reference.href = "#";
+          reference.textContent = `${verse.ch}.${verse.vn}`;
+          reference.setAttribute("aria-label", `Choose a game for chapter ${verse.ch}, verse ${verse.vn}`);
+          reference.addEventListener("click", (event) => {
+            event.preventDefault();
+            showGamePicker(reference, verse);
+          });
+          references.appendChild(reference);
+          if (completed) {
+            const checkmark = document.createElement("span");
+            checkmark.className = "verse-completion-mark";
+            checkmark.setAttribute("aria-label", "Completed");
+            checkmark.textContent = " ✓";
+            references.appendChild(checkmark);
+          }
+        });
+        dayContent.appendChild(references);
       }
-      cell.appendChild(link);
+      cell.appendChild(dayContent);
     }
     grid.appendChild(cell);
   }
@@ -128,7 +258,7 @@ function renderDetails(verses) {
     transliteration.textContent = cleanShlokaText(verse.trans);
     const status = document.createElement("p");
     status.className = "verse-completion";
-    status.textContent = isCompleted(selectedDate, verse) ? "✓ Completed" : "Not completed yet";
+    status.textContent = isCompleted(verse) ? "✓ Completed" : "Not completed yet";
     card.append(heading, text, transliteration, status);
     return card;
   }));
@@ -148,9 +278,6 @@ try {
   console.error(error);
 }
 
-window.addEventListener("storage", (event) => {
-  if (loadedVerses && (event.key === null || event.key.startsWith(completionPrefix))) {
-    renderCalendar(loadedVerses);
-    renderDetails(loadedVerses);
-  }
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible") void loadCompletedShlokas();
 });

@@ -1,5 +1,5 @@
 // Dates are interpreted in the visitor's local time zone.
-export const SCHEDULE_START = Object.freeze({ year: 2026, month: 10, day: 2 });
+export const SCHEDULE_START = Object.freeze({ year: 2025, month: 12, day: 2 });
 export const VERSES_PER_DAY = 2;
 
 export function getDailySchedule(verses, date = new Date()) {

@@ -6,6 +6,8 @@ import {
   getCurrentUserProfile,
 } from "../api/auth-api.js";
 import { db, doc, updateDoc } from "../api/firebase-config.js";
+import { initProfilePhotoEditor } from "./avatar-upload.js";
+import { resolveAvatarState } from "./avatar-state.js";
 
 const profileName = document.getElementById("profile-name");
 const profileEmail = document.getElementById("profile-email");
@@ -65,28 +67,49 @@ function getInitials(name, email) {
 }
 
 function renderProfileAvatar(user, profile) {
-  const profileIconElement = document.querySelector(".profile-icon");
-  if (!profileIconElement) return;
-
-  profileIconElement.replaceChildren();
-
-  if (user.photoURL) {
-    const image = document.createElement("img");
-    image.src = user.photoURL;
-    image.alt = `${profile?.name || user.displayName || "User"} profile`;
-    image.className = "profile-avatar-img";
-    profileIconElement.appendChild(image);
+  const avatar = document.querySelector(".profile-icon");
+  if (!avatar || !user) return;
+  avatar.replaceChildren();
+  const state = resolveAvatarState(user, profile);
+  const initials = () => {
+    const fallback = document.createElement("span");
+    fallback.className = "profile-avatar-fallback";
+    fallback.textContent = getInitials(
+      profile?.name || user.displayName,
+      user.email,
+    );
+    avatar.appendChild(fallback);
+  };
+  if (!state.photoURL) {
+    initials();
     return;
   }
-
-  const fallback = document.createElement("span");
-  fallback.className = "profile-avatar-fallback";
-  fallback.textContent = getInitials(
-    profile?.name || user.displayName,
-    user.email,
-  );
-  profileIconElement.appendChild(fallback);
+  const image = document.createElement("img");
+  image.src = state.photoURL;
+  image.alt = `${profile?.name || user.displayName || "User"} profile`;
+  image.className = "profile-avatar-img";
+  image.onerror = () => {
+    image.remove();
+    initials();
+  };
+  avatar.appendChild(image);
 }
+
+// Keep the existing profile fields/logic intact. The avatar editor only
+// updates the owner-controlled avatar fields on their Firestore profile.
+initProfilePhotoEditor({
+  getUser: () => currentUser,
+  getProfile: () => currentProfile,
+  onSaved: (patch) => {
+    currentProfile = { ...(currentProfile || {}), ...patch };
+    renderProfileAvatar(currentUser, currentProfile);
+    window.dispatchEvent(
+      new CustomEvent("zatam:avatar-updated", {
+        detail: { photoURL: patch.photoURL },
+      }),
+    );
+  },
+});
 
 // Load all countries
 async function loadAllCountries() {

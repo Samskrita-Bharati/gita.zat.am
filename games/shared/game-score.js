@@ -50,6 +50,7 @@ import { auth, db, onAuthStateChanged } from "../../auth/api/firebase-config.js"
 import {
   doc,
   setDoc,
+  getDoc,
   writeBatch,
   serverTimestamp,
   arrayUnion,
@@ -195,6 +196,21 @@ async function updateShlokaProgress(uid, assignment) {
   await setDoc(doc(db, "shlokaProgress", `${uid}_${month}`), {
     completedShlokas: arrayUnion(id),
   }, { merge: true });
+
+  // Keep the calendar's per-session copy in sync when it has already been read.
+  try {
+    const cacheKey = `gita.shlokaProgress.v1.${uid}_${month}`;
+    const cached = sessionStorage.getItem(cacheKey);
+    if (cached !== null) {
+      const completedShlokas = JSON.parse(cached);
+      if (Array.isArray(completedShlokas) && !completedShlokas.some((value) => String(value) === String(id))) {
+        completedShlokas.push(id);
+        sessionStorage.setItem(cacheKey, JSON.stringify(completedShlokas));
+      }
+    }
+  } catch {
+    // Session cache is optional; the Firestore write above is authoritative.
+  }
 }
 
 async function getAuthenticatedUser() {
@@ -224,25 +240,37 @@ async function getAuthenticatedUser() {
   });
 }
 
+// One-time discovery per running browser session. For an existing game this
+// costs one parent document read but no parent writes; subsequent submissions
+// on this page only append the two monthly history records.
+const initializedParents = new Map();
+
+async function ensureParentExists(gameId, label) {
+  if (initializedParents.has(gameId)) return initializedParents.get(gameId);
+
+  const operation = (async () => {
+    const parent = doc(db, "leaderboards", gameId);
+    const snapshot = await getDoc(parent);
+    if (snapshot.exists()) return;
+    try {
+      await setDoc(parent, { label, updatedAt: serverTimestamp() });
+    } catch (error) {
+      // Two first-time players may both try to register the same game. If the
+      // other client registered it first, the parent now exists and is safe.
+      if (!(await getDoc(parent)).exists()) throw error;
+    }
+  })();
+  initializedParents.set(gameId, operation);
+  operation.catch(() => {
+    if (initializedParents.get(gameId) === operation) initializedParents.delete(gameId);
+  });
+  return operation;
+}
+
 async function ensureLeaderboardParents(gameId, gameName) {
   await Promise.all([
-    setDoc(
-      doc(db, "leaderboards", "Global"),
-      {
-        label: "Global",
-        updatedAt: serverTimestamp(),
-      },
-      { merge: true },
-    ),
-
-    setDoc(
-      doc(db, "leaderboards", gameId),
-      {
-        label: gameName || gameId,
-        updatedAt: serverTimestamp(),
-      },
-      { merge: true },
-    ),
+    ensureParentExists("Global", "Global"),
+    ensureParentExists(gameId, gameName || gameId),
   ]);
 }
 
