@@ -321,14 +321,14 @@
         return true;
       }
 
-      var selectId = new URLSearchParams(window.location.search).get("id");
+      // var selectId = new URLSearchParams(window.location.search).get("id");
       var data = await getShlokaTextFromUrl(window.location.search);
       
-      if (selectId){
-        const cleanURL = new URL(window.location.href);
-        cleanURL.searchParams.delete("id");
-        window.history.replaceState({}, "", cleanURL);
-      } 
+      // if (selectId){
+      //   const cleanURL = new URL(window.location.href);
+      //   cleanURL.searchParams.delete("id");
+      //   window.history.replaceState({}, "", cleanURL);
+      // } 
       var wordList = splitShlokaWords(data)
       .map(word => word.replace(/[।॥]/g, "").trim())
       .filter(word => splitWordIntoGraphemes(word).length > 1);
