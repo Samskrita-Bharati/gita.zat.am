@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react';
 import { fileURLToPath } from 'node:url';
 
 const gameDirectory = fileURLToPath(new URL('.', import.meta.url));
-const devEntry = '/games/strands/index.dev.html';
+const devEntry = '/games/04-suutram/index.dev.html';
 const portalDirectory = fileURLToPath(new URL('../../', import.meta.url));
 
 export default defineConfig({
@@ -17,7 +17,7 @@ export default defineConfig({
       configureServer(server) {
         server.middlewares.use((req, _res, next) => {
           const url = new URL(req.url ?? '/', 'http://localhost');
-          if (['/games/strands', '/games/strands/', '/games/strands/index.html'].includes(url.pathname)) {
+          if (['/games/04-suutram', '/games/04-suutram/', '/games/04-suutram/index.html'].includes(url.pathname)) {
             req.url = devEntry + url.search;
           }
           next();
@@ -33,14 +33,14 @@ export default defineConfig({
     },
   },
   optimizeDeps: { entries: [`${gameDirectory}index.dev.html`] },
-  server: { port: 8443, open: '/games/strands/' },
+  server: { port: 8443, open: '/games/04-suutram/' },
   build: {
     outDir: `${gameDirectory}dist`,
     emptyOutDir: true,
-    assetsDir: 'games/strands/built',
+    assetsDir: 'games/04-suutram/built',
     rollupOptions: {
       input: `${gameDirectory}index.dev.html`,
     },
   },
-  preview: { port: 8443, open: '/games/strands/' },
+  preview: { port: 8443, open: '/games/04-suutram/' },
 });

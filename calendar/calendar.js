@@ -20,11 +20,12 @@ cleanUrl.searchParams.delete("date");
 window.history.replaceState(null, "", `${cleanUrl.pathname}${cleanUrl.search}${cleanUrl.hash}`);
 
 const games = [
-  { dir: "018-as", cover: "018-as/cover.svg", title: "Arrange" },
-  { dir: "z18", cover: "z18/cover.svg", title: "BodhaPlay" },
-  { dir: "059-fitb", cover: "059-fitb/cover.svg", title: "Fill in the Blank" },
-  { dir: "fw/index.html", cover: "fw/cover.svg", title: "Word Search" },
-  { dir: "strands", cover: "strands/cover.svg", title: "Suutram" },
+  { dir: "01-wordSearch/index.html", cover: "01-wordSearch/cover.svg", title: "Word Search" },
+  { dir: "02-arrange", cover: "02-arrange/cover.svg", title: "Arrange" },
+  { dir: "057-gita-typing", cover: "057-gita-typing/cover.svg", title: "Gita Typing" },
+  { dir: "04-suutram", cover: "04-suutram/cover.svg", title: "Suutram" },
+  { dir: "05-fillBlank", cover: "05-fillBlank/cover.svg", title: "Fill in the Blank" },
+  { dir: "06-wordScramble", cover: "06-wordScramble/cover.svg", title: "BodhaPlay" },
 ];
 
 function showGamePicker(anchor, verse) {

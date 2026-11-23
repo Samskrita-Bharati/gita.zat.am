@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import vm from "node:vm";
 
-const html = await readFile(new URL("../games/018-as/index.html", import.meta.url), "utf8");
+const html = await readFile(new URL("../games/02-arrange/index.html", import.meta.url), "utf8");
 const source = html.match(/<script type="text\/javascript">([\s\S]*?)<\/script>/)?.[1]
   .replace("import('./daily-shloka.mjs')", "Promise.resolve(dailyModule)");
 assert.ok(source, "Game script is present");
@@ -19,7 +19,7 @@ function game(storage = new Map()) {
     $, URL, URLSearchParams, console, dailyModule: {},
     document: { getElementById: (id) => elements[id] },
     window: {
-      location: { href: "https://example.test/games/018-as/?id=1", search: "?id=1", assign(url) { this.next = url; } },
+      location: { href: "https://example.test/games/02-arrange/?id=1", search: "?id=1", assign(url) { this.next = url; } },
       setInterval: () => 1, clearInterval() {},
       orderingGameScore: { reset() {}, async submit(score, options) { submissions.push({ score, options }); return { ok: true }; } },
     },

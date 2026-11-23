@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
-import { groupShlokaWords, loadTodaysShloka } from "../games/018-as/daily-shloka.mjs";
+import { groupShlokaWords, loadTodaysShloka } from "../games/02-arrange/daily-shloka.mjs";
 import { cleanShlokaText } from "../shlokasToday/shlokasToday.js";
 import { splitShlokaWords } from "../games/shared/shloka-utils.js";
 

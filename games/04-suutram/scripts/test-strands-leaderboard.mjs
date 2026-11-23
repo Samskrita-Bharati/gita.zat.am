@@ -13,7 +13,7 @@ const run = prepareStrandsScoreRun(verse, async () => ({
 assert.deepEqual(await Promise.all([run.submit(breakdown, 245), run.submit(breakdown, 245)]), ['saved', 'saved']);
 assert.deepEqual(calls, [
   {
-  gameId: 'strands',
+  gameId: '04-suutram',
   gameName: 'Gita Strands',
   levelId: '2.11-4x4',
   levelName: 'Shloka 2.11 – 4×4',

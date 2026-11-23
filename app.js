@@ -2,50 +2,50 @@ import { initializeShlokasToday } from "./shlokasToday/shlokasToday.js";
 
 export const menu = [
   {
-    id: 18,
+    id: 1,
+    title: "Word Search",
+    dir: "games/01-wordSearch/index.html",
+    cover: "./games/01-wordSearch/cover.svg",
+    desc: `Find Sanskrit words in the grid.`,
+  },
+  {
+    id: 2,
     title: "Arrange सुभाषितम्  ",
     pickerLabel: "Arrange",
-    dir: "games/018-as",
-    cover: "./games/018-as/cover.svg",
+    dir: "games/02-arrange",
+    cover: "./games/02-arrange/cover.svg",
     desc: ` Order the words of a सुभाषितम्  in correct sequence!`,
   },
   {
-    id: 19,
-    title: "BodhaPlay: शब्दावली",
-    pickerLabel: "Scramble",
-    dir: "games/z18",
-    cover: "./games/z18/cover.svg",
-    desc: `Unscramble Sanskrit vocabulary.`,
+    id: 3,
+    title: "Gita Typing Game",
+    pickerLabel: "Typing",
+    dir: "games/057-gita-typing",
+    cover: "./games/057-gita-typing/cover.svg",
+    desc: `Practice typing on English (Harvard-Kyoto) transliteration of the shlokas from Bhagavad Gita`,
   },
   {
-    id: 59,
+    id: 4,
+    title: "सूत्रम् suutram",
+    pickerLabel: "Suutram",
+    dir: "games/04-suutram",
+    cover: "./games/04-suutram/cover.svg",
+    desc: "Connect Sanskrit letters to discover hidden words from the shloka.",
+  },
+  {
+    id: 5,
     title: "Fill in the Blank",
-    dir: "games/059-fitb",
-    cover: "./games/059-fitb/cover.svg",
+    dir: "games/05-fillBlank",
+    cover: "./games/05-fillBlank/cover.svg",
     desc: `Complete the daily shloka by filling in the missing words.`,
   },
   {
-    id: 61,
-    title: "Word Search",
-    dir: "games/fw/index.html",
-    cover: "./games/fw/cover.svg",
-    desc: `Find Sanskrit words in the grid.`,
-  },
-  // {
-  //   id: 57,
-  //   title: "Gita Typing Game",
-  //   pickerLabel: "Typing",
-  //   dir: "games/057-gita-typing",
-  //   cover: "./games/057-gita-typing/cover.svg",
-  //   desc: `Practice typing on English (Harvard-Kyoto) transliteration of the shlokas from Bhagavad Gita`,
-  // },
-  {
-    id: 63,
-    title: "सूत्रम् suutram",
-    pickerLabel: "Suutram",
-    dir: "games/strands",
-    cover: "./games/strands/cover.svg",
-    desc: "Connect Sanskrit letters to discover hidden words from the shloka.",
+    id: 6,
+    title: "BodhaPlay: शब्दावली",
+    pickerLabel: "Scramble",
+    dir: "games/06-wordScramble",
+    cover: "./games/06-wordScramble/cover.svg",
+    desc: `Unscramble Sanskrit vocabulary.`,
   },
 ];
 
@@ -62,7 +62,7 @@ const sectionCenter = document.querySelector(".section-center");
 // Change this array anytime to change featured games.
 // =====================================================
 
-const featuredGameIds = [18, 57, 61];
+const featuredGameIds = [1, 3, 4];
 
 // =====================================================
 // SLIDER STATE
