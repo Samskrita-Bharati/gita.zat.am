@@ -249,12 +249,8 @@
          AS IT CURRENTLY IS.
     ================================================== -->
 
-    <script type="module">
-      import{
-        getShlokaTextFromUrl, 
-        splitShlokaWords, 
-        splitWordIntoGraphemes
-      } from "../shared/shloka-utils.js"
+    <script type="module"> 
+      import{getShlokaTextFromUrl, splitShlokaWords, splitWordIntoGraphemes} from "../shared/shloka-utils.js"
 
       import{
         initGameScore, 
@@ -324,15 +320,14 @@
         return true;
       }
 
-      var verses = await fetch("../../assets/bhagavad-gita-verses.json")
-         .then(response => response.json());
-
-         var {verses: todayVerses} = getDailySchedule(verses);
-
-         var data = todayVerses
-            .map(verse => cleanShlokaText(verse.txt))
-            .join(" ");
-
+      var selectId = new URLSearchParams(window.location.search).get("id");
+      var data = await getShlokaTextFromUrl(window.location.search);
+      
+      if (selectId){
+        const cleanURL = new URL(window.location.href);
+        cleanURL.searchParams.delete("id");
+        window.history.replaceState({}, "", cleanURL);
+      }
       var wordList = splitShlokaWords(data)
       .map(word => word.replace(/[।॥]/g, "").trim())
       .filter(word => splitWordIntoGraphemes(word).length > 1);
@@ -340,38 +335,9 @@
       wordList = [...new Set(wordList)];
 
       var addShlokaWords = [...wordList];
-      // console.log("Shloka: ", data);
-      // console.log("Shloka Words:", wordList)
+
       window.data = data;
       window.wordList = wordList;
-      
-      // if (!data) data = "अक्षरसमूहे अद्यतन-कथा पदानि सन्ति करोतु अन्वेषणम्";
-
-      // var wordList = translit
-      //   .transliterate(data, "iast", {
-      //     target: "devanagari",
-      //   })
-      //   .split(" ");
-
-      // document.addEventListener("DOMContentLoaded", function () {
-      //   var lnk =
-      //     "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ6CFR_0gDsZl-lmwLFWmtdXMXYGVEHGJ8fvBu2_5wvbEl9L-4Yr0ugI0TFTTdvtLlMTRmLnCIJ5FBF/pub?gid=0&single=true&output=csv";
-
-      //   renderScore();
-      //   document.querySelectorAll("#level a").forEach((link) => {
-      //     const size = new URL(link.href).searchParams.get("size");
-      //     if (size === ["5", "7", "10"][Number(level.id) - 1]) {
-      //       link.setAttribute("aria-current", "true");
-      //     }
-      //   });
-
-      //   Papa.parse(lnk, {
-      //     download: true,
-      //     header: false,
-      //     complete: populateWlist,
-      //     error: () => populateWlist({ data: [] }),
-      //   });
-      // });
 
       function populateWlist(fildat) {
         renderScore();
@@ -388,20 +354,6 @@
           liveScoreEl.textContent = "No Shloka available."
           return;
         }
-        // const column = headers.findIndex((name) => name.trim() === "padam");
-        // const requestedSet = Number(urlParams.get("set"));
-        // const set = Number.isInteger(requestedSet) && requestedSet >= 0 &&
-        //   requestedSet * wpp + wpp <= rows.length ? requestedSet : 0;
-
-        // if (column >= 0) {
-        //   wlist = rows.slice(set * wpp, (set + 1) * wpp)
-        //     .map((row) => row[column]?.trim())
-        //     .filter(Boolean);
-        // }
-
-        // if (wlist.length > 0) wordList = wlist;
-
-        // N_WORDS_TO_FIND = Math.min(N_WORDS_TO_FIND, wordList.length);
         var size = urlParams.get("size");
 
         if (size && size >= 4 && size <= 15) {
@@ -472,7 +424,7 @@
           hideHint();
           resizeGrid();
           registerEventListeners();
-          return true;
+          return true; 
         };
 
         var registerEventListeners = function () {
@@ -491,9 +443,6 @@
             cellClick(e);
            });
       };
-
-          
-    
 
         var drawGrid = function () {
           var table = $("<table></table>");
@@ -1003,70 +952,26 @@
         };
 
         var fullSwaras = [
-          "अ",
-          "आ",
-          "इ",
-          "ई",
-          "उ",
-          "ऊ",
-          "ऋ",
-          "ॠ",
-          "ए",
-          "ऐ",
-          "ओ",
-          "औ",
+          "अ", "आ", "इ",
+          "ई", "उ", "ऊ",
+          "ऋ", "ॠ", "ए",
+          "ऐ", "ओ", "औ",
         ];
 
         var swaras = [
-          "\u093e",
-          "\u093f",
-          "\u0940",
-          "\u0941",
-          "\u0942",
-          "\u0943",
-          "\u0944",
-          "\u0947",
-          "\u0948",
-          "\u094b",
-          "\u094c",
+          "\u093e", "\u093f", "\u0940",
+          "\u0941", "\u0942", "\u0943",
+          "\u0944", "\u0947", "\u0948",
+          "\u094b", "\u094c",
         ];
 
         var vyanjanas = [
-          "क",
-          "ख",
-          "ग",
-          "घ",
-          "ङ",
-          "च",
-          "छ",
-          "ज",
-          "झ",
-          "ञ",
-          "त",
-          "थ",
-          "द",
-          "ध",
-          "न",
-          "ट",
-          "ठ",
-          "ड",
-          "ढ",
-          "ण",
-          "प",
-          "फ",
-          "ब",
-          "भ",
-          "म",
-          "य",
-          "र",
-          "ल",
-          "व",
-          "स",
-          "श",
-          "ष",
-          "ह",
-          "क्ष",
-          "ज्ञ",
+          "क", "ख", "ग", "घ", "ङ", "च",
+          "छ", "ज", "झ", "ञ", "त", "थ",
+          "द", "ध", "न", "ट", "ठ", "ड", 
+          "ढ", "ण", "प", "फ", "ब", "भ",
+          "म", "य", "र", "ल", "व", "स",
+          "श", "ष", "ह", "क्ष", "ज्ञ",
         ];
         var halant = "\u094d";
         var anuswara = "\u0902";
