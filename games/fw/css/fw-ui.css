@@ -249,7 +249,7 @@
   border-radius: var(--radius-sm);
   color: var(--navy);
   background: var(--cream-dark);
-  font-weight: 700;
+  font-weight: 700; 
 }
 
 #fwGameShell #hintLink button img {
