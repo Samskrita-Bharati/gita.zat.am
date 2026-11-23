@@ -335,8 +335,6 @@
 
       wordList = [...new Set(wordList)];
 
-      var addShlokaWords = [...wordList];
-
       window.data = data;
       window.wordList = wordList;
 
@@ -416,9 +414,6 @@
 
           fillRandom();
           countAnswers();
-          addShlokaWords = [
-            ...new Set([...addShlokaWords, ...answers])];
-            addShlokaWords.sort(() => Math.random() -0.5);
             window.placedWords = placedWords;
           // console.log("Placed Words: ", placedWords);
           // console.log("Shloka Words: ", wordList);
