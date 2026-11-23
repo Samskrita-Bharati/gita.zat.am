@@ -50,6 +50,7 @@ import { auth, db, onAuthStateChanged } from "../../auth/api/firebase-config.js"
 import {
   doc,
   setDoc,
+  getDoc,
   writeBatch,
   serverTimestamp,
   arrayUnion,
@@ -239,25 +240,37 @@ async function getAuthenticatedUser() {
   });
 }
 
+// One-time discovery per running browser session. For an existing game this
+// costs one parent document read but no parent writes; subsequent submissions
+// on this page only append the two monthly history records.
+const initializedParents = new Map();
+
+async function ensureParentExists(gameId, label) {
+  if (initializedParents.has(gameId)) return initializedParents.get(gameId);
+
+  const operation = (async () => {
+    const parent = doc(db, "leaderboards", gameId);
+    const snapshot = await getDoc(parent);
+    if (snapshot.exists()) return;
+    try {
+      await setDoc(parent, { label, updatedAt: serverTimestamp() });
+    } catch (error) {
+      // Two first-time players may both try to register the same game. If the
+      // other client registered it first, the parent now exists and is safe.
+      if (!(await getDoc(parent)).exists()) throw error;
+    }
+  })();
+  initializedParents.set(gameId, operation);
+  operation.catch(() => {
+    if (initializedParents.get(gameId) === operation) initializedParents.delete(gameId);
+  });
+  return operation;
+}
+
 async function ensureLeaderboardParents(gameId, gameName) {
   await Promise.all([
-    setDoc(
-      doc(db, "leaderboards", "Global"),
-      {
-        label: "Global",
-        updatedAt: serverTimestamp(),
-      },
-      { merge: true },
-    ),
-
-    setDoc(
-      doc(db, "leaderboards", gameId),
-      {
-        label: gameName || gameId,
-        updatedAt: serverTimestamp(),
-      },
-      { merge: true },
-    ),
+    ensureParentExists("Global", "Global"),
+    ensureParentExists(gameId, gameName || gameId),
   ]);
 }
 

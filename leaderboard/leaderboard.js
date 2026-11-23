@@ -4,6 +4,9 @@ import {
   doc,
   getDoc,
   writeBatch,
+  deleteField,
+  FieldPath,
+  serverTimestamp,
 } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
 
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
@@ -13,7 +16,10 @@ import { auth, db } from "../auth/api/firebase-config.js";
 import {
   getLeaderboardGames,
   getRawData,
+  getMonthlyHistoryPage,
+  invalidateLeaderboardCache,
 } from "./leaderboard-utils.js";
+import { rankGamePlayers } from "./score-ranking.mjs";
 
 // =====================================================
 // PAGE STATE
@@ -31,6 +37,15 @@ const state = {
   gameMap: new Map(),
   profileCache: new Map(),
   levelOptionsCache: new Map(),
+  expandedRows: new Set(),
+  shlokaVisible: new Map(),
+  attemptsVisible: new Map(),
+  openLevels: new Set(),
+  historyRecords: [],
+  historyCursor: null,
+  historyHasMore: true,
+  historySource: null,
+  renderToken: 0,
 };
 
 // =====================================================
@@ -53,12 +68,14 @@ const leaderboardTableHeader = document.getElementById(
 );
 const leaderboard = document.getElementById("leaderboard");
 const leaderboardEmpty = document.getElementById("leaderboardEmpty");
+const scoringHint = document.getElementById("lbScoringHint");
 const pagination = document.getElementById("pagination");
 
 const prevBtn = document.getElementById("prevBtn");
 const nextBtn = document.getElementById("nextBtn");
 const pageNum = document.getElementById("pageNum");
 const totalPages = document.getElementById("totalPages");
+const loadMoreHistoryBtn = document.getElementById("loadMoreHistoryBtn");
 
 const myRankSignedOut = document.getElementById("myRankSignedOut");
 const myRankContent = document.getElementById("myRankContent");
@@ -468,11 +485,50 @@ async function fetchCurrentRawData() {
     seasonDate.value,
   );
 
+  if (state.activeView === "history" && newStart === 0) {
+    await loadMoreHistoryMonths({ reset: true });
+    return;
+  }
   state.currentRawData = await getRawData(newStart, newEnd, sourceGame);
+  if (sourceGame === "Global" && newStart === 0) {
+    state.allTimeGlobalHistory = state.currentRawData;
+  }
+}
+
+async function loadMoreHistoryMonths({ reset = false } = {}) {
+  const sourceGame = gameSelect.value === "all" ? "Global" : gameSelect.value;
+  if (reset || state.historySource !== sourceGame) {
+    state.historySource = sourceGame;
+    state.historyRecords = [];
+    state.historyCursor = null;
+    state.historyHasMore = true;
+  }
+  // Limit work per interaction: 3 monthly docs/query, maximum 3 queries.
+  // A user with sparse activity can explicitly request older months.
+  for (let i = 0; i < 3 && state.historyHasMore; i++) {
+    const page = await getMonthlyHistoryPage(sourceGame, {
+      cursor: state.historyCursor,
+      pageSize: 3,
+    });
+    state.historyCursor = page.cursor;
+    state.historyHasMore = page.hasMore;
+    const known = new Set(state.historyRecords.map((record) => record.key));
+    for (const record of page.records) {
+      if (!known.has(record.key)) state.historyRecords.push(record);
+    }
+    if (getCurrentUserHistory(state.historyRecords).length >= (state.currentPage * state.perPage + 1)) {
+      break;
+    }
+  }
+  state.currentRawData = state.historyRecords;
 }
 
 async function loadAllTimeGlobalHistory() {
-  state.allTimeGlobalHistory = await getRawData(0, Date.now(), "Global");
+  // This shares the cached fetch from the default Overall (all-time) view,
+  // rather than fetching the same global history twice on page load.
+  if (!state.allTimeGlobalHistory.length) {
+    state.allTimeGlobalHistory = await getRawData(0, Date.now(), "Global");
+  }
 }
 
 // =====================================================
@@ -645,7 +701,7 @@ async function generateOverallLeaderboard(rawData) {
     rank: index + 1,
   }));
 
-  return attachProfiles(rows);
+  return rows;
 }
 
 // =====================================================
@@ -653,141 +709,19 @@ async function generateOverallLeaderboard(rawData) {
 // =====================================================
 
 async function generateGameLeaderboard(rawData) {
-  const scoringSystem = getScoringSystem();
-  const selectedGame = gameSelect.value;
-  const selectedLevel = levelSelect.value;
-
-  const bestByPlayerGameLevel = new Map();
-  const totalsByPlayerGameLevel = new Map();
-
-  filterRawDataByRange(rawData).forEach((record) => {
-    if (!record.uid || !record.gameId || record.gameId === "legacy") {
-      return;
-    }
-
-    if (selectedGame !== "all" && record.gameId !== selectedGame) {
-      return;
-    }
-
-    const levelKey = getLevelKey(record);
-
-    if (
-      selectedGame !== "all" &&
-      selectedLevel !== "all" &&
-      levelKey !== selectedLevel
-    ) {
-      return;
-    }
-
-    const groupKey = `${record.gameId}::${levelKey}`;
-    const playerKey = `${record.uid}::${groupKey}`;
-
-    const score = Number(record.score);
-    const timePlayed = Number(record.timePlayed) || 0;
-
-    if (!Number.isFinite(score)) {
-      return;
-    }
-
-    const totalTime = totalsByPlayerGameLevel.get(playerKey) || 0;
-    totalsByPlayerGameLevel.set(playerKey, totalTime + timePlayed);
-
-    const current = bestByPlayerGameLevel.get(playerKey);
-    const candidate = {
-      uid: record.uid,
-      gameId: record.gameId,
-      gameName: getGameName(record),
-      levelId: record.levelId,
-      levelName: record.levelName,
-      levelKey,
-      groupKey,
-      score,
-      timePlayed,
-      timestamp: record.timestamp,
-      result: record.meta?.result || "completed",
-    };
-
-    if (isBetterAttempt(candidate, current)) {
-      bestByPlayerGameLevel.set(playerKey, candidate);
-    }
-  });
-
-  const groups = new Map();
-
-  [...bestByPlayerGameLevel.entries()].forEach(([playerKey, attempt]) => {
-    const row = {
-      ...attempt,
-      totalScore: attempt.score,
-      bestScore: attempt.score,
-      bestTimePlayed: attempt.timePlayed,
-      totalTimePlayed: totalsByPlayerGameLevel.get(playerKey) || 0,
-    };
-
-    if (!groups.has(row.groupKey)) {
-      groups.set(row.groupKey, []);
-    }
-
-    groups.get(row.groupKey).push(row);
-  });
-
-  const rankedRows = [];
-
-  groups.forEach((rows) => {
-    rows.sort((a, b) => {
-      if (scoringSystem === "totalTimePlayed") {
-        if (b.totalTimePlayed !== a.totalTimePlayed) {
-          return b.totalTimePlayed - a.totalTimePlayed;
-        }
-      } else if (b.bestScore !== a.bestScore) {
-        return b.bestScore - a.bestScore;
-      }
-
-      if (a.bestTimePlayed !== b.bestTimePlayed) {
-        return a.bestTimePlayed - b.bestTimePlayed;
-      }
-
-      return b.timestamp - a.timestamp;
-    });
-
-    rows.forEach((row, index) => {
-      rankedRows.push({
-        ...row,
-        rank: index + 1,
-        timeDisplay:
-          scoringSystem === "totalTimePlayed"
-            ? formatSeconds(row.totalTimePlayed)
-            : formatSeconds(row.bestTimePlayed),
-      });
-    });
-  });
-
-  rankedRows.sort((a, b) => {
-    const gameCompare = a.gameName.localeCompare(b.gameName, undefined, {
-      numeric: true,
-      sensitivity: "base",
-    });
-
-    if (gameCompare !== 0) {
-      return gameCompare;
-    }
-
-    const levelCompare = getLevelDisplay(a).localeCompare(
-      getLevelDisplay(b),
-      undefined,
-      {
-        numeric: true,
-        sensitivity: "base",
-      },
-    );
-
-    if (levelCompare !== 0) {
-      return levelCompare;
-    }
-
-    return a.rank - b.rank;
-  });
-
-  return attachProfiles(rankedRows);
+  return rankGamePlayers(filterRawDataByRange(rawData), {
+    selectedGame: gameSelect.value,
+    selectedLevel: levelSelect.value,
+    scoringSystem: getScoringSystem(),
+  }).map((row) => ({
+    ...row,
+    gameName: state.gameMap.get(row.gameId) || row.gameName,
+    timeDisplay: formatSeconds(
+      getScoringSystem() === "totalTimePlayed"
+        ? row.totalTimePlayed
+        : row.bestTimePlayed,
+    ),
+  }));
 }
 
 // =====================================================
@@ -847,29 +781,12 @@ function setTableHeader(view) {
   }
 
   if (view === "game") {
-    const isAllGames = gameSelect.value === "all";
-
-    leaderboardTableHeader.classList.add(
-      isAllGames
-        ? "leaderboard-table-header-game-all"
-        : "leaderboard-table-header-game",
-    );
-
-    leaderboardTableHeader.innerHTML = isAllGames
-      ? `
-          <div>Game Rank</div>
-          <div>Player</div>
-          <div>Best Score</div>
-          <div>Time</div>
-        `
-      : `
-          <div>Rank</div>
-          <div>Player</div>
-          <div>Game</div>
-          <div>Level</div>
-          <div>Best Score</div>
-          <div>Time</div>
-        `;
+    leaderboardTableHeader.classList.add("leaderboard-table-header-game-players");
+    const label = levelSelect.value === "all" ? "Cumulative Points" : "Best Score / 100";
+    leaderboardTableHeader.innerHTML = `
+      <div>Rank</div><div>Player</div>
+      <div>${label}</div><div>Time</div><div>Details</div>
+    `;
     return;
   }
 
@@ -925,6 +842,10 @@ function updateViewControls() {
   rankingSection.hidden = !isOverall;
 
   setTableHeader(state.activeView);
+  scoringHint.hidden = state.activeView !== "game";
+  scoringHint.textContent = levelSelect.value === "all"
+    ? "Cumulative points = sum of each player's best score for every completed level in the game. Tap View Shlokas to inspect scores and attempts."
+    : "Selected level: rankings show each player's best score out of 100. Tap View Shlokas to inspect attempts.";
 }
 
 function getPodiumRows() {
@@ -1005,78 +926,99 @@ function renderOverallRows(rows) {
     .join("");
 }
 
-function getGameGroupHeading(row) {
-  const levelDisplay = getLevelDisplay(row);
-
-  return levelDisplay === "—"
-    ? row.gameName
-    : `${row.gameName} · ${levelDisplay}`;
+function playerGameKey(row) {
+  return `${row.gameId}::${row.uid}`;
 }
 
-function renderAllGamesRows(rows) {
-  let previousGroupKey = null;
+function levelRecordKey(row, level) {
+  return `${playerGameKey(row)}::${level.levelKey}`;
+}
 
-  return rows
-    .map((row) => {
-      const showGroupHeading = row.groupKey !== previousGroupKey;
-      previousGroupKey = row.groupKey;
+function getShlokaName(level) {
+  return level.levelName || (level.levelId == null ? "Game" : `Level ${level.levelId}`);
+}
 
-      return `
-        ${
-          showGroupHeading
-            ? `
-              <div class="lb-game-group-heading">
-                <span class="lb-game-group-icon" aria-hidden="true">🎮</span>
-                <strong>${escapeHtml(getGameGroupHeading(row))}</strong>
-              </div>
-            `
-            : ""
-        }
-
-        <div class="row row-game-all">
-          <div class="rank">${row.rank}</div>
-
-          <div class="player-cell">
-            <strong>${escapeHtml(row.username)}</strong>
-            <span>📍 ${escapeHtml(row.location)}</span>
-          </div>
-
-          <div class="score">${formatNumberOrDash(row.bestScore)}</div>
-
-          <div class="time">${escapeHtml(row.timeDisplay)}</div>
-        </div>
-      `;
-    })
-    .join("");
+function renderPlayerHistory(row) {
+  const key = playerGameKey(row);
+  const count = state.shlokaVisible.get(key) || 8;
+  const visibleLevels = row.levels.slice(0, count);
+  return `
+    <div class="lb-player-history" id="history-${escapeHtml(encodeURIComponent(key))}">
+      <div class="lb-player-history-title">
+        <strong>Best scores by Shloka</strong>
+        <span>${row.levelsCount} ${row.levelsCount === 1 ? "level" : "levels"} · ${row.attemptsCount} attempts</span>
+      </div>
+      ${visibleLevels.map((level) => {
+        const id = levelRecordKey(row, level);
+        const limit = state.attemptsVisible.get(id) || 5;
+        return `
+          <details class="lb-level-detail" data-open-level="${escapeHtml(id)}" ${state.openLevels.has(id) ? "open" : ""}>
+            <summary>
+              <span class="lb-level-name">${escapeHtml(getShlokaName(level))}
+                <small>${level.attempts.length} ${level.attempts.length === 1 ? "attempt" : "attempts"}</small>
+              </span>
+              <span class="lb-level-best">${formatNumberOrDash(level.bestScore)} / 100</span>
+              <span aria-hidden="true" class="lb-detail-chevron">⌄</span>
+            </summary>
+            <div class="lb-attempt-list">
+              ${level.attempts.slice(0, limit).map((attempt) => `
+                <div class="lb-attempt-line">
+                  <span>${escapeHtml(formatDateTime(attempt.timestamp))}</span>
+                  <strong>${formatNumberOrDash(attempt.score)} / 100</strong>
+                  <span>${escapeHtml(formatSeconds(attempt.timePlayed))}</span>
+                </div>
+              `).join("")}
+              ${level.attempts.length > limit ? `
+                <button type="button" class="lb-more-link" data-action="more-attempts"
+                  data-game="${escapeHtml(row.gameId)}" data-uid="${escapeHtml(row.uid)}"
+                  data-level="${escapeHtml(level.levelKey)}">Show more attempts</button>
+              ` : ""}
+            </div>
+          </details>
+        `;
+      }).join("")}
+      ${row.levels.length > count ? `<button type="button" class="lb-more-link"
+        data-action="more-levels" data-game="${escapeHtml(row.gameId)}"
+        data-uid="${escapeHtml(row.uid)}">Show more Shlokas (${row.levels.length - count} remaining)</button>` : ""}
+    </div>
+  `;
 }
 
 function renderGameRows(rows) {
-  if (gameSelect.value === "all") {
-    return renderAllGamesRows(rows);
-  }
-
-  return rows
-    .map(
-      (row) => `
-        <div class="row row-game">
-          <div class="rank">${row.rank}</div>
-
+  let previousGame = null;
+  return rows.map((row) => {
+    const key = playerGameKey(row);
+    const expanded = state.expandedRows.has(key);
+    const heading = gameSelect.value === "all" && previousGame !== row.gameId;
+    previousGame = row.gameId;
+    const score = levelSelect.value === "all" ? row.cumulativeScore : row.bestScore;
+    return `
+      ${heading ? `<div class="lb-game-group-heading">
+        <span class="lb-game-group-icon" aria-hidden="true">🎮</span>
+        <strong>${escapeHtml(row.gameName)}</strong>
+      </div>` : ""}
+      <article class="lb-game-player" data-player-key="${escapeHtml(key)}">
+        <div class="row row-game-player">
+          <div class="rank" data-label="Rank">${row.rank}</div>
           <div class="player-cell">
-            <strong>${escapeHtml(row.username)}</strong>
-            <span>📍 ${escapeHtml(row.location)}</span>
+            <strong>${escapeHtml(row.username || "Player")}</strong>
+            <span>📍 ${escapeHtml(row.location || "Unknown")} · ${row.levelsCount} ${row.levelsCount === 1 ? "level" : "levels"}</span>
           </div>
-
-          <div class="game-name">${escapeHtml(row.gameName)}</div>
-
-          <div class="level-name">${escapeHtml(getLevelDisplay(row))}</div>
-
-          <div class="score">${formatNumberOrDash(row.bestScore)}</div>
-
-          <div class="time">${escapeHtml(row.timeDisplay)}</div>
+          <div class="lb-game-player-score" data-label="${levelSelect.value === "all" ? "Cumulative" : "Best"}">
+            <strong>${formatNumberOrDash(score)}</strong>
+            <span>${levelSelect.value === "all" ? "Cumulative points" : "Best score / 100"}</span>
+          </div>
+          <div class="time" data-label="Time">${escapeHtml(row.timeDisplay)}</div>
+          <button class="lb-player-expand" type="button" data-action="toggle-player"
+            data-game="${escapeHtml(row.gameId)}" data-uid="${escapeHtml(row.uid)}"
+            aria-expanded="${expanded}" aria-controls="history-${escapeHtml(encodeURIComponent(key))}">
+            ${expanded ? "Hide history" : "View Shlokas"}<span aria-hidden="true"> ${expanded ? "⌃" : "⌄"}</span>
+          </button>
         </div>
-      `,
-    )
-    .join("");
+        ${expanded ? renderPlayerHistory(row) : ""}
+      </article>
+    `;
+  }).join("");
 }
 
 function renderHistoryRows(rows) {
@@ -1105,35 +1047,46 @@ function renderHistoryRows(rows) {
     .join("");
 }
 
-function renderTable() {
+async function renderTable() {
+  const token = ++state.renderToken;
   const data = state.leaderboardData;
   const total = data.length;
   const totalPageCount = Math.max(1, Math.ceil(total / state.perPage));
-
-  if (state.currentPage > totalPageCount) {
-    state.currentPage = totalPageCount;
-  }
-
+  if (state.currentPage > totalPageCount) state.currentPage = totalPageCount;
   const start = (state.currentPage - 1) * state.perPage;
   const pageRows = data.slice(start, start + state.perPage);
 
+  // Profile reads are limited to the page on screen, not every ranked player.
+  if (state.activeView !== "history") {
+    const visible = new Map(pageRows.map((row) => [row.uid, row]));
+    if (state.activeView === "overall") {
+      data.slice(0, 3).forEach((row) => visible.set(row.uid, row));
+    }
+    await Promise.all([...visible.values()].map(async (row) => {
+      const profile = await getUserProfile(row.uid);
+      row.username = profile.name;
+      row.location = profile.location;
+    }));
+  }
+  if (token !== state.renderToken) return;
   leaderboardEmpty.hidden = total > 0;
-
   if (state.activeView === "overall") {
     leaderboard.innerHTML = renderOverallRows(pageRows);
+    renderPodium();
   } else if (state.activeView === "game") {
     leaderboard.innerHTML = renderGameRows(pageRows);
   } else {
     leaderboard.innerHTML = renderHistoryRows(pageRows);
   }
 
+  const hasRemoteHistory = state.activeView === "history" &&
+    timeSelect.value === "allDates" && state.historyHasMore;
   pageNum.textContent = String(state.currentPage);
-  totalPages.textContent = String(totalPageCount);
-
+  totalPages.textContent = `${totalPageCount}${hasRemoteHistory ? "+" : ""}`;
   prevBtn.disabled = state.currentPage <= 1;
-  nextBtn.disabled = state.currentPage >= totalPageCount;
-
-  pagination.hidden = total <= state.perPage;
+  nextBtn.disabled = state.currentPage >= totalPageCount && !hasRemoteHistory;
+  pagination.hidden = total <= state.perPage && !hasRemoteHistory;
+  loadMoreHistoryBtn.hidden = !hasRemoteHistory;
 }
 
 // =====================================================
@@ -1167,56 +1120,36 @@ async function renderMyRank() {
   let hint = "";
   let usingOverallRank = false;
 
-  if (state.activeView === "overall" || gameSelect.value === "all") {
-    usingOverallRank = true;
-    const overallRows =
-      state.activeView === "overall"
-        ? state.leaderboardData
-        : await generateOverallLeaderboard(state.currentRawData);
-
-    row = overallRows.find((item) => item.uid === state.currentUser.uid) || null;
-
-    if (row) {
-      contextValue = row.gamesCount;
-    }
-
-    if (state.activeView !== "overall") {
-      hint = "Showing your Overall rank. Select one game and level for a game-specific rank.";
-    }
-  } else if (state.activeView === "game") {
-    const knownLevels = state.levelOptionsCache.get(gameSelect.value) || [];
-
-    if (knownLevels.length > 0 && levelSelect.value === "all") {
-      row = null;
-      contextValue = "—";
-      contextLabel = "Level";
-      scoreLabel = "Best Score";
-      hint = "Select a level to see your rank for that specific level.";
+  if (state.activeView === "game" && gameSelect.value !== "all") {
+    row = state.leaderboardData.find((item) => item.uid === state.currentUser.uid) || null;
+    contextValue = row ? row.levelsCount : "—";
+    contextLabel = levelSelect.value === "all" ? "Levels" : "Level";
+    if (levelSelect.value !== "all") {
+      contextValue = levelSelect.options[levelSelect.selectedIndex]?.text || "—";
+      scoreLabel = "Best Score / 100";
     } else {
-      row =
-        state.leaderboardData.find(
-          (item) => item.uid === state.currentUser.uid,
-        ) || null;
-
-      contextValue =
-        levelSelect.value === "all"
-          ? "-"
-          : levelSelect.options[levelSelect.selectedIndex]?.text || "-";
-      contextLabel = "Level";
-      scoreLabel = "Best Score";
+      scoreLabel = "Cumulative Points";
     }
-  } else {
-    const overallRows = await generateOverallLeaderboard(
-      state.allTimeGlobalHistory,
-    );
-
+    hint = levelSelect.value === "all"
+      ? "Your cumulative points count only the best attempt for each Shloka."
+      : "Showing your rank for this specific level.";
+  } else if (state.activeView === "history") {
+    await loadAllTimeGlobalHistory();
+    const overallRows = await generateOverallLeaderboard(state.allTimeGlobalHistory);
     row = overallRows.find((item) => item.uid === state.currentUser.uid) || null;
-
-    if (row) {
-      contextValue = row.gamesCount;
+    contextValue = row?.gamesCount ?? "—";
+    hint = "History includes repeat attempts; your Overall rank uses best scores.";
+    usingOverallRank = true;
+  } else {
+    usingOverallRank = true;
+    const overallRows = state.activeView === "overall"
+      ? state.leaderboardData
+      : await generateOverallLeaderboard(state.currentRawData);
+    row = overallRows.find((item) => item.uid === state.currentUser.uid) || null;
+    contextValue = row?.gamesCount ?? "—";
+    if (state.activeView === "game") {
+      hint = "Showing your Overall rank. Choose a game to see cumulative game points.";
     }
-
-    hint = "History shows every saved attempt, including repeat plays.";
   }
 
   if (!row) {
@@ -1231,7 +1164,7 @@ async function renderMyRank() {
         : "—";
       scoreLabel = "Time Played";
     } else {
-      const scoreValue = usingOverallRank ? row.totalScore : row.bestScore;
+      const scoreValue = usingOverallRank ? row.totalScore : row.cumulativeScore;
       myRankScore.textContent = formatNumberOrDash(scoreValue);
     }
   }
@@ -1322,43 +1255,63 @@ function syncAdminControls() {
   resetHint.textContent = "";
 }
 
+// Reset is a privileged, deliberate admin operation. Remove the game's
+// monthly docs AND its matching Global entries in the same batched write.
+// Earlier versions deleted only game data, leaving stale Global ranks.
 async function performReset(gameId) {
   const gameName = state.gameMap.get(gameId) || gameId;
+  if (!confirm(`Delete ALL recorded scores for ${gameName}, including Global rankings? This cannot be undone.`)) return;
 
-  if (
-    !confirm(
-      `Are you sure you want to clear all score histories for ${gameName}?`,
-    )
-  ) {
-    return;
-  }
-
-  const historyColRef = collection(db, "leaderboards", gameId, "gameHistory");
-  const historySnapshot = await getDocs(historyColRef);
-
-  if (historySnapshot.empty) {
-    alert(`Score histories for ${gameName} are already empty.`);
-    return;
-  }
-
-  const batch = writeBatch(db);
-
-  historySnapshot.forEach((document) => {
-    batch.delete(document.ref);
-  });
-
+  resetBtn.disabled = true;
   try {
-    await batch.commit();
+    const historyColRef = collection(db, "leaderboards", gameId, "gameHistory");
+    const historySnapshot = await getDocs(historyColRef);
+    if (historySnapshot.empty) {
+      alert(`Score histories for ${gameName} are already empty.`);
+      return;
+    }
 
+    const months = historySnapshot.docs;
+    let clearedGlobalEntries = 0;
+    // Small batches avoid Firestore rules' per-batch document-access budget.
+    for (let offset = 0; offset < months.length; offset += 4) {
+      const group = months.slice(offset, offset + 4);
+      const globalMonths = await Promise.all(group.map((history) =>
+        getDoc(doc(db, "leaderboards", "Global", "gameHistory", history.id))));
+      const batch = writeBatch(db);
+      group.forEach((history, index) => {
+        batch.delete(history.ref);
+        const globalSnap = globalMonths[index];
+        if (!globalSnap.exists()) return;
+        const globalData = globalSnap.data();
+        const updates = ["updatedAt", serverTimestamp()];
+        for (const key of Object.keys(globalData.entries || {})) {
+          const meta = globalData.attemptMeta?.[key];
+          const keyGame = key.split("_").slice(3).join("_");
+          if (meta?.gameId !== gameId && keyGame !== gameId) continue;
+          // Use FieldPath so unusual auth UIDs cannot break nested map keys.
+          updates.push(new FieldPath("entries", key), deleteField());
+          updates.push(new FieldPath("attemptMeta", key), deleteField());
+          clearedGlobalEntries++;
+        }
+        if (updates.length > 2) batch.update(globalSnap.ref, ...updates);
+      });
+      await batch.commit();
+    }
+
+    invalidateLeaderboardCache(gameId);
+    state.allTimeGlobalHistory = [];
     state.levelOptionsCache.delete(gameId);
-
-    alert(`Successfully reset ${gameName} histories.`);
-
     await refreshLevelOptions();
     await refreshData();
+    await loadAllTimeGlobalHistory();
+    renderRecentHistory();
+    alert(`Reset complete: ${gameName} histories deleted and ${clearedGlobalEntries} matching Global entries removed.`);
   } catch (error) {
     console.error("Reset failed:", error);
-    alert("Error resetting leaderboard. Check console.");
+    alert("Unable to complete reset. Some months may have changed; please review the affected rankings before retrying.");
+  } finally {
+    resetBtn.disabled = false;
   }
 }
 
@@ -1367,6 +1320,10 @@ async function performReset(gameId) {
 // =====================================================
 
 async function refreshData() {
+  state.expandedRows.clear();
+  state.shlokaVisible.clear();
+  state.attemptsVisible.clear();
+  state.openLevels.clear();
   updateViewControls();
   updateRangeDisplay();
 
@@ -1386,8 +1343,7 @@ async function refreshData() {
 
   state.currentPage = 1;
 
-  renderPodium();
-  renderTable();
+  await renderTable();
   await renderMyRank();
   renderRecentHistory();
   await syncAdminControls();
@@ -1443,8 +1399,7 @@ document.getElementById("scoring").addEventListener("change", async () => {
 
   state.currentPage = 1;
 
-  renderPodium();
-  renderTable();
+  await renderTable();
   await renderMyRank();
 });
 
@@ -1452,19 +1407,62 @@ prevBtn.addEventListener("click", () => {
   if (state.currentPage <= 1) return;
 
   state.currentPage -= 1;
-  renderTable();
+  void renderTable();
 });
 
-nextBtn.addEventListener("click", () => {
+nextBtn.addEventListener("click", async () => {
   const totalPageCount = Math.max(
     1,
     Math.ceil(state.leaderboardData.length / state.perPage),
   );
 
-  if (state.currentPage >= totalPageCount) return;
-
+  if (state.currentPage >= totalPageCount) {
+    if (state.activeView === "history" && timeSelect.value === "allDates" && state.historyHasMore) {
+      await loadMoreHistoryMonths();
+      state.leaderboardData = getCurrentUserHistory(state.historyRecords);
+      if (state.leaderboardData.length <= state.currentPage * state.perPage) {
+        await renderTable();
+        return;
+      }
+    } else return;
+  }
   state.currentPage += 1;
-  renderTable();
+  await renderTable();
+});
+
+leaderboard.addEventListener("toggle", (event) => {
+  const detail = event.target;
+  if (!(detail instanceof HTMLDetailsElement) || !detail.dataset.openLevel) return;
+  if (detail.open) state.openLevels.add(detail.dataset.openLevel);
+  else state.openLevels.delete(detail.dataset.openLevel);
+}, true);
+
+leaderboard.addEventListener("click", (event) => {
+  const button = event.target.closest("button[data-action]");
+  if (!button) return;
+  const key = `${button.dataset.game}::${button.dataset.uid}`;
+  if (button.dataset.action === "toggle-player") {
+    if (state.expandedRows.has(key)) state.expandedRows.delete(key);
+    else state.expandedRows.add(key);
+  } else if (button.dataset.action === "more-levels") {
+    state.shlokaVisible.set(key, (state.shlokaVisible.get(key) || 8) + 8);
+  } else if (button.dataset.action === "more-attempts") {
+    const id = `${key}::${button.dataset.level}`;
+    state.attemptsVisible.set(id, (state.attemptsVisible.get(id) || 5) + 10);
+  }
+  void renderTable();
+});
+
+loadMoreHistoryBtn.addEventListener("click", async () => {
+  if (state.activeView !== "history" || !state.historyHasMore) return;
+  loadMoreHistoryBtn.disabled = true;
+  try {
+    await loadMoreHistoryMonths();
+    state.leaderboardData = getCurrentUserHistory(state.historyRecords);
+    await renderTable();
+  } finally {
+    loadMoreHistoryBtn.disabled = false;
+  }
 });
 
 viewAllHistoryBtn.addEventListener("click", async () => {
@@ -1517,7 +1515,7 @@ onAuthStateChanged(auth, async (user) => {
   if (state.activeView === "history") {
     state.leaderboardData = getCurrentUserHistory(state.currentRawData);
     state.currentPage = 1;
-    renderTable();
+    void renderTable();
   }
 });
 
@@ -1618,7 +1616,6 @@ function animate() {
 async function initializeLeaderboard() {
   try {
     await loadGameOptions();
-    await loadAllTimeGlobalHistory();
     updateViewControls();
     await refreshData();
     animate();
