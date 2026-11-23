@@ -255,7 +255,7 @@
 #fwGameShell #hintLink button img {
   width: 22px;
   height: 26px;
-  object-fit: contain; 
+  object-fit: contain;  
 }
 
 #fwGameShell #hintLink button:disabled {
