@@ -1053,57 +1053,38 @@
         obj.href = url.href;
       }
 
+      function renderShlokaHint(highlightAnswers) {
+        const hint = document.getElementById("lead2");
+        const targetWords = new Set(highlightAnswers ? answers : []);
+        hint.replaceChildren();
+
+        const lines = data.trim().split(/\n\s*/u);
+
+        lines.forEach((line, index) => {
+          if (index > 0) hint.append(document.createElement("br"));
+
+          for (const part of line.split(/(\s+)/u)) {
+            const word = part.replace(/[।॥]/gu, "").trim();
+
+            if (targetWords.has(word)) {
+              const bold = document.createElement("strong");
+              bold.textContent = part;
+              hint.append(bold);
+            } else {
+              hint.append(part);
+            }
+          }
+        });
+      }
+
       function showHint1() {
         if (!useHint(1, 10)) return;
-        $("#lead2").html("");
-
-        for (var i = 0; i < addShlokaWords.length; i++) {
-          var ttWord = translit.transliterate(addShlokaWords[i], "devanagari", {
-            fallback: "iast",
-          });
-
-          $("#lead2").append(
-            "<span class=nob title='" +
-              ttWord +
-              "'>" +
-              addShlokaWords[i] +
-              " </span>",
-          );
-
-          if  (i< addShlokaWords.length -1){
-            $("#lead2").append("  ")
-          }
-        }
+        renderShlokaHint(false);
       }
 
       function showHint2() {
         if (!useHint(2, 20)) return;
-        $("#lead2").html("");
-
-        for (var i = 0; i < addShlokaWords.length; i++) {
-          var ttWord = translit.transliterate(addShlokaWords[i], "devanagari",{
-          fallback: "iast",
-
-          });
-
-          if(answers.includes(addShlokaWords[i])){
-            $("#lead2").append("<strong title='" + ttWord + "'>" +              
-              addShlokaWords[i] +
-              "</strong>"
-            );
-          } else {
-            $("#lead2").append(
-              "<span class=nob title='" +
-               ttWord + "'>"  +
-               addShlokaWords[i] +
-                 "</span>"
-                
-            );
-          }
-          if (i < addShlokaWords.length - 1){
-            $("#lead2").append("  ")
-          } 
-        }
+        renderShlokaHint(true);
       }
       window.sV = sV;
       window.showHint1 = showHint1;
