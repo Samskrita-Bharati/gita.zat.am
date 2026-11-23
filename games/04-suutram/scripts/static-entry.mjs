@@ -1,7 +1,7 @@
 import { copyFileSync, cpSync, renameSync, rmSync } from 'node:fs';
 
 const game = new URL('../', import.meta.url);
-const output = new URL('dist/games/strands/', game);
+const output = new URL('dist/games/04-suutram/', game);
 const page = new URL('index.html', output);
 
 if (process.argv.includes('--publish')) {

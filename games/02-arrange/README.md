@@ -38,7 +38,7 @@ From the repository root, serve the site over HTTP, for example:
 npx http-server . -p 8000 -c-1
 ```
 
-Then open `http://localhost:8000/games/018-as/`. The game requires sign-in.
+Then open `http://localhost:8000/games/02-arrange/`. The game requires sign-in.
 
 ## Files
 

@@ -17,7 +17,7 @@ const navbarCssUrl = new URL("./navbar.css", import.meta.url);
 // alone is not enough. A normal game lives inside a
 // child folder such as:
 //
-//   /games/018-as/
+//   /games/02-arrange/
 //   /games/057-gita-typing/
 //
 // =====================================================
