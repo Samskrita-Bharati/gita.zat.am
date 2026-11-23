@@ -78,9 +78,8 @@
           <div id="liveScore">Time: — · Score: —</div>
           <a id="fwNext" class="zatam-game-btn" hidden>Next difficulty</a>
 
-          <!-- <div id="finishMessage">।। शुभमस्तु ।।</div> -->
+          <div id="finishMessage">।। शुभमस्तु ।।</div>
 
-          <div id="finishMessage">।। Well Played ।।</div>
           <div id="gridParent">
             <div id="grid"></div>
           </div>
@@ -142,7 +141,7 @@
               <li>Incorrect clicks cost 1 point. Correct clicks count towards the Words Found counter.</li>
               <li>The first hint shows the shloka words (-10 points).The second bolds the target words (-20 points). Each hint is charged once.</li>
               <li>Choose a difficulty to play a new board, or select Retry to try again.</li>
-              <li>Final scores are submitted to the leaderboard</li>
+              <li>Final scores are submitted to the leaderboard</li> 
             </ol>
           </section>
         </aside>
@@ -287,7 +286,7 @@
       })[urlParams.get("size")] || { id: "1", name: "Easy", seconds: 160, next: "7" };
 
       initGameScore({
-        gameId: "fw", 
+        gameId: "01-wordSearch", 
         gameName: "Word Search",
         levelId: level.id,
         levelName: level.name,
@@ -440,12 +439,7 @@
         });
            $("#grid td").on("click", function(e){
             if (isGameFinished) return;
-
-            if (!hasStarted){
-            hasStarted = true;
-            initScoreByDifficulty();
-            updateHints();
-            }
+            
             cellClick(e);
            });
       };
@@ -1036,6 +1030,9 @@
 
         $(window).resize(resizeGrid);
         if (!main()) return;
+        hasStarted = true;
+        initScoreByDifficulty();
+        updateHints();
 
       //   const startButton = document.getElementById("fwStart");
       //   startButton.disabled = false;
