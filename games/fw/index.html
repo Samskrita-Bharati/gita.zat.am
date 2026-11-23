@@ -255,6 +255,11 @@
         splitShlokaWords, 
         splitWordIntoGraphemes
       } from "../shared/shloka-utils.js"
+
+      import{
+        initGameScore, 
+        submitGameScore
+      } from "../shared/game-score.js"
       import { getDailySchedule } from "../../shlokasToday/daily-schedule.mjs";
       import { cleanShlokaText } from "../../shlokasToday/shlokasToday.js";      var wpp = 15;
       var answers = [];
@@ -281,6 +286,12 @@
         "7": { id: "2", name: "Medium", seconds: 120},
       })[urlParams.get("size")] || { id: "1", name: "Easy", seconds: 160, next: "7" };
 
+      initGameScore({
+        gameId: "fw", 
+        gameName: "Word Search",
+        levelId: level.id,
+        levelName: level.name,
+      })
       function elapsedSeconds() {
         return Math.floor((performance.now() - startedAt) / 1000);
       }
@@ -451,11 +462,9 @@
           fillRandom();
           countAnswers();
           addShlokaWords = [
-            ...answers,
-            ...addShlokaWords.filter(word => !answers.includes(word))
-          ].slice(0,8);
-          addShlokaWords.sort(() => Math.random() - 0.5);
-          window.placedWords = placedWords;
+            ...new Set([...addShlokaWords, ...answers])];
+            addShlokaWords.sort(() => Math.random() -0.5);
+            window.placedWords = placedWords;
           // console.log("Placed Words: ", placedWords);
           // console.log("Shloka Words: ", wordList);
           // console.log("Selected Words: ", words);
@@ -573,6 +582,9 @@
             const completedIn = elapsedSeconds();
             const finalScore = currentScore(completedIn);
             liveScoreEl.textContent = "Final Score: " + finalScore + " / 100";
+            
+            submitGameScore(finalScore);
+            
             const next = document.getElementById("fwNext");
 
             if (level.next) {
@@ -1137,7 +1149,7 @@
         if (!useHint(1, 10)) return;
         $("#lead2").html("");
 
-        for (var i = 0; i < Math.min(8, addShlokaWords.length); i++) {
+        for (var i = 0; i < addShlokaWords.length; i++) {
           var ttWord = translit.transliterate(addShlokaWords[i], "devanagari", {
             fallback: "iast",
           });
@@ -1150,8 +1162,8 @@
               " </span>",
           );
 
-          if  (i< Math.min(8, addShlokaWords.length) -1){
-            $("#lead2").append(" | ")
+          if  (i< addShlokaWords.length -1){
+            $("#lead2").append("  ")
           }
         }
       }
@@ -1160,7 +1172,7 @@
         if (!useHint(2, 20)) return;
         $("#lead2").html("");
 
-        for (var i = 0; i < Math.min(8, addShlokaWords.length); i++) {
+        for (var i = 0; i < addShlokaWords.length; i++) {
           var ttWord = translit.transliterate(addShlokaWords[i], "devanagari",{
           fallback: "iast",
 
@@ -1179,8 +1191,8 @@
                 
             );
           }
-          if (i < Math.min(8, addShlokaWords.length) - 1){
-            $("#lead2").append(" | ")
+          if (i < addShlokaWords.length - 1){
+            $("#lead2").append("  ")
           }
         }
       }

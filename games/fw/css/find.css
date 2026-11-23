@@ -381,6 +381,7 @@ body {
     padding: 14% 0 1.25rem;
   }
 
+
   #lead {
     font-size: 1em;
     padding: 0.375rem 5px;
@@ -629,3 +630,13 @@ input:checked + .slider:before {
   width: 18px;
   height: 18px;
 }
+
+@media (max-width: 768px){
+
+  #wordsFoundContainer {
+    left: 10px;
+  }
+  #fwRetry{
+    right: 10px;
+  }
+} 
