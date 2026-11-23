@@ -9,6 +9,7 @@ const KRISHNA_URL = new URL("../../srikrishna-gg-wa.jpg", import.meta.url).href;
 const FONT =
   '"Noto Sans Devanagari", "Nirmala UI", "Kohinoor Devanagari", "Arial Unicode MS", Arial, sans-serif';
 let currentData = null;
+let inlineShareButton = null;
 let modal = null;
 let formerFocus = null;
 let previewObjectUrl = null;
@@ -412,13 +413,18 @@ export function openScoreShare(input = {}) {
   );
   if (!data.playerName) privacy.title = "No display name available";
   const actions = element("div", "gg-share-actions");
-  const native = element("button", "gg-share-primary", "Share to apps");
+  const native = element("button", "gg-share-primary", "Share image to apps");
   native.type = "button";
   native.disabled = true;
   const download = element("button", "gg-share-secondary", "Download PNG");
   download.type = "button";
   download.disabled = true;
   actions.append(native, download);
+  const socialHeading = element(
+    "p",
+    "gg-share-social-heading",
+    "Share to a social network",
+  );
   const socials = element("div", "gg-share-socials");
   for (const [label, name] of [
     ["WhatsApp", "whatsapp"],
@@ -430,15 +436,20 @@ export function openScoreShare(input = {}) {
     b.dataset.network = name;
     socials.append(b);
   }
+  const copyActions = element("div", "gg-share-copy-actions");
+  const copyImage = element("button", "gg-share-copy", "Copy image");
+  copyImage.type = "button";
+  copyImage.disabled = true;
   const copy = element("button", "gg-share-copy", "Copy game link");
   copy.type = "button";
+  copyActions.append(copyImage, copy);
   const notice = element("p", "gg-share-notice");
   notice.setAttribute("role", "status");
   notice.setAttribute("aria-live", "polite");
   const footer = element(
     "p",
     "gg-share-footnote",
-    "Social buttons share the link. Use Share to apps or Download PNG for the image.",
+    "On phones, use Share image to apps and choose your app. Social website links cannot attach a local PNG automatically; download the card and add it to your post.",
   );
   dialog.append(
     top,
@@ -446,8 +457,9 @@ export function openScoreShare(input = {}) {
     preview,
     privacy,
     actions,
+    socialHeading,
     socials,
-    copy,
+    copyActions,
     notice,
     footer,
   );
@@ -467,6 +479,11 @@ export function openScoreShare(input = {}) {
     loading.hidden = false;
     native.disabled = true;
     download.disabled = true;
+    copyImage.disabled = true;
+    previewFile = null;
+    socials
+      .querySelectorAll("button")
+      .forEach((button) => (button.disabled = true));
     try {
       const canvas = await createScorecard(data, {
         includeName: checkbox.checked,
@@ -493,16 +510,27 @@ export function openScoreShare(input = {}) {
       loading.hidden = true;
       native.disabled = false;
       download.disabled = false;
-      native.textContent =
-        typeof navigator.share === "function"
-          ? "Share to apps"
-          : "Copy to share";
+      socials
+        .querySelectorAll("button")
+        .forEach((button) => (button.disabled = false));
+      const canShareImage =
+        typeof navigator.share === "function" &&
+        navigator.canShare?.({ files: [previewFile] });
+      native.textContent = canShareImage
+        ? "Share image to apps"
+        : "Save image to share";
+      copyImage.disabled = !(
+        navigator.clipboard?.write && typeof ClipboardItem !== "undefined"
+      );
     } catch (error) {
       if (localVersion !== modalVersion || run !== previewRun) return;
       loading.textContent =
         "Preview unavailable. You can still share the game link.";
       native.disabled = false;
-      native.textContent = "Share game link";
+      native.textContent = "Copy game link";
+      socials
+        .querySelectorAll("button")
+        .forEach((button) => (button.disabled = false));
       setNotice(
         notice,
         "Image generation is unavailable on this browser.",
@@ -515,51 +543,86 @@ export function openScoreShare(input = {}) {
   });
   void renderPreview();
 
+  function downloadImage() {
+    if (!previewObjectUrl) return false;
+    const link = element("a");
+    link.href = previewObjectUrl;
+    link.download = "gg-zatam-achievement.png";
+    link.style.display = "none";
+    document.body.append(link);
+    link.click();
+    link.remove();
+    return true;
+  }
   native.addEventListener("click", () => {
-    const text = shareText(data);
-    if (typeof navigator.share === "function") {
-      const files = previewFile ? [previewFile] : [];
-      const payload =
-        files.length && navigator.canShare?.({ files })
-          ? {
-              title: `GG · Zat.am · ${data.gameName}`,
-              text: `${text}\n${data.url}`,
-              files,
-            }
-          : { title: `GG · Zat.am · ${data.gameName}`, text, url: data.url };
-      // Invoke share synchronously in the click handler for user activation.
+    if (
+      previewFile &&
+      typeof navigator.share === "function" &&
+      navigator.canShare?.({ files: [previewFile] })
+    ) {
+      // Sharing the File (not just its URL) enables actual image attachment.
+      // The OS/app determines which receiving targets support it.
       navigator
-        .share(payload)
-        .then(() => setNotice(notice, "Share sheet opened."))
+        .share({
+          files: [previewFile],
+          title: `GG · Zat.am · ${data.gameName}`,
+          text: `${shareText(data)}\n${data.url}`,
+        })
+        .then(() => setNotice(notice, "Image shared using your device."))
         .catch((error) => {
           if (error?.name !== "AbortError")
             setNotice(
               notice,
-              "Sharing is unavailable. Try Download PNG or Copy link.",
+              "The share sheet could not accept the image. Download the PNG and attach it manually.",
               true,
             );
         });
+    } else if (downloadImage()) {
+      setNotice(
+        notice,
+        "Image saved. Add the PNG as a photo in your social app.",
+      );
     } else {
-      void writeClipboard(`${text} ${data.url}`)
-        .then(() => setNotice(notice, "Score and game link copied."))
+      void writeClipboard(`${shareText(data)}\n${data.url}`)
+        .then(() =>
+          setNotice(
+            notice,
+            "Game link copied. The image could not be generated.",
+          ),
+        )
         .catch(() =>
-          setNotice(notice, "Copy failed. Use Download PNG instead.", true),
+          setNotice(notice, "Sharing is unavailable on this browser.", true),
         );
     }
   });
   download.addEventListener("click", () => {
-    if (!previewObjectUrl) return;
-    const a = element("a");
-    a.href = previewObjectUrl;
-    a.download = "gg-zatam-achievement.png";
-    a.style.display = "none";
-    document.body.append(a);
-    a.click();
-    a.remove();
-    setNotice(
-      notice,
-      "PNG downloaded. You can upload it to Instagram or any social app.",
-    );
+    if (downloadImage())
+      setNotice(notice, "PNG downloaded. Attach it as a photo in your post.");
+  });
+  copyImage.addEventListener("click", () => {
+    if (
+      !previewFile ||
+      !navigator.clipboard?.write ||
+      typeof ClipboardItem === "undefined"
+    ) {
+      setNotice(
+        notice,
+        "Copy image is not supported here. Download PNG instead.",
+        true,
+      );
+      return;
+    }
+    void navigator.clipboard
+      .write([new ClipboardItem({ "image/png": previewFile })])
+      .then(() =>
+        setNotice(
+          notice,
+          "Scorecard image copied. Paste it into a supported social app.",
+        ),
+      )
+      .catch(() =>
+        setNotice(notice, "Could not copy image. Download PNG instead.", true),
+      );
   });
   copy.addEventListener("click", () => {
     void writeClipboard(`${shareText(data)}\n${data.url}`)
@@ -575,6 +638,37 @@ export function openScoreShare(input = {}) {
   socials.addEventListener("click", (event) => {
     const target = event.target.closest("button[data-network]");
     if (!target) return;
+    const network = target.dataset.network;
+    const names = { whatsapp: "WhatsApp", facebook: "Facebook", x: "X" };
+    if (
+      previewFile &&
+      typeof navigator.share === "function" &&
+      navigator.canShare?.({ files: [previewFile] })
+    ) {
+      // The Web Share API cannot force a particular target application.
+      setNotice(
+        notice,
+        `Choose ${names[network]} in the share sheet to send the PNG. If it is not listed, download and attach the image instead.`,
+      );
+      navigator
+        .share({
+          files: [previewFile],
+          title: `GG · Zat.am · ${data.gameName}`,
+          text: `${shareText(data)}\n${data.url}`,
+        })
+        .catch((error) => {
+          if (error?.name !== "AbortError")
+            setNotice(
+              notice,
+              "Could not share the image. Download it and attach it manually.",
+              true,
+            );
+        });
+      return;
+    }
+    // Website social-intent endpoints only accept text/URLs, never client-side
+    // File objects. Download the PNG first and explicitly explain the step.
+    if (previewFile) downloadImage();
     const encodedText = encodeURIComponent(shareText(data) + " " + data.url);
     const encodedUrl = encodeURIComponent(data.url);
     const urls = {
@@ -582,34 +676,66 @@ export function openScoreShare(input = {}) {
       x: `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText(data))}&url=${encodedUrl}`,
       facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`,
     };
-    window.open(urls[target.dataset.network], "_blank", "noopener,noreferrer");
+    window.open(urls[network], "_blank", "noopener,noreferrer");
+    setNotice(
+      notice,
+      `Add the downloaded scorecard PNG to your ${names[network]} post or message. The link alone cannot upload the image.`,
+    );
   });
 }
 
-/** Reveal a small, persistent share shortcut only after a real game result. */
+/** Attach the share control to a game's completed-result panel, never the screen corner. */
+function findResultContainer(gameId) {
+  const selector = {
+    "018-as": "#successMessage",
+    "059-fitb": "#result",
+    fw: "#finishMessage",
+    strands: ".modal-backdrop .result-card",
+  }[gameId];
+  return selector ? document.querySelector(selector) : null;
+}
+
+function removeInlineButton() {
+  inlineShareButton?.remove();
+  inlineShareButton = null;
+  // Remove legacy fixed-position shortcut left by an older version.
+  document.getElementById("gg-score-share-shortcut")?.remove();
+}
+
+export function hasCompletedScoreShare() {
+  return currentData != null;
+}
+
+export function openCompletedScoreShare() {
+  if (currentData) openScoreShare(currentData);
+}
+
+/** Store one completed result, then place Share Score within its game result. */
 export function showCompletedScoreShare(input = {}) {
   if (typeof document === "undefined") return;
   currentData = normalizeShareResult(input);
   loadCss();
-  let control = document.getElementById("gg-score-share-shortcut");
-  if (!control) {
-    control = element(
-      "button",
-      "gg-score-share-shortcut",
-      "✦  Share your score",
-    );
-    control.id = "gg-score-share-shortcut";
-    control.type = "button";
-    control.addEventListener("click", () => {
-      if (currentData) openScoreShare(currentData);
-    });
-    document.body.append(control);
-  }
-  control.hidden = false;
+  removeInlineButton();
+  document.dispatchEvent(new Event("gg-score-share-ready"));
+  // ZIM canvas result dialogs and the React Strands modal provide their own
+  // contextual button. The typing game already has its own #share button.
+  if (["z18", "strands", "057-gita-typing"].includes(currentData.gameId))
+    return;
+  const container = findResultContainer(currentData.gameId);
+  if (!container) return;
+  const button = element("button", "gg-share-inline-button", "✦ Share Score");
+  button.type = "button";
+  button.setAttribute("aria-label", "Share your completed game score");
+  button.addEventListener("click", openCompletedScoreShare);
+  const actionRow = container.querySelector(".zatam-game-actions");
+  if (actionRow) actionRow.prepend(button);
+  else container.append(button);
+  inlineShareButton = button;
 }
 
 export function clearCompletedScoreShare() {
   currentData = null;
-  document.getElementById("gg-score-share-shortcut")?.remove();
+  removeInlineButton();
+  document.dispatchEvent(new Event("gg-score-share-ready"));
   closeModal();
 }

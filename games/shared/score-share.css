@@ -1,26 +1,37 @@
 /* Mobile-first score sharing; matches GG's navy, cream and gold design tokens. */
-.gg-score-share-shortcut {
-  position: fixed;
-  z-index: 800;
-  right: max(18px, env(safe-area-inset-right));
-  bottom: max(18px, env(safe-area-inset-bottom));
-  border: 2px solid #f6b23b;
-  border-radius: 999px;
+.gg-share-inline-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 11px 20px;
+  margin: 13px auto 6px;
+  border-radius: 10px;
+  border: 1px solid #df9f29;
   background: #0b2b4f;
-  color: #fff;
-  padding: 13px 19px;
+  color: #fffaf2;
   font:
-    700 14px/1.3 Arial,
+    700 14px/1.35 Arial,
+    "Noto Sans Devanagari",
     sans-serif;
-  letter-spacing: 0.01em;
-  box-shadow: 0 9px 24px #09264a40;
+  box-shadow: 0 3px 10px #09264a20;
   cursor: pointer;
 }
-.gg-score-share-shortcut:hover,
-.gg-score-share-shortcut:focus-visible {
+.gg-share-inline-button:hover {
   background: #143d6b;
+}
+.gg-share-inline-button:focus-visible {
   outline: 3px solid #ffd36b;
-  outline-offset: 2px;
+  outline-offset: 3px;
+}
+.zatam-game-actions > .gg-share-inline-button {
+  margin: 0;
+}
+#finishMessage > .gg-share-inline-button {
+  display: flex;
+  width: max-content;
+  max-width: 100%;
+  margin: 12px auto 4px;
 }
 .gg-share-overlay {
   position: fixed;
@@ -92,7 +103,8 @@
   max-height: min(42dvh, 400px);
   overflow: hidden;
   border-radius: 14px;
-  background: #153a62;
+  background: #f8f1e5;
+  border: 1px solid #eadfce;
 }
 .gg-share-preview img {
   display: block;
@@ -100,13 +112,15 @@
   width: auto;
   max-width: 100%;
   object-fit: contain;
+  border-radius: 10px;
+  box-shadow: 0 4px 16px #09264a25;
 }
 .gg-share-preview img:not([src]) {
   display: none;
 }
 .gg-share-loading {
   position: absolute;
-  color: #fff;
+  color: #09264a;
   font-size: 13px;
   padding: 8px;
 }
@@ -154,6 +168,12 @@
   opacity: 0.5;
   cursor: wait;
 }
+.gg-share-social-heading {
+  color: #687789;
+  font-size: 11px;
+  font-weight: 700;
+  margin: 13px 0 0;
+}
 .gg-share-socials {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -165,13 +185,22 @@
   color: #0b2b4f;
   border: 1px solid #eadfce;
 }
+.gg-share-copy-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 10px;
+}
 .gg-share-copy {
   display: block;
   width: 100%;
-  margin-top: 10px;
   background: transparent;
   color: #0b2b4f;
   border: 1px solid #a8b6c7;
+}
+.gg-share-copy:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
 }
 .gg-share-dialog button:focus-visible {
   outline: 3px solid #f6b23b;
@@ -207,10 +236,8 @@
   .gg-share-preview img {
     max-height: 35dvh;
   }
-  .gg-score-share-shortcut {
-    right: 14px;
-    bottom: max(14px, env(safe-area-inset-bottom));
-    font-size: 13px;
+  .gg-share-inline-button {
+    width: 100%;
   }
 }
 @media (prefers-reduced-motion: no-preference) {
@@ -227,4 +254,8 @@
       transform: translateY(0);
     }
   }
+}
+.gg-share-socials button:disabled {
+  opacity: 0.55;
+  cursor: wait;
 }

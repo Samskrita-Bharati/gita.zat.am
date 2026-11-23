@@ -61,3 +61,49 @@ test("share module requires no Firebase service or game-scoring import", () => {
   );
   assert.doesNotMatch(source, /firebase-|getDocs\(|setDoc\(|writeBatch\(/);
 });
+
+test("share control uses completed-result containers, not a floating viewport button", () => {
+  const shareSource = readFileSync(
+    new URL("../games/shared/score-share.js", import.meta.url),
+    "utf8",
+  );
+  const css = readFileSync(
+    new URL("../games/shared/score-share.css", import.meta.url),
+    "utf8",
+  );
+  for (const selector of ["#successMessage", "#finishMessage", "#result"])
+    assert.ok(shareSource.includes(selector));
+  assert.match(shareSource, /actionRow\.prepend\(button\)/);
+  assert.doesNotMatch(css, /\.gg-score-share-shortcut\s*\{/);
+  assert.match(shareSource, /\['z18','strands','057-gita-typing'\]/);
+});
+
+test("mobile sharing sends an actual PNG file and social fallbacks explain manual attachment", () => {
+  const shareSource = readFileSync(
+    new URL("../games/shared/score-share.js", import.meta.url),
+    "utf8",
+  );
+  assert.match(
+    shareSource,
+    /navigator\.canShare\?\.\(\{files:\[previewFile\]\}\)/,
+  );
+  assert.match(shareSource, /navigator\.share\(\{files:\[previewFile\]/);
+  assert.match(shareSource, /downloadImage\(\)/);
+  assert.match(shareSource, /attach the image/);
+  assert.match(shareSource, /ClipboardItem/);
+});
+
+test("Strands and ZIM share actions are contextual and do not modify scoring functions", () => {
+  const strands = readFileSync(
+    new URL("../games/strands/share-bridge.js", import.meta.url),
+    "utf8",
+  );
+  const z18 = readFileSync(
+    new URL("../games/z18/index.html", import.meta.url),
+    "utf8",
+  );
+  assert.match(strands, /card\.insertBefore\(shareButton, actions\)/);
+  assert.match(strands, /openCompletedScoreShare\(\)/);
+  assert.match(z18, /shareResult\.on\("click", \(\) => openScoreShare/);
+  assert.match(z18, /submitGameScore\(finalScore/);
+});

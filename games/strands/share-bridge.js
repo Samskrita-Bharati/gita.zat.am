@@ -1,9 +1,13 @@
+import {
+  hasCompletedScoreShare,
+  openCompletedScoreShare,
+} from "../shared/score-share.js";
 /**
  * Results-modal companion for the published Strands bundle.
  * The existing React build is unchanged. It can still call shared game-score.js,
- * and this small enhancement exposes its share shortcut inside the results dialog.
+ * and this small enhancement shows the contextual Share Score button in the results dialog.
  */
-const observer = new MutationObserver(() => {
+function refreshShareControl() {
   const card = document.querySelector(".result-card");
   if (!card || !card.closest(".modal-backdrop")) return;
   const actions = card.querySelector(".result-actions");
@@ -16,14 +20,16 @@ const observer = new MutationObserver(() => {
     shareButton.dataset.ggStrandsShare = "true";
     shareButton.textContent = "✦ Share my score";
     shareButton.addEventListener("click", () => {
-      document.getElementById("gg-score-share-shortcut")?.click();
+      openCompletedScoreShare();
     });
     // Insert before React's action row, leaving game controls untouched.
     card.insertBefore(shareButton, actions);
   }
-  shareButton.disabled = !document.getElementById("gg-score-share-shortcut");
+  shareButton.disabled = !hasCompletedScoreShare();
   shareButton.title = shareButton.disabled
     ? "Preparing your shareable result…"
     : "";
-});
+}
+const observer = new MutationObserver(refreshShareControl);
 observer.observe(document.body, { childList: true, subtree: true });
+document.addEventListener("gg-score-share-ready", refreshShareControl);
