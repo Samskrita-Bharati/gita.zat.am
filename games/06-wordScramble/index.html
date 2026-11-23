@@ -159,33 +159,46 @@
 				const totalLetters = words.reduce((count, word) => count + splitWordIntoGraphemes(word).length, 0);
 				const extraMoves = Math.max(0, totalMoves - totalLetters);
 				const finalScore = scoreFromPenalties({ mistakes: extraMoves, hints: giveUpCount, mistakePenalty: 2, hintPenalty: GAME_CONFIG.revealedWordPenalty });
+				const widthScale = W / 1024;
+				const compact = W < 700 || H < 500;
 				const end = new Pane({
-					content: `Score : ${finalScore} / 100\nMoves : ${totalMoves}\n\n`,
+					content: "",
+					width: W * 0.9,
+					height: H * 0.82,
 					backgroundColor: themeColors.creamDark,
 					color: themeColors.navyDark,
 					corner: 16,
 				});
-				const status = new Label("Saving score…", 18, "Arial", themeColors.navyDark).center(end).mov(50, 55);
+				const scoreSize = Math.max(24, Math.min(42, H * (compact ? 0.075 : 0.09)));
+				new Label(`Score: ${finalScore} / 100`, scoreSize, "Arial", themeColors.navyDark)
+					.pos(0, -H * 0.18, CENTER, CENTER, end);
+				new Label(`Moves: ${totalMoves}`, scoreSize * 0.8, "Arial", themeColors.navyDark)
+					.pos(0, -H * 0.06, CENTER, CENTER, end);
+				const status = new Label("Saving score…", Math.max(14, scoreSize * 0.48), "Arial", themeColors.navyDark)
+					.pos(0, H * 0.18, CENTER, CENTER, end);
+				const buttonWidth = Math.min(150 * widthScale, W * 0.34);
+				const buttonHeight = Math.max(42, 54 * widthScale);
+				const buttonLabelSize = Math.max(14, Math.min(22, buttonHeight * 0.42));
 				const cancel = new Button({
-					width: 120,
-					height: 50,
-					label: "Done",
+					width: buttonWidth,
+					height: buttonHeight,
+					label: new Label({ text: "Done", size: buttonLabelSize, font: "Arial", color: themeColors.white, align: CENTER, valign: CENTER, labelWidth: buttonWidth - 12 }),
 					backgroundColor: themeColors.accentCoral,
 					rollBackgroundColor: themeColors.danger,
 					downBackgroundColor: themeColors.danger,
 					color: themeColors.white,
 					corner: 12,
-				}).center(end).mov(-100);
+				}).pos(-W * 0.18, H * 0.04, CENTER, CENTER, end);
 				const redo = new Button({
-					width: 120,
-					height: 50,
-					label: "पुनः 🤔",
+					width: buttonWidth,
+					height: buttonHeight,
+					label: new Label({ text: "पुनः 🤔", size: buttonLabelSize, font: "Arial", color: themeColors.navyDark, align: CENTER, valign: CENTER, labelWidth: buttonWidth - 12 }),
 					backgroundColor: themeColors.gold,
 					rollBackgroundColor: themeColors.goldLight,
 					downBackgroundColor: themeColors.navy,
 					color: themeColors.navyDark,
 					corner: 12,
-				}).center(end).mov(100);
+				}).pos(W * 0.18, H * 0.04, CENTER, CENTER, end);
 				cancel.on("click", () => end.hide());
 				redo.on("click", () => window.location.reload());
 				end.show();
