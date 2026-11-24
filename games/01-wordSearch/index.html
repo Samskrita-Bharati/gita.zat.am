@@ -287,7 +287,7 @@
       })[urlParams.get("size")] || { id: "1", name: "Easy", seconds: 160, next: "7" };
 
       initGameScore({
-        gameId: "fw", 
+        gameId: "01-wordSearch", 
         gameName: "Word Search",
         levelId: level.id,
         levelName: level.name,
@@ -398,24 +398,24 @@
         var main = function () {
           drawGrid();
 
-          var nWordsPut = 0;
-          var attempts = 0;
-
-          do {
+          let validBoard = false;
+          for (let attempt = 0; attempt < 100 && !validBoard; attempt++) {
             $("#grid td").empty();
             placedWords.length = 0;
 
-            var words = getWordsToFind();
-            nWordsPut = putWords(words);
-            attempts++;
-          } while (nWordsPut < N_WORDS_TO_FIND && attempts < 100);
-        
-          if(nWordsPut < N_WORDS_TO_FIND){
-          liveScoreEl.textContent = "Unable to place all words. Try again";
-          return false;
-        }
+            const wordsPlaced = putWords(getWordsToFind());
+            if (wordsPlaced < N_WORDS_TO_FIND) continue;
 
-          fillRandom();
+            fillRandom();
+            validBoard = hasUniqueTargetPaths();
+          }
+
+          if (!validBoard) {
+            $("#grid").empty();
+            liveScoreEl.textContent = "Unable to generate a puzzle. Select Retry to try again.";
+            return false;
+          }
+
           countAnswers();
             window.placedWords = placedWords;
           // console.log("Placed Words: ", placedWords);
@@ -460,10 +460,10 @@
           $("#grid").append(table);
         };
 
+        const foundTargets = new Set();
         var foundStrings = {};
         var stringToCss = {};
         var nAnswersPresent = 0;
-        var nAnswersDiscovered = 0;
 
         var countAnswers = function () {
           // var rowIdx = 0;
@@ -511,14 +511,12 @@
 
           var cell = $(e.target).closest("td").get(0);
           const foundNow = processCell(cell, false).length;
-          nAnswersDiscovered += foundNow;
           if (!foundNow) penalties += 1;
           renderScore();
 
-          // $("#nFound").text(String.fromCharCode(0x0966 + nAnswersDiscovered));
-          $("#nFound").text(nAnswersDiscovered);
+          $("#nFound").text(foundTargets.size);
 
-          if (nAnswersDiscovered == nAnswersPresent) {
+          if (foundTargets.size === nAnswersPresent) {
             isGameFinished = true;
             updateHints();
 
@@ -565,7 +563,7 @@
               matchCandidate +
               $("#tblCell_" + cellRowIdx + "_" + colIdx).text();
 
-             if (isProperMatch(matchCandidate)){
+             if (isProperMatch(matchCandidate, doNotMark)) {
               
               matches.push(matchCandidate);
 
@@ -594,7 +592,7 @@
 
             if (
               convertToArrayOfAksharas(matchCandidate).length > 1 &&
-              isProperMatch(matchCandidate) 
+              isProperMatch(matchCandidate, doNotMark)
               
           ){
               matches.push(matchCandidate);
@@ -633,7 +631,7 @@
 
             if (
               convertToArrayOfAksharas(matchCandidate).length > 1 &&
-              isProperMatch(matchCandidate) 
+              isProperMatch(matchCandidate, doNotMark)
           ) {
               matches.push(matchCandidate);
 
@@ -661,6 +659,7 @@
           endColIdx,
           word,
         ) {
+          foundTargets.add(word);
           if (!stringToCss[word]) {
             var nCssUsed = Object.keys(stringToCss).length;
 
@@ -726,25 +725,21 @@
           );
         };
 
-        var isProperMatch = function (candidate) {
-          // var wordListIdx = 0;
+        function isProperMatch(candidate, doNotMark) {
+          return placedWords.includes(candidate) &&
+            (doNotMark || !foundTargets.has(candidate));
+        }
 
-          // for (wordListIdx = 0; wordListIdx < wordList.length; wordListIdx++) {
-          //   if (wordList[wordListIdx] === candidate) {
-          //     return true;
-          //   }
-          return placedWords.includes(candidate);
+        function hasUniqueTargetPaths() {
+          const seen = new Set();
+          for (const cell of document.querySelectorAll("#grid td")) {
+            for (const word of processCell(cell, true)) {
+              if (seen.has(word)) return false;
+              seen.add(word);
+            }
           }
-
-        //   return false;
-        // };
-
-        var showDetails = function () {};
-        var showHint = function () {
-          $("#hintPopup").show();
-
-          return false;
-        };
+          return seen.size === placedWords.length;
+        }
 
         var hideHint = function () {
           $("#hintPopup").hide();
