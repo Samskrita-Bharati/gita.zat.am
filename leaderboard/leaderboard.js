@@ -20,6 +20,7 @@ import {
   invalidateLeaderboardCache,
 } from "./leaderboard-utils.js";
 import { rankGamePlayers } from "./score-ranking.mjs";
+import { groupRankedGames, pageGamePlayers } from "./game-accordion.mjs";
 import { openScoreShare } from "../games/shared/score-share.js";
 
 // =====================================================
@@ -39,6 +40,8 @@ const state = {
   profileCache: new Map(),
   levelOptionsCache: new Map(),
   expandedRows: new Set(),
+  openGameId: null,
+  gamePage: 1,
   shlokaVisible: new Map(),
   attemptsVisible: new Map(),
   openLevels: new Set(),
@@ -773,6 +776,7 @@ function getRecentUserHistory() {
 
 function setTableHeader(view) {
   leaderboardTableHeader.className = "leaderboard-table-header";
+  leaderboardTableHeader.hidden = view === "game";
 
   if (view === "overall") {
     leaderboardTableHeader.classList.add("leaderboard-table-header-overall");
@@ -823,8 +827,9 @@ function updateDatePickerState() {
 function updateViewControls() {
   updateDatePickerState();
 
-  document.querySelectorAll(".lb-view-tab").forEach((button) => {
-    const isActive = button.dataset.view === state.activeView;
+  document.querySelectorAll(".lb-view-tab:not(.gg-referral-tab)").forEach((button) => {
+    const referralVisible = document.getElementById('lbReferralView')?.hidden === false;
+    const isActive = !referralVisible && button.dataset.view === state.activeView;
 
     button.classList.toggle("is-active", isActive);
     button.setAttribute("aria-pressed", String(isActive));
@@ -854,7 +859,7 @@ function updateViewControls() {
   scoringHint.hidden = state.activeView !== "game";
   scoringHint.textContent =
     levelSelect.value === "all"
-      ? "Cumulative points = sum of each player's best score for every completed level in the game. Tap View Shlokas to inspect scores and attempts."
+      ? "Cumulative points = sum of each player's best score for every completed level in the game. Expand a game, then tap View Shlokas to inspect scores and attempts."
       : "Selected level: rankings show each player's best score out of 100. Tap View Shlokas to inspect attempts.";
 }
 
@@ -1013,24 +1018,13 @@ function renderPlayerHistory(row) {
 }
 
 function renderGameRows(rows) {
-  let previousGame = null;
   return rows
     .map((row) => {
       const key = playerGameKey(row);
       const expanded = state.expandedRows.has(key);
-      const heading = gameSelect.value === "all" && previousGame !== row.gameId;
-      previousGame = row.gameId;
       const score =
         levelSelect.value === "all" ? row.cumulativeScore : row.bestScore;
       return `
-      ${
-        heading
-          ? `<div class="lb-game-group-heading">
-        <span class="lb-game-group-icon" aria-hidden="true">🎮</span>
-        <strong>${escapeHtml(row.gameName)}</strong>
-      </div>`
-          : ""
-      }
       <article class="lb-game-player" data-player-key="${escapeHtml(key)}">
         <div class="row row-game-player">
           <div class="rank" data-label="Rank">${row.rank}</div>
@@ -1052,6 +1046,51 @@ function renderGameRows(rows) {
         ${expanded ? renderPlayerHistory(row) : ""}
       </article>
     `;
+    })
+    .join("");
+}
+
+// Games, not player rows, are the top-level units when All Games is chosen.
+// Only the expanded game's current page is rendered, and only those players'
+// profiles are loaded. No extra Firestore queries are needed for toggling.
+function renderGameAccordions(groups) {
+  return groups
+    .map((group, index) => {
+      const expanded = group.gameId === state.openGameId;
+      const panelId = `lb-game-panel-${index}`;
+      const page = expanded
+        ? pageGamePlayers(group.players, state.gamePage, state.perPage)
+        : null;
+      const label = levelSelect.value === "all"
+        ? "Cumulative Points" : "Best Score / 100";
+      return `
+        <section class="lb-game-accordion${expanded ? " is-open" : ""}">
+          <h3 class="lb-game-accordion-heading">
+            <button type="button" class="lb-game-toggle" data-action="toggle-game"
+              data-game="${escapeHtml(group.gameId)}"
+              aria-expanded="${expanded}" aria-controls="${panelId}">
+              <span class="lb-game-group-icon" aria-hidden="true">🎮</span>
+              <span class="lb-game-accordion-label">
+                <strong>${escapeHtml(group.gameName)}</strong>
+                <small>${group.players.length} ranked ${group.players.length === 1 ? "player" : "players"}</small>
+              </span>
+              <span class="lb-game-accordion-chevron" aria-hidden="true">⌄</span>
+            </button>
+          </h3>
+          ${expanded ? `
+            <div class="lb-game-accordion-panel" id="${panelId}">
+              <div class="lb-game-accordion-columns" aria-hidden="true">
+                <span>Rank</span><span>Player</span><span>${label}</span><span>Time</span><span>Details</span>
+              </div>
+              ${renderGameRows(page.rows)}
+              ${page.totalPages > 1 ? `
+                <nav class="lb-game-accordion-pagination" aria-label="${escapeHtml(group.gameName)} player rankings pages">
+                  <button type="button" data-action="game-previous" ${page.page === 1 ? "disabled" : ""}>← Previous</button>
+                  <span>Page ${page.page} of ${page.totalPages}</span>
+                  <button type="button" data-action="game-next" ${page.page === page.totalPages ? "disabled" : ""}>Next →</button>
+                </nav>` : ""}
+            </div>` : `<div class="lb-game-accordion-panel" id="${panelId}" hidden></div>`}
+        </section>`;
     })
     .join("");
 }
@@ -1084,6 +1123,28 @@ function renderHistoryRows(rows) {
 
 async function renderTable() {
   const token = ++state.renderToken;
+  if (state.activeView === "game") {
+    const groups = groupRankedGames(state.leaderboardData);
+    const openedGroup = groups.find((group) => group.gameId === state.openGameId);
+    const page = openedGroup
+      ? pageGamePlayers(openedGroup.players, state.gamePage, state.perPage)
+      : null;
+    if (page) {
+      state.gamePage = page.page;
+      // An unopened accordion never triggers a player-profile read.
+      await Promise.all(page.rows.map(async (row) => {
+        const profile = await getUserProfile(row.uid);
+        row.username = profile.name;
+        row.location = profile.location;
+      }));
+    }
+    if (token !== state.renderToken) return;
+    leaderboardEmpty.hidden = groups.length > 0;
+    leaderboard.innerHTML = renderGameAccordions(groups);
+    pagination.hidden = true; // Player paging is inside the opened game.
+    loadMoreHistoryBtn.hidden = true;
+    return;
+  }
   const data = state.leaderboardData;
   const total = data.length;
   const totalPageCount = Math.max(1, Math.ceil(total / state.perPage));
@@ -1110,8 +1171,6 @@ async function renderTable() {
   if (state.activeView === "overall") {
     leaderboard.innerHTML = renderOverallRows(pageRows);
     renderPodium();
-  } else if (state.activeView === "game") {
-    leaderboard.innerHTML = renderGameRows(pageRows);
   } else {
     leaderboard.innerHTML = renderHistoryRows(pageRows);
   }
@@ -1455,6 +1514,7 @@ async function refreshData() {
   }
 
   state.currentPage = 1;
+  state.gamePage = 1;
 
   await renderTable();
   await renderMyRank();
@@ -1466,9 +1526,20 @@ async function refreshData() {
 // EVENTS
 // =====================================================
 
-document.querySelectorAll(".lb-view-tab").forEach((button) => {
+let gameOptionsInitialized = false;
+
+document.querySelectorAll(".lb-view-tab:not(.gg-referral-tab)").forEach((button) => {
   button.addEventListener("click", async () => {
-    state.activeView = button.dataset.view || "overall";
+    const nextView = button.dataset.view || "overall";
+    if (nextView === "game" && state.activeView !== "game") {
+      state.openGameId = gameSelect.value === "all" ? null : gameSelect.value;
+      state.gamePage = 1;
+    }
+    state.activeView = nextView;
+    if (!gameOptionsInitialized) {
+      await loadGameOptions();
+      gameOptionsInitialized = true;
+    }
 
     if (state.activeView === "overall") {
       gameSelect.value = "all";
@@ -1483,6 +1554,8 @@ document.querySelectorAll(".lb-view-tab").forEach((button) => {
 });
 
 gameSelect.addEventListener("change", async () => {
+  state.openGameId = gameSelect.value === "all" ? null : gameSelect.value;
+  state.gamePage = 1;
   await refreshLevelOptions();
   await refreshData();
 });
@@ -1509,6 +1582,7 @@ document.getElementById("scoring").addEventListener("change", async () => {
   }
 
   state.currentPage = 1;
+  state.gamePage = 1;
 
   await renderTable();
   await renderMyRank();
@@ -1560,6 +1634,27 @@ leaderboard.addEventListener(
 leaderboard.addEventListener("click", (event) => {
   const button = event.target.closest("button[data-action]");
   if (!button) return;
+  if (button.dataset.action === "toggle-game") {
+    state.openGameId = state.openGameId === button.dataset.game
+      ? null : button.dataset.game;
+    state.gamePage = 1;
+    state.expandedRows.clear();
+    state.openLevels.clear();
+    const gameId = button.dataset.game;
+    void renderTable().then(() => {
+      // Keep keyboard focus on the accordion trigger after rerendering.
+      [...leaderboard.querySelectorAll('button[data-action="toggle-game"]')]
+        .find((trigger) => trigger.dataset.game === gameId)?.focus({ preventScroll: true });
+    });
+    return;
+  }
+  if (button.dataset.action === "game-previous" || button.dataset.action === "game-next") {
+    state.gamePage += button.dataset.action === "game-next" ? 1 : -1;
+    state.expandedRows.clear();
+    state.openLevels.clear();
+    void renderTable();
+    return;
+  }
   const key = `${button.dataset.game}::${button.dataset.uid}`;
   if (button.dataset.action === "toggle-player") {
     if (state.expandedRows.has(key)) state.expandedRows.delete(key);
@@ -1741,9 +1836,14 @@ function animate() {
 
 async function initializeLeaderboard() {
   try {
-    await loadGameOptions();
-    updateViewControls();
-    await refreshData();
+    // A direct referral deep link must not download all-time game histories.
+    // Load the original leaderboard on demand if the player switches tabs.
+    if (new URLSearchParams(window.location.search).get('view') !== 'referrals') {
+      await loadGameOptions();
+      gameOptionsInitialized = true;
+      updateViewControls();
+      await refreshData();
+    }
     animate();
   } catch (error) {
     console.error("[Leaderboard] Failed to initialize:", error);
