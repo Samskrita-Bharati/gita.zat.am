@@ -270,6 +270,30 @@
   letter-spacing: 0.14em;
   text-transform: uppercase;
 }
+.today-verse-reference {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.today-verse-audio {
+  min-height: 44px;
+  padding: 0.35rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  background: var(--white);
+  color: var(--navy-dark);
+  font: inherit;
+  letter-spacing: normal;
+  text-transform: none;
+  cursor: pointer;
+}
+
+.today-verse-audio:focus-visible {
+  outline: 2px solid var(--navy-dark);
+  outline-offset: 2px;
+}
 
 .today-verse-text,
 .today-verse-transliteration {

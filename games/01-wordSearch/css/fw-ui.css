@@ -256,7 +256,7 @@
   width: 22px;
   height: 26px;
   object-fit: contain;  
-}
+}  
 
 #fwGameShell #hintLink button:disabled {
   opacity: .55;
@@ -266,4 +266,4 @@
 #fwGameShell #level a[aria-current="true"] {
   background: var(--navy);
   color: var(--white);
-}
+} 

@@ -135,11 +135,13 @@
           <section class="fw-panel fw-instructions" tabindex="0" aria-label="How to play">
             <h2>How to play</h2>
             <ol>
-              <li>Select Start, then find a word and select its first अक्षर.</li>
-              <li>Look right, down, or diagonally down and right. Found words are highlighted.</li>
-              <li>A click that finds no new word costs 1 point. Correct clicks cost nothing.</li>
-              <li>The first hint costs 10 points and unlocks the second hint, which costs 20 points. Each hint is charged once.</li>
-              <li>Choose a difficulty to play a new board, or select पुनः to replay.</li>
+              <li>Find the Sanskrit words from the Bhagavad Gita shloka</li> 
+              <li>Tap the first अक्षर (character) of each word.</li>
+              <li>Words can appear right, down, or diagonally down and right. Found words are highlighted.</li>
+              <li>Incorrect clicks cost 1 point. Correct clicks count towards the Words Found counter.</li>
+              <li>The first hint shows the shloka words (-10 points).The second bolds the target words (-20 points). Each hint is charged once.</li>
+              <li>Choose a difficulty to play a new board, or select Retry to try again.</li>
+              <li>Final scores are submitted to the leaderboard</li>
             </ol>
           </section>
         </aside>
@@ -249,19 +251,16 @@
          AS IT CURRENTLY IS.
     ================================================== -->
 
-    <script type="module">
-      import{
-        getShlokaTextFromUrl, 
-        splitShlokaWords, 
-        splitWordIntoGraphemes
-      } from "../shared/shloka-utils.js"
+    <script type="module"> 
+      import{getShlokaTextFromUrl, splitShlokaWords, splitWordIntoGraphemes} from "../shared/shloka-utils.js"
 
       import{
         initGameScore, 
         submitGameScore
       } from "../shared/game-score.js"
       import { getDailySchedule } from "../../shlokasToday/daily-schedule.mjs";
-      import { cleanShlokaText } from "../../shlokasToday/shlokasToday.js";      var wpp = 15;
+      import { cleanShlokaText } from "../../shlokasToday/shlokasToday.js";      
+      var wpp = 15;
       var answers = [];
       var placedWords=[];
       var wlist = [];
@@ -287,7 +286,7 @@
       })[urlParams.get("size")] || { id: "1", name: "Easy", seconds: 160, next: "7" };
 
       initGameScore({
-        gameId: "fw", 
+        gameId: "01-wordSearch", 
         gameName: "Word Search",
         levelId: level.id,
         levelName: level.name,
@@ -324,59 +323,29 @@
         return true;
       }
 
-      var verses = await fetch("../../assets/bhagavad-gita-verses.json")
-         .then(response => response.json());
-
-         var {verses: todayVerses} = getDailySchedule(verses);
-
-         var data = todayVerses
-            .map(verse => cleanShlokaText(verse.txt))
-            .join(" ");
-
+      // var selectId = new URLSearchParams(window.location.search).get("id");
+      var data = await getShlokaTextFromUrl(window.location.search);
+      
+      // if (selectId){
+      //   const cleanURL = new URL(window.location.href);
+      //   cleanURL.searchParams.delete("id");
+      //   window.history.replaceState({}, "", cleanURL);
+      // } 
       var wordList = splitShlokaWords(data)
       .map(word => word.replace(/[।॥]/g, "").trim())
       .filter(word => splitWordIntoGraphemes(word).length > 1);
 
       wordList = [...new Set(wordList)];
 
-      var addShlokaWords = [...wordList];
-      // console.log("Shloka: ", data);
-      // console.log("Shloka Words:", wordList)
       window.data = data;
       window.wordList = wordList;
-      
-      // if (!data) data = "अक्षरसमूहे अद्यतन-कथा पदानि सन्ति करोतु अन्वेषणम्";
-
-      // var wordList = translit
-      //   .transliterate(data, "iast", {
-      //     target: "devanagari",
-      //   })
-      //   .split(" ");
-
-      // document.addEventListener("DOMContentLoaded", function () {
-      //   var lnk =
-      //     "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ6CFR_0gDsZl-lmwLFWmtdXMXYGVEHGJ8fvBu2_5wvbEl9L-4Yr0ugI0TFTTdvtLlMTRmLnCIJ5FBF/pub?gid=0&single=true&output=csv";
-
-      //   renderScore();
-      //   document.querySelectorAll("#level a").forEach((link) => {
-      //     const size = new URL(link.href).searchParams.get("size");
-      //     if (size === ["5", "7", "10"][Number(level.id) - 1]) {
-      //       link.setAttribute("aria-current", "true");
-      //     }
-      //   });
-
-      //   Papa.parse(lnk, {
-      //     download: true,
-      //     header: false,
-      //     complete: populateWlist,
-      //     error: () => populateWlist({ data: [] }),
-      //   });
-      // });
 
       function populateWlist(fildat) {
+
         renderScore();
 
-          document.querySelectorAll("#level a").forEach((link) => {          const size = new URL(link.href).searchParams.get("size");
+          document.querySelectorAll("#level a").forEach((link) => {         
+             const size = new URL(link.href).searchParams.get("size");
 
           if (size === ["5", "7"][Number(level.id) -1 ]){
             link.setAttribute("aria-current", true)
@@ -388,20 +357,6 @@
           liveScoreEl.textContent = "No Shloka available."
           return;
         }
-        // const column = headers.findIndex((name) => name.trim() === "padam");
-        // const requestedSet = Number(urlParams.get("set"));
-        // const set = Number.isInteger(requestedSet) && requestedSet >= 0 &&
-        //   requestedSet * wpp + wpp <= rows.length ? requestedSet : 0;
-
-        // if (column >= 0) {
-        //   wlist = rows.slice(set * wpp, (set + 1) * wpp)
-        //     .map((row) => row[column]?.trim())
-        //     .filter(Boolean);
-        // }
-
-        // if (wlist.length > 0) wordList = wlist;
-
-        // N_WORDS_TO_FIND = Math.min(N_WORDS_TO_FIND, wordList.length);
         var size = urlParams.get("size");
 
         if (size && size >= 4 && size <= 15) {
@@ -461,9 +416,6 @@
 
           fillRandom();
           countAnswers();
-          addShlokaWords = [
-            ...new Set([...addShlokaWords, ...answers])];
-            addShlokaWords.sort(() => Math.random() -0.5);
             window.placedWords = placedWords;
           // console.log("Placed Words: ", placedWords);
           // console.log("Shloka Words: ", wordList);
@@ -472,7 +424,7 @@
           hideHint();
           resizeGrid();
           registerEventListeners();
-          return true;
+          return true; 
         };
 
         var registerEventListeners = function () {
@@ -482,18 +434,10 @@
         });
            $("#grid td").on("click", function(e){
             if (isGameFinished) return;
-
-            if (!hasStarted){
-            hasStarted = true;
-            initScoreByDifficulty();
-            updateHints();
-            }
+            
             cellClick(e);
            });
       };
-
-          
-    
 
         var drawGrid = function () {
           var table = $("<table></table>");
@@ -1003,70 +947,26 @@
         };
 
         var fullSwaras = [
-          "अ",
-          "आ",
-          "इ",
-          "ई",
-          "उ",
-          "ऊ",
-          "ऋ",
-          "ॠ",
-          "ए",
-          "ऐ",
-          "ओ",
-          "औ",
+          "अ", "आ", "इ",
+          "ई", "उ", "ऊ",
+          "ऋ", "ॠ", "ए",
+          "ऐ", "ओ", "औ",
         ];
 
         var swaras = [
-          "\u093e",
-          "\u093f",
-          "\u0940",
-          "\u0941",
-          "\u0942",
-          "\u0943",
-          "\u0944",
-          "\u0947",
-          "\u0948",
-          "\u094b",
-          "\u094c",
+          "\u093e", "\u093f", "\u0940",
+          "\u0941", "\u0942", "\u0943",
+          "\u0944", "\u0947", "\u0948",
+          "\u094b", "\u094c",
         ];
 
         var vyanjanas = [
-          "क",
-          "ख",
-          "ग",
-          "घ",
-          "ङ",
-          "च",
-          "छ",
-          "ज",
-          "झ",
-          "ञ",
-          "त",
-          "थ",
-          "द",
-          "ध",
-          "न",
-          "ट",
-          "ठ",
-          "ड",
-          "ढ",
-          "ण",
-          "प",
-          "फ",
-          "ब",
-          "भ",
-          "म",
-          "य",
-          "र",
-          "ल",
-          "व",
-          "स",
-          "श",
-          "ष",
-          "ह",
-          "क्ष",
-          "ज्ञ",
+          "क", "ख", "ग", "घ", "ङ", "च",
+          "छ", "ज", "झ", "ञ", "त", "थ",
+          "द", "ध", "न", "ट", "ठ", "ड", 
+          "ढ", "ण", "प", "फ", "ब", "भ",
+          "म", "य", "र", "ल", "व", "स",
+          "श", "ष", "ह", "क्ष", "ज्ञ",
         ];
         var halant = "\u094d";
         var anuswara = "\u0902";
@@ -1125,6 +1025,9 @@
 
         $(window).resize(resizeGrid);
         if (!main()) return;
+        hasStarted = true;
+        initScoreByDifficulty();
+        updateHints();
 
       //   const startButton = document.getElementById("fwStart");
       //   startButton.disabled = false;
@@ -1145,56 +1048,38 @@
         obj.href = url.href;
       }
 
+      function renderShlokaHint(highlightAnswers) {
+        const hint = document.getElementById("lead2");
+        const targetWords = new Set(highlightAnswers ? answers : []);
+        hint.replaceChildren();
+
+        const lines = data.trim().split(/\n\s*/u);
+
+        lines.forEach((line, index) => {
+          if (index > 0) hint.append(document.createElement("br"));
+
+          for (const part of line.split(/(\s+)/u)) {
+            const word = part.replace(/[।॥]/gu, "").trim();
+
+            if (targetWords.has(word)) {
+              const bold = document.createElement("strong");
+              bold.textContent = part;
+              hint.append(bold);
+            } else {
+              hint.append(part);
+            }
+          }
+        });
+      }
+
       function showHint1() {
         if (!useHint(1, 10)) return;
-        $("#lead2").html("");
-
-        for (var i = 0; i < addShlokaWords.length; i++) {
-          var ttWord = translit.transliterate(addShlokaWords[i], "devanagari", {
-            fallback: "iast",
-          });
-
-          $("#lead2").append(
-            "<span class=nob title='" +
-              ttWord +
-              "'>" +
-              addShlokaWords[i] +
-              " </span>",
-          );
-
-          if  (i< addShlokaWords.length -1){
-            $("#lead2").append("  ")
-          }
-        }
+        renderShlokaHint(false);
       }
 
       function showHint2() {
         if (!useHint(2, 20)) return;
-        $("#lead2").html("");
-
-        for (var i = 0; i < addShlokaWords.length; i++) {
-          var ttWord = translit.transliterate(addShlokaWords[i], "devanagari",{
-          fallback: "iast",
-
-          });
-
-          if(answers.includes(addShlokaWords[i])){
-            $("#lead2").append("<strong title='" + ttWord + "'>" +              addShlokaWords[i] +
-              "</strong>"
-            );
-          } else {
-            $("#lead2").append(
-              "<span class=nob title='" +
-               ttWord + "'>"  +
-               addShlokaWords[i] +
-                 "</span>"
-                
-            );
-          }
-          if (i < addShlokaWords.length - 1){
-            $("#lead2").append("  ")
-          } 
-        }
+        renderShlokaHint(true);
       }
       window.sV = sV;
       window.showHint1 = showHint1;

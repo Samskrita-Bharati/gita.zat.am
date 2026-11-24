@@ -1,4 +1,4 @@
-// Lightweight bilingual mode helper for game pages (e.g., games/fw/index.html)
+// Lightweight bilingual mode helper for game pages (e.g., games/01-wordSearch/index.html)
 // Handles URL `t` query param based on the user's stored
 // preferred language and the shared global bilingual flag.
 

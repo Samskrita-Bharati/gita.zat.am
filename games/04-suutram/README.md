@@ -6,17 +6,17 @@ Strands inside the Gita portal. This checkpoint replaces the original themed gam
 
 After installing with `npm ci`, run `npm run publish:static` from this directory.
 Commit the regenerated `index.html` and `built/` files with the source changes.
-GitHub Pages serves those files at `/games/strands/` without running Vite.
+GitHub Pages serves those files at `/games/04-suutram/` without running Vite.
 The Vite dev server serves `index.dev.html` at the normal Strands URL.
 Do not edit the generated `index.html` by hand.
 
 ## Run
 
-From `games/strands`, run `npm ci` if dependencies are not installed, then `npm run dev`.
+From `games/04-suutram`, run `npm ci` if dependencies are not installed, then `npm run dev`.
 
 - Portal: `http://localhost:8443/`
-- Sample shloka 1.1: `http://localhost:8443/games/strands/?id=1`
-- Sample shloka 1.2: `http://localhost:8443/games/strands/?id=2`
+- Sample shloka 1.1: `http://localhost:8443/games/04-suutram/?id=1`
+- Sample shloka 1.2: `http://localhost:8443/games/04-suutram/?id=2`
 
 Use the URL printed by Vite if the configured port is occupied.
 
