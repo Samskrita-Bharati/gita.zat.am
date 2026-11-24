@@ -208,3 +208,18 @@ footer {
   visibility: visible;
   opacity: 1;
 }
+
+input#typedValue {
+  box-sizing: border-box;
+  max-width: 100%;
+  background-color: #fff;
+  color: #172033;
+  -webkit-text-fill-color: #172033;
+  caret-color: #172033;
+}
+
+input#typedValue.error,
+input#typedValue[aria-invalid="true"] {
+  background-color: #ffe4e6;
+  outline: 2px solid #be123c;
+}
