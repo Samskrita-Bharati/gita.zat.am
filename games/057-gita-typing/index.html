@@ -31,8 +31,8 @@
 
       <section class="zatam-game-card typing-card" aria-label="Typing challenge">
         <p id="info">
-          Type the highlighted word exactly as shown, including uppercase letters.
-          Finish the shloka to see its English meaning.
+          Type both of today’s shlokas in order, matching uppercase and lowercase letters.
+          Each mistake costs 5 points. Finish both to see your score and the English meanings.
         </p>
 
         <p id="reference"></p>
@@ -54,22 +54,8 @@
           <button id="start" type="button" class="zatam-game-btn zatam-game-btn-primary">
             Start Game
           </button>
-          <button id="share" type="button" class="zatam-game-btn zatam-game-btn-secondary"
-                  onclick="ShareIt()" onmouseout="outFunc()">
-            Share Result
-            <span id="myTooltip" class="typing-tooltip" aria-live="polite"></span>
-          </button>
         </div>
-
-        <div id="viswaroopa"></div>
       </section>
-
-      <fieldset id="settings" class="typing-settings">
-        <legend>Shloka progression</legend>
-        <label><input type="radio" id="seq" name="progression" value="0" checked> Sequential</label>
-        <label><input type="radio" id="rand" name="progression" value="1"> Random</label>
-        <label><input type="radio" id="nectar" name="progression" value="2"> 51 key verses</label>
-      </fieldset>
     </main>
     <script>
       // Old offline caches contain an unauthenticated game page.

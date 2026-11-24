@@ -164,3 +164,46 @@ input#typedValue[aria-invalid="true"] {
 #navbar-mount ~ footer span {
   white-space: normal !important;
 }
+
+.typing-shell {
+  --typing-orange: #c04b08;
+  --typing-orange-dark: #963b07;
+  --typing-tint: #fff0dc;
+}
+
+.typing-shell [hidden] {
+  display: none !important;
+}
+
+input#typedValue.error,
+input#typedValue[aria-invalid="true"] {
+  border-color: #d65a0a;
+  background: #fff0dc;
+  outline: 2px solid #d65a0a;
+  outline-offset: 2px;
+}
+
+#quote span::after {
+  content: none;
+}
+
+.typing-verse + .typing-verse {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+
+.typing-verse h2,
+#meaning h2,
+#meaning h3 {
+  color: var(--typing-orange-dark);
+}
+
+.typing-verse h2,
+#meaning h3 {
+  font-size: 1rem;
+}
+
+.typing-verse p {
+  margin: 0;
+}
