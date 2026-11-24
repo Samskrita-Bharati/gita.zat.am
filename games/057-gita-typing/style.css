@@ -1,225 +1,166 @@
-body {
-  background-color: var(--accent-blue);
-  color: var(--white);
+.typing-shell {
+  --typing-orange: #a63f0a;
+  --typing-orange-dark: #823008;
+  --typing-tint: #fff1df;
+  max-width: 920px;
 }
 
-main {
-  display: grid;
-  place-items: center;
-  max-width: 640px;
-  margin: 0 auto;
-  line-height: 2rem;
-}
-
-h1 {
+.typing-card {
+  padding: clamp(1rem, 4vw, 2.5rem);
+  border-top: 4px solid var(--typing-orange);
   text-align: center;
-  font-style: normal;
-  font-weight: bold;
-  font-size: var(--font-size-display);
-  line-height: 105%;
-  color: var(--white);
 }
 
-p {
-  text-align: center;
-  font-size: var(--font-size-xl);
-
+.typing-card > :empty {
+  display: none;
 }
 
-#dailyChallengeNotice a {
-  color: var(--white);
-  font-weight: 700;
-  text-decoration: underline;
-}
-
-.error {
-  background-color: var(--danger);
-}
-
-.highlight {
-  color: var(--gold-light);
-  text-decoration: underline;
-}
-
+#info,
 #meaning {
-  max-width: 960px;
-  display: grid;
-  place-items: center;
-  align-items: center;
-  text-align: center;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-#share,
-#settings {
-  text-align: center;
-  display: grid;
-  place-items: center;
-  align-items: center;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-span:after {
-  content: "";
-  display: inline-block;
-  width: 6px;
-}
-
-button {
-  display: flex;
+  max-width: 64ch;
   margin: 0 auto;
-  padding: 1.25rem;
-  border: 0;
-  border-radius: 50px;
-  font-size: var(--font-size-xl);
-  background-color: var(--white);
-  cursor: pointer;
-  overflow: hidden;
+  line-height: 1.65;
 }
 
-.rocket {
-  display: block;
-  width: 60px;
-  height: 34px;
-  margin-left: 1.25rem;
-  background: url(https://cdn.glitch.global/4adcabc2-60b0-4638-899f-af1599e3ba61/rocket.png?v=1695663248265) right center no-repeat;
-  background-size: 60px;
+#reference {
+  margin: 0 0 0.75rem;
+  color: var(--typing-orange);
+  font-weight: 800;
 }
 
-.button:hover .rocket {
-  animation: shake 0.5s;
-  animation-iteration-count: infinite;
+#quote {
+  margin: 0 0 1.25rem;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--cream);
+  font-size: clamp(1.125rem, 3vw, 1.5rem);
+  line-height: 2;
+  overflow-wrap: anywhere;
 }
 
-#typedValue {
-  width: 360px;
-  display: block;
-  margin: 0 auto;
-  padding: 1.25rem;
-  font-size: var(--font-size-2xl);
-  border: 0;
-  border-radius: var(--radius-sm);
-  box-shadow: inset 1px 0px 5px 4px rgba(0,0,0,0.2);
+#quote span::after {
+  content: " ";
+  white-space: pre;
 }
 
-.congrats {
-  text-transform: uppercase;
-  font-size: 1.5em;
-  font-weight: bold;
-  color: var(--gold-light);
-}
-
-@keyframes shake {
-  0% { transform: translate(1px, 1px) rotate(0deg); }
-  10% { transform: translate(-1px, -2px) rotate(-1deg); }
-  20% { transform: translate(-3px, 0px) rotate(1deg); }
-  30% { transform: translate(3px, 2px) rotate(0deg); }
-  40% { transform: translate(1px, -1px) rotate(1deg); }
-  50% { transform: translate(-1px, 2px) rotate(-1deg); }
-  60% { transform: translate(-3px, 1px) rotate(0deg); }
-  70% { transform: translate(3px, 1px) rotate(-1deg); }
-  80% { transform: translate(-1px, -1px) rotate(1deg); }
-  90% { transform: translate(1px, 2px) rotate(0deg); }
-  100% { transform: translate(1px, -2px) rotate(-1deg); }
-}
-
-
-/*  Glitch remix button styles*/
-/* Navigation grid */
-.footer {
-  position: absolute;
-  bottom: 30px;
-}
-
-.btn--remix {
-  background: var(--white);
-  padding: 0.625rem;
-  border-radius: 30px;
-  text-decoration: none;
-  color: var(--text);
-}
-
-.btn--remix:hover {
-  background: var(--gold-light);
-}
-
-.winner {
-  background-image: url(https://cdn.glitch.global/4adcabc2-60b0-4638-899f-af1599e3ba61/confetti.gif?v=1695663103834);
-}
-
-.img {
-  display: grid;
-  align-items: center;
-  place-items: center;
-  margin: 0 auto;
-  padding: 1.25rem;
-  filter: grayscale(0%);
-  max-width: 350px;
-}
-
-.img:hover {
-    filter: grayscale(100%);
-}
-
-footer {
-  padding: 4rem;
-  display: grid;
-  place-items: center;
-  align-items: center;
-}
-
-
-.tooltip {
-  position: relative;
-  display: inline-block;
-}
-
-.tooltip .tooltiptext {
-  visibility: hidden;
-  width: 140px;
-  background-color: var(--muted);
-  color: var(--white);
-  text-align: center;
-  border-radius: var(--radius-sm);
-  padding: 5px;
-  position: absolute;
-  z-index: 1;
-  bottom: 150%;
-  left: 50%;
-  margin-left: -75px;
-  opacity: 0;
-  transition: opacity 0.3s;
-}
-
-.tooltip .tooltiptext::after {
-  content: "";
-  position: absolute;
-  top: 100%;
-  left: 50%;
-  margin-left: -5px;
-  border-width: 5px;
-  border-style: solid;
-  border-color: var(--muted) transparent transparent transparent;
-}
-
-.tooltip:hover .tooltiptext {
-  visibility: visible;
-  opacity: 1;
+#quote .highlight {
+  border-radius: 0.25rem;
+  background: var(--typing-tint);
+  color: var(--typing-orange-dark);
+  font-weight: 800;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
 }
 
 input#typedValue {
   box-sizing: border-box;
-  max-width: 100%;
-  background-color: #fff;
+  width: min(100%, 28rem);
+  margin: 0 auto;
+  padding: 0.8rem 1rem;
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  background: #fff;
   color: #172033;
   -webkit-text-fill-color: #172033;
   caret-color: #172033;
+  font: inherit;
+  font-size: 1.125rem;
+}
+
+input#typedValue:focus-visible {
+  outline: 2px solid var(--typing-orange);
+  outline-offset: 2px;
 }
 
 input#typedValue.error,
 input#typedValue[aria-invalid="true"] {
-  background-color: #ffe4e6;
-  outline: 2px solid #be123c;
+  border-color: #be123c;
+  background: #ffe4e6;
+}
+
+#start {
+  border-color: var(--typing-orange);
+  background: var(--typing-orange);
+  color: #fff;
+}
+
+#start:hover:enabled {
+  background: var(--typing-orange-dark);
+}
+
+#share {
+  border-color: var(--typing-orange);
+  color: var(--typing-orange);
+}
+
+.typing-tooltip {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+#message {
+  margin-top: 1rem;
+  line-height: 1.6;
+}
+
+#message .congrats {
+  color: var(--typing-orange);
+  font-size: 1.25rem;
+  font-weight: 800;
+}
+
+#message p {
+  margin: 0.5rem 0 0;
+}
+
+#meaning {
+  margin-top: 1rem;
+  padding: 1rem;
+  border-left: 4px solid var(--typing-orange);
+  border-radius: var(--radius);
+  background: var(--typing-tint);
+  text-align: left;
+}
+
+#viswaroopa img {
+  display: block;
+  width: min(100%, 260px);
+  height: auto;
+  margin: 1.25rem auto 0;
+  border-radius: var(--radius);
+}
+
+.typing-settings {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem 1.25rem;
+  margin: 1.25rem 0 0;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--white);
+}
+
+.typing-settings legend {
+  padding: 0 0.5rem;
+  font-weight: 700;
+}
+
+.typing-settings input {
+  accent-color: var(--typing-orange);
+}
+
+#navbar-mount ~ footer {
+  padding: 0 1rem 2rem;
+  text-align: center;
+}
+
+#navbar-mount ~ footer span {
+  white-space: normal !important;
 }

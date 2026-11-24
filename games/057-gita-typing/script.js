@@ -147,12 +147,51 @@ let num_errors, progression_type, nectar_index=-1, is_random;
 
 let lastPlayedTs;
 
+const typingScorerReady = import("../shared/game-score.js").catch((error) => {
+  console.error("Could not load the typing leaderboard.", error);
+  return null;
+});
+
+let typingScorer = null;
+
+async function saveTypingScore(status, score, levelName, mistakes, elapsedMs) {
+  if (!typingScorer) {
+    status.textContent += " · Leaderboard unavailable.";
+    return;
+  }
+
+  status.textContent += " · Saving…";
+
+  let saveMessage;
+  try {
+    const result = await typingScorer.submitGameScore(score, {
+      levelId: levelName,
+      levelName,
+      metrics: { mistakes, elapsedMs },
+    });
+
+    saveMessage = result.ok
+      ? "Saved to the leaderboard."
+      : result.reason === "not-signed-in"
+        ? "Sign in to save your score."
+        : result.reason === "already-submitted"
+          ? "Score already saved."
+          : "Score could not be saved.";
+  } catch (error) {
+    console.error("Could not confirm the typing score save.", error);
+    saveMessage = "Could not confirm the leaderboard save.";
+  }
+
+  status.textContent = `Score: ${score}/100 · ${saveMessage}`;
+}
+
 async function startGame() {
 
   start.disabled = true;
   try {
     await gitaReady;
     await dailyChallengeReady;
+    typingScorer = await typingScorerReady;
   } catch (error) {
     info.textContent = `Could not start the game: ${error.message} Please return to the calendar and try again.`;
     start.disabled = false;
@@ -212,9 +251,17 @@ async function startGame() {
   highlightPosition = 0;
   quote.childNodes[highlightPosition].className = "highlight";
   
-  startTime = new Date().getTime();
+  input.value = "";
+  input.classList.remove("error");
+
+  typingScorer?.initGameScore({
+    gameId: "057-gita-typing",
+    gameName: "Gita Typing",
+  });
+
+  startTime = Date.now();
   
-  document.body.className = "";
+  document.body.classList.remove("viswaroopa");
   
   // $("typedValue").focus();
   document.getElementById("typedValue").focus();
@@ -236,21 +283,20 @@ function checkInput() {
     return;
   }
   if (currentWord !== typedValue) {
-    
-    if (currentWord.startsWith(typedValue) == true) {
-      input.className = "";
+    if (currentWord.startsWith(typedValue)) {
+      input.classList.remove("error");
     } else {
-      input.className = "error";
-      console.log("mistake");
-      num_errors++;
+      if (!input.classList.contains("error")) {
+        num_errors++;
+      }
+      input.classList.add("error");
     }
-    
     return;
   }
-  
 
-  wordQueue.shift(); // shift removes the first item in the array (the 0th element)
-  input.value = ""; // empty the text input
+  wordQueue.shift();
+  input.value = "";
+  input.classList.remove("error");
 
   quote.childNodes[highlightPosition].className = "";
   highlightPosition++;
@@ -287,6 +333,25 @@ function gameOver(completedCorrectly = false) {
   quote.innerHTML = `<span class="quote">Verse: ${quoteText.split(",").join("<br>")}</span>`;
   meaning.innerHTML = `<span class="meaning">Meaning: ${dailyChallenge ? dailyChallenge.meaning : meanings[ch_index][sh_index]}</span>`;
 
+  if (completedCorrectly) {
+    const score = Math.max(0, 100 - num_errors * 5);
+    const chapter = dailyChallenge?.verse.ch ?? ch_index + 1;
+    // The original typing list omits the opening verse of chapter 13.
+    const verse = dailyChallenge?.verse.vn ?? sh_index + (chapter === 13 ? 2 : 1);
+    const levelName = `Chapter ${chapter}, Verse ${verse}`;
+
+    const scoreStatus = document.createElement("p");
+    scoreStatus.setAttribute("role", "status");
+    scoreStatus.textContent = `Score: ${score}/100`;
+    message.appendChild(scoreStatus);
+
+    start.disabled = true;
+    void saveTypingScore(scoreStatus, score, levelName, num_errors, elapsedTime)
+      .finally(() => {
+        start.disabled = false;
+      });
+  }
+  
   if (dailyChallenge && completedCorrectly) {
     const status = document.createElement("p");
     try {
@@ -313,7 +378,7 @@ function gameOver(completedCorrectly = false) {
   } else {
   viswaroopa.innerHTML = `<img class="img" src="Mahabharata.jpg?v=1696106267514">`
   }
-  document.body.className = "viswaroopa";
+  document.body.classList.add("viswaroopa");
 //  document.body.className = "winner";
   // This game currently measures time and typos; it does not submit a
   // leaderboard score out of 100. Share a truthful "completed" time card.
