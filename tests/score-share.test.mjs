@@ -130,11 +130,30 @@ test('all six active games retain a completed-game share integration', () => {
   const scrambler = readFileSync(new URL('../games/06-wordScramble/index.html', import.meta.url), 'utf8');
   const shareSource = readFileSync(new URL('../games/shared/score-share.js', import.meta.url), 'utf8');
   assert.match(wordSearch, /submitGameScore\(finalScore\)/);
-  assert.match(shareSource, /"01-wordSearch": "#finishMessage"/);
+  assert.match(shareSource, /"01-wordSearch": "#bp26CelebrateOverlay \.bp26CelebrateBox"/);
   assert.match(arrange, /submit: submitGameScore/);
   assert.match(typing, /showCompletedScoreShare/);
   assert.match(strands, /src="\.\/share-bridge\.js"/);
   assert.match(fillBlank, /showCompletedScoreShare/);
   assert.match(scrambler, /id="z18-result-share"/);
   assert.match(scrambler, /openScoreShare/);
+});
+
+// Regression: Word Search's real completion modal stays visible until closed,
+// and the shared Share Score action lives in that same modal.
+test('Word Search completion stays open with contextual Share Score button', () => {
+  const html=readFileSync(new URL('../games/01-wordSearch/index.html',import.meta.url),'utf8');
+  const css=readFileSync(new URL('../games/01-wordSearch/css/find.css',import.meta.url),'utf8');
+  const shared=readFileSync(new URL('../games/shared/score-share.js',import.meta.url),'utf8');
+  assert.match(html,/id="bp26CelebrateOverlay"[\s\S]*?role="dialog"/);
+  assert.match(html,/id="bp26CelebrateActions"/);
+  assert.match(html,/id="bp26CelebrateScoreValue"/);
+  assert.match(html,/scoreCard\.hidden = score === null/);
+  assert.match(html,/overlay\.style\.display = "flex"/);
+  assert.doesNotMatch(html,/setTimeout\(\(\) => \{\s*overlay\.style\.display = "none"/);
+  assert.match(html,/closeBtn\?\.addEventListener\("click", closeCompletion\)/);
+  assert.match(shared,/"01-wordSearch": "#bp26CelebrateOverlay \.bp26CelebrateBox"/);
+  assert.match(shared,/actionRow\.prepend\(button\)/);
+  assert.match(css,/#bp26CelebrateActions|\.bp26CelebrateActions/);
+  assert.match(html,/submitGameScore\(finalScore\)/);
 });

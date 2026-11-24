@@ -761,7 +761,7 @@ function findResultContainer(gameId) {
     "018-as": "#successMessage",
     "059-fitb": "#result",
     fw: "#finishMessage",
-    "01-wordSearch": "#finishMessage",
+    "01-wordSearch": "#bp26CelebrateOverlay .bp26CelebrateBox",
     strands: ".modal-backdrop .result-card",
   }[gameId];
   return selector ? document.querySelector(selector) : null;
