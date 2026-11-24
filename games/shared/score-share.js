@@ -4,6 +4,17 @@
  * The artwork is generated locally and is not a cryptographically verified result.
  */
 const APP_URL = "https://gg.zat.am/";
+// Public page folders changed in November 2026. Keep the existing Firestore
+// game IDs unchanged, but share the currently deployed page URLs.
+const GAME_PAGE_FOLDERS = Object.freeze({
+  "fw": "01-wordSearch",
+  "01-wordSearch": "01-wordSearch",
+  "018-as": "02-arrange",
+  "strands": "04-suutram",
+  "059-fitb": "05-fillBlank",
+  "z18": "06-wordScramble",
+  "057-gita-typing": "057-gita-typing",
+});
 const CSS_URL = new URL("./score-share.css", import.meta.url).href;
 const KRISHNA_URL = new URL("../../srikrishna-gg-wa.jpg", import.meta.url).href;
 const FONT =
@@ -40,7 +51,8 @@ export function normalizeShareResult(input = {}) {
     /[^a-zA-Z0-9_-]/g,
     "",
   );
-  const url = gameId ? new URL(`games/${gameId}/`, APP_URL).href : APP_URL;
+  const pageFolder = GAME_PAGE_FOLDERS[gameId] || gameId;
+  const url = gameId ? new URL(`games/${pageFolder}/`, APP_URL).href : APP_URL;
   const rank = Number(input.rank);
   const levels = Number(input.levels);
   const displayName = safeString(input.playerName, 64);
@@ -749,6 +761,7 @@ function findResultContainer(gameId) {
     "018-as": "#successMessage",
     "059-fitb": "#result",
     fw: "#finishMessage",
+    "01-wordSearch": "#finishMessage",
     strands: ".modal-backdrop .result-card",
   }[gameId];
   return selector ? document.querySelector(selector) : null;
