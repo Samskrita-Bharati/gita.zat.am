@@ -530,15 +530,15 @@
             
             const result = await submitGameScore(finalScore);
             console.log("Score submission result:", result);
-            const next = document.getElementById("fwNext");
 
+            const next = document.getElementById("fwNext");
             if (level.next) {
               const url = new URL(location.href);
               url.searchParams.set("size", level.next);
               url.hash = "";
               next.href = url.href;
               next.hidden = false;
-            }
+            } 
 
             bp26Celebrate({ title: "Finished ✅", score: finalScore });
             // $("#finishMessage").append("<br>AFTER " + nc + " clicks!");
