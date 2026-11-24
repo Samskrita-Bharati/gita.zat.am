@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="en">
   <head>
+
     <title>अन्वेषणम्</title>
     <link rel="icon" type="image/png" href="../assets/bp26c.png" />
     <meta charset="utf-8" />
@@ -286,7 +287,7 @@
       })[urlParams.get("size")] || { id: "1", name: "Easy", seconds: 160, next: "7" };
 
       initGameScore({
-        gameId: "01-wordSearch", 
+        gameId: "fw", 
         gameName: "Word Search",
         levelId: level.id,
         levelName: level.name,
@@ -527,17 +528,17 @@
             const finalScore = currentScore(completedIn);
             liveScoreEl.textContent = "Final Score: " + finalScore + " / 100";
             
-            submitGameScore(finalScore);
-            
-            const next = document.getElementById("fwNext");
+            const result = await submitGameScore(finalScore);
+            console.log("Score submission result:", result);
 
+            const next = document.getElementById("fwNext");
             if (level.next) {
               const url = new URL(location.href);
               url.searchParams.set("size", level.next);
               url.hash = "";
               next.href = url.href;
               next.hidden = false;
-            }
+            } 
 
             bp26Celebrate({ title: "Finished ✅", score: finalScore });
             // $("#finishMessage").append("<br>AFTER " + nc + " clicks!");
