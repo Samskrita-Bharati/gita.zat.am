@@ -15,6 +15,7 @@
 
     <link rel="stylesheet" href="../css/global.css" />
     <link rel="stylesheet" href="leaderboardStyles.css" />
+    <link rel="stylesheet" href="./referral-tab.css" />
   </head>
 
   <body class="leaderboard-page" data-page="leaderboard">
@@ -85,9 +86,36 @@
         >
           🕘 My History
         </button>
+        <button
+          type="button"
+          id="lbReferralTab"
+          class="lb-view-tab gg-referral-tab"
+          aria-pressed="false"
+        >
+          👥 Referrals
+        </button>
       </nav>
 
-      <section class="lb-layout">
+      <section id="lbReferralView" class="gg-referral-view" hidden aria-labelledby="lbReferralTitle">
+        <div class="gg-referral-head">
+          <div>
+            <span class="lb-section-kicker">Community Invites</span>
+            <h2 id="lbReferralTitle">Referral Leaderboard</h2>
+            <p>Ranked by confirmed, verified new registrations. Game scores are separate.</p>
+          </div>
+          <a class="gg-referral-invite" href="../referrals/index.html">↗ Invite Friends</a>
+        </div>
+        <div class="gg-referral-stat-bar">
+          <div><span>Your confirmed referrals</span><strong id="lbReferralMine">—</strong></div>
+          <div><span>Your referral rank</span><strong id="lbReferralMyRank">—</strong></div>
+        </div>
+        <div id="lbReferralList" class="gg-referral-list" aria-live="polite">
+          <p class="gg-referral-loading">Open the tab to load top referrers.</p>
+        </div>
+        <p id="lbReferralMessage" class="gg-referral-message" role="status"></p>
+      </section>
+
+      <section class="lb-layout" id="lbGameViews">
         <div class="lb-main-column">
           <section class="lb-filter-card">
             <div class="lb-section-heading">
@@ -402,5 +430,6 @@
 
     <script type="module" src="../navbar/navbar-loader.js"></script>
     <script type="module" src="./leaderboard.js"></script>
+    <script type="module" src="./referral-tab.js"></script>
   </body>
 </html>

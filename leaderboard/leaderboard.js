@@ -823,8 +823,9 @@ function updateDatePickerState() {
 function updateViewControls() {
   updateDatePickerState();
 
-  document.querySelectorAll(".lb-view-tab").forEach((button) => {
-    const isActive = button.dataset.view === state.activeView;
+  document.querySelectorAll(".lb-view-tab:not(.gg-referral-tab)").forEach((button) => {
+    const referralVisible = document.getElementById('lbReferralView')?.hidden === false;
+    const isActive = !referralVisible && button.dataset.view === state.activeView;
 
     button.classList.toggle("is-active", isActive);
     button.setAttribute("aria-pressed", String(isActive));
@@ -1466,9 +1467,15 @@ async function refreshData() {
 // EVENTS
 // =====================================================
 
-document.querySelectorAll(".lb-view-tab").forEach((button) => {
+let gameOptionsInitialized = false;
+
+document.querySelectorAll(".lb-view-tab:not(.gg-referral-tab)").forEach((button) => {
   button.addEventListener("click", async () => {
     state.activeView = button.dataset.view || "overall";
+    if (!gameOptionsInitialized) {
+      await loadGameOptions();
+      gameOptionsInitialized = true;
+    }
 
     if (state.activeView === "overall") {
       gameSelect.value = "all";
@@ -1741,9 +1748,14 @@ function animate() {
 
 async function initializeLeaderboard() {
   try {
-    await loadGameOptions();
-    updateViewControls();
-    await refreshData();
+    // A direct referral deep link must not download all-time game histories.
+    // Load the original leaderboard on demand if the player switches tabs.
+    if (new URLSearchParams(window.location.search).get('view') !== 'referrals') {
+      await loadGameOptions();
+      gameOptionsInitialized = true;
+      updateViewControls();
+      await refreshData();
+    }
     animate();
   } catch (error) {
     console.error("[Leaderboard] Failed to initialize:", error);

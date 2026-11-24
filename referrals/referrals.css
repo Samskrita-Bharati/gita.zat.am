@@ -1,0 +1,45 @@
+.gg-invite-page { margin:0; min-height:100vh; background:var(--cream); color:var(--navy-dark); font-family:var(--zatam-font); }
+.ref-page,.ref-page * {box-sizing:border-box}
+.ref-page{width:min(1080px,100%); margin:auto; padding:20px 18px 64px}
+.ref-back,.ref-text-link{color:var(--navy);font-weight:700;text-decoration:none}
+.ref-back{display:inline-block;margin:14px 0 20px}
+.ref-hero{background:linear-gradient(125deg,#09264a,#164270);border-radius:22px;padding:34px 28px;color:#fff;display:flex;align-items:center;gap:18px;box-shadow:var(--shadow-md)}
+.ref-hero-text{flex:1;min-width:0}
+.ref-eyebrow{font-size:.74rem;letter-spacing:.13em;font-weight:800;color:#c88b23;text-transform:uppercase}
+.ref-hero .ref-eyebrow{color:var(--gold-light)}
+.ref-hero h1{font-size:clamp(1.65rem,4.5vw,2.7rem);line-height:1.16;margin:12px 0}
+.ref-hero p{margin:0;max-width:620px;line-height:1.65;color:#ebf1f8}
+.ref-hero-symbol{font-size:clamp(3rem,9vw,6.5rem);color:var(--gold-light);opacity:.9}
+.ref-panel{background:#fff;border:1px solid var(--border);border-radius:18px;padding:26px;margin-top:20px;box-shadow:var(--shadow-sm)}
+.ref-section-heading{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:10px}
+.ref-section-heading h2,.ref-guide h2{font-size:clamp(1.15rem,2.8vw,1.55rem);margin:6px 0}
+.ref-muted{color:#627386;line-height:1.55;margin:7px 0 18px}
+.ref-link-row{display:flex;gap:10px;min-width:0}
+.ref-link-row input{min-width:0;flex:1;padding:14px 12px;border:1px solid #bec9d4;border-radius:10px;color:var(--navy-dark);font:inherit;background:#fffaf2}
+.ref-button{border-radius:10px;padding:12px 18px;font:700 .94rem var(--zatam-font);text-align:center;cursor:pointer;text-decoration:none;min-height:46px;display:inline-flex;align-items:center;justify-content:center}
+.ref-button-primary{background:var(--navy);color:#fff;border:1px solid var(--navy)}
+.ref-button-outline{background:#fff;color:var(--navy);border:1px solid #b4bfd0}
+.ref-button:disabled,.ref-button[aria-disabled=true]{opacity:.45;pointer-events:none}
+.ref-button:focus-visible,.ref-back:focus-visible,.ref-text-link:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
+.ref-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+.ref-feedback{color:var(--success);font-size:.88rem;min-height:1.2rem;margin:12px 0 0}
+.ref-error{color:var(--danger)}
+.ref-stat-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:18px}
+.ref-stat{background:#fff;border:1px solid var(--border);border-radius:18px;padding:24px;display:flex;flex-direction:column;gap:7px}
+.ref-stat span{font-size:.9rem;color:#536579}
+.ref-stat strong{font-size:2.25rem;line-height:1.2;color:var(--navy)}
+.ref-stat small{font-size:.78rem;color:#66768a}
+.ref-top-list{display:grid;gap:9px;margin-top:14px}
+.ref-top-row{display:flex;gap:14px;align-items:center;background:#fffaf4;border:1px solid var(--border);padding:13px;border-radius:11px;min-width:0}
+.ref-position{font-weight:800;color:#9b6c20;width:30px;flex:0 0 auto}
+.ref-top-row strong{min-width:0;flex:1;overflow-wrap:anywhere}
+.ref-points{font-weight:800;color:var(--navy);white-space:nowrap}
+.ref-guide{padding:22px 0}
+.ref-guide-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:14px}
+.ref-guide-grid>div{padding:18px;border:1px solid var(--border);border-radius:14px;background:#fff}
+.ref-guide-grid strong{color:var(--navy)}
+.ref-guide-grid p{color:#52667a;line-height:1.5;margin-bottom:0}
+@media(max-width:620px){.ref-page{padding:14px 14px 44px}.ref-hero{padding:27px 21px}.ref-hero-symbol{display:none}.ref-panel{padding:19px 16px}.ref-link-row{flex-direction:column}.ref-button,.ref-actions>*{width:100%}.ref-stat{padding:18px 15px}.ref-stat strong{font-size:1.95rem}.ref-guide-grid{grid-template-columns:1fr}.ref-section-heading{align-items:start;flex-direction:column}.ref-points{font-size:.82rem}}
+@media(max-width:365px){.ref-stat-grid{grid-template-columns:1fr}}
+/* Keep the title white against the navy hero even with global heading rules. */
+.ref-hero h1{color:#fff}

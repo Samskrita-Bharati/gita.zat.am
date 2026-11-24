@@ -9,6 +9,9 @@ import {
   auth,
 } from "../api/firebase-config.js";
 import { authErrorMessage } from "./auth-error-messages.js";
+import { captureReferralFromUrl, claimReferralOnSignup } from "../../referrals/referral-client.js";
+
+captureReferralFromUrl();
 import { getSafeRedirect, preserveRedirectOnLink } from "./safe-redirect.js";
 
 preserveRedirectOnLink(document.querySelector('a[data-cy="login-link"]'));
@@ -82,6 +85,14 @@ signupForm.addEventListener("submit", async (event) => {
     } catch (error) {
       setupError = error;
       console.error("Account created, but Firestore profile setup failed:", error);
+    }
+
+    // Store an immutable pending referral while the account is still signed in.
+    // Referral outages must never prevent ordinary user registration.
+    try {
+      await claimReferralOnSignup(createdUser);
+    } catch (error) {
+      console.warn('Referral pending claim could not be recorded:', error);
     }
 
     let verificationError = null;

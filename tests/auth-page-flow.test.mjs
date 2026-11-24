@@ -30,6 +30,9 @@ function simulatePage(page, deps = {}) {
     getSafeRedirect: () => null,
     getDestination: () => '/gg-home',
     getPreferencesUrl: () => '/gg-preferences',
+    captureReferralFromUrl: () => null,
+    claimReferralOnSignup: async () => null,
+    confirmReferralOnLogin: async () => null,
   };
   const keys = Object.keys(env);
   new Function(...keys, 'document', 'window', 'setTimeout', source)(

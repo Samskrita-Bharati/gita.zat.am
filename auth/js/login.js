@@ -10,6 +10,9 @@ import {
   auth,
 } from "../api/firebase-config.js";
 import { authErrorMessage } from "./auth-error-messages.js";
+import { captureReferralFromUrl, claimReferralOnSignup, confirmReferralOnLogin } from "../../referrals/referral-client.js";
+
+captureReferralFromUrl();
 import {
   getDestination,
   getPreferencesUrl,
@@ -68,6 +71,8 @@ loginForm.addEventListener("submit", async (event) => {
     }
 
     await ensureUserDocument(user);
+    try { await confirmReferralOnLogin(user); }
+    catch (error) { console.warn('Referral confirmation unavailable:', error); }
     const profile = await getCurrentUserProfile();
     showMessage("Sign-in successful! Redirecting...");
     redirectForProfile(profile);
@@ -85,6 +90,12 @@ googleSignInBtn.addEventListener("click", async () => {
   try {
     const credential = await signInWithGoogle();
     await ensureUserDocument(credential.user);
+    // Separate failure handling: an invalid invitation must not prevent
+    // confirmation of a previously recorded valid claim.
+    try { await claimReferralOnSignup(credential.user); }
+    catch (error) { console.warn('Referral pending claim unavailable:', error); }
+    try { await confirmReferralOnLogin(credential.user); }
+    catch (error) { console.warn('Referral confirmation unavailable:', error); }
     const profile = await getCurrentUserProfile();
     showMessage("Google sign-in successful! Redirecting...");
     redirectForProfile(profile);
