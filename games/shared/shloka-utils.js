@@ -47,6 +47,14 @@ export async function getShlokaTextFromUrl(search = window.location.search) {
   return text;
 }
 
+export async function getShlokaVerseFromUrl(search = window.location.search) {
+  const verses = await loadVerses();
+  const id = resolveShlokaId(search, verses);
+  if (id === null) return null;
+
+  return verses.find((verse) => verse.id === id) ?? null;
+}
+
 function resolveShlokaId(search, verses) {
   const { verses: todaysVerses } = getDailySchedule(verses);
   if (todaysVerses.length === 0) return null;
