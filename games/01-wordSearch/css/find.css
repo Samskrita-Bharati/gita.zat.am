@@ -520,59 +520,153 @@ input:checked + .slider:before {
 }
 
 /* =====================================================
-   Celebration UI
+   Persistent Word Search completion dialog — mobile first.
+   Shares the site's navy, cream and gold brand palette.
 ===================================================== */
-
 #bp26CelebrateOverlay {
   position: fixed;
   inset: 0;
+  z-index: 10000;
   display: none;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.35);
-  z-index: 10000;
-  padding: 1.25rem;
-  border: none;
+  padding: 20px;
+  background: rgba(9, 38, 74, 0.72);
+  overflow-y: auto;
+  box-sizing: border-box;
 }
 
 .bp26CelebrateBox {
-  position: relative;
-  width: min(460px, 92vw);
-  background: var(--white);
-  border-radius: var(--radius-lg);
-  padding: 1.125rem;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+  box-sizing: border-box;
+  width: min(420px, 100%);
+  margin: auto;
+  padding: clamp(20px, 5vw, 32px);
+  border: 1px solid #ecddc6;
+  border-top: 4px solid #f6b23b;
+  border-radius: 20px;
+  background: #fffaf2;
+  color: #09264a;
+  box-shadow: 0 25px 70px rgba(7, 29, 55, 0.3);
   text-align: center;
-  font-family: system-ui, Arial, sans-serif;
-  border: 1px solid #eee;
+  font-family: Arial, "Noto Sans Devanagari", sans-serif;
+}
+
+.bp26CelebrateKicker {
+  margin: 0;
+  color: #b86a40;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.13em;
 }
 
 .bp26Sparkles {
-  font-size: 54px;
-  line-height: 1.1;
-  margin: 0.5rem 0 0.375rem;
+  display: grid;
+  place-items: center;
+  width: 54px;
+  height: 54px;
+  margin: 14px auto 12px;
+  border-radius: 50%;
+  background: #fff0ca;
+  color: #a66b07;
+  font-size: 29px;
   animation: bp26Pop 600ms ease-out both;
 }
 
-@keyframes bp26Pop {
-  0% {
-    transform: scale(0.6);
-    opacity: 0;
-  }
-
-  100% {
-    transform: scale(1);
-    opacity: 1;
-  }
+.bp26CelebrateBox #bp26CelebrateTitle {
+  margin: 0;
+  color: #09264a;
+  font-size: clamp(21px, 5vw, 26px);
+  line-height: 1.25;
 }
 
-.bp26Btn {
-  margin-top: 0.75rem;
-  padding: 0.625rem 0.875rem;
-  border-radius: var(--radius);
-  border: 1px solid #ddd;
-  background: #f9fafb;
+.bp26CelebrateBox #bp26CelebrateSub {
+  margin: 10px 0 18px;
+  color: #5c6d83;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.bp26CelebrateScore {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 17px 12px;
+  border-radius: 13px;
+  background: #f0f5fa;
+  border: 1px solid #dce7f1;
+}
+
+.bp26CelebrateScore[hidden] { display: none; }
+.bp26CelebrateScore span {
+  font-size: 11px;
+  letter-spacing: .09em;
+  font-weight: 800;
+}
+.bp26CelebrateScore strong {
+  font-size: clamp(44px, 11vw, 58px);
+  line-height: 1.15;
+  font-weight: 800;
+  color: #09264a;
+}
+.bp26CelebrateScore small {
+  font-size: 12px;
+  color: #526a86;
+}
+
+.bp26CelebrateActions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+/* The shared score module inserts the Share Score button in this action row. */
+.bp26CelebrateActions > .gg-share-inline-button,
+.bp26CelebrateActions > .bp26Btn {
+  box-sizing: border-box;
+  flex: 1 1 125px;
+  width: auto;
+  min-height: 46px;
+  margin: 0;
+  border-radius: 10px;
+  font: 700 14px/1.3 Arial, "Noto Sans Devanagari", sans-serif;
   cursor: pointer;
+}
+
+.bp26CelebrateActions > .gg-share-inline-button {
+  background: #09264a;
+  border: 1px solid #09264a;
+  color: #fffaf2;
+}
+
+.bp26CelebrateActions > .bp26Btn {
+  padding: 10px 18px;
+  background: #fffaf2;
+  color: #09264a;
+  border: 1px solid #d5c6af;
+}
+
+.bp26CelebrateActions > button:hover { filter: brightness(0.95); }
+.bp26CelebrateActions > button:focus-visible {
+  outline: 3px solid #f6b23b;
+  outline-offset: 3px;
+}
+
+@media (max-width: 430px) {
+  .bp26CelebrateActions { flex-direction: column; }
+  .bp26CelebrateActions > .gg-share-inline-button,
+  .bp26CelebrateActions > .bp26Btn { flex: none; width: 100%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bp26Sparkles { animation: none; }
+}
+
+@keyframes bp26Pop {
+  0% { transform: scale(0.8); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
 }
 
 .bp26Confetti {
@@ -639,4 +733,4 @@ input:checked + .slider:before {
   #fwRetry{
     right: 10px;
   }
-}    
+}

@@ -15,6 +15,21 @@ import { resolveAvatarState, safePhotoURL } from "../auth/js/avatar-state.js";
 // Prevent duplicate initialization
 let navbarInitialized = false;
 
+// Share Score uses the same public display name already loaded for the navbar.
+// Publish it once per authentication state change; no additional Firestore
+// request is needed, and signed-out users never inherit a previous name.
+function publishShareIdentity(user, profile = null) {
+  if (user && auth.currentUser?.uid !== user.uid) return;
+  const savedName = String(profile?.name || '').trim();
+  const authName = String(user?.displayName || '').trim();
+  const identity = user ? {
+    uid: user.uid,
+    playerName: (savedName || authName).slice(0, 64),
+  } : null;
+  window.zatamShareIdentity = identity;
+  window.dispatchEvent(new CustomEvent('zatam:share-identity', { detail: identity }));
+}
+
 // =====================================================
 // LANGUAGE LABELS
 // =====================================================
@@ -305,6 +320,8 @@ export async function initNavbarAuth() {
   // ===================================================
 
   onAuthStateChanged(auth, async (user) => {
+    publishShareIdentity(null);
+    if (user) publishShareIdentity(user);
     if (user) {
       // The navigation link is a convenience only. /admin/ and Firestore
       // independently verify the isAdmin role before exposing any data.
@@ -359,6 +376,7 @@ export async function initNavbarAuth() {
       try {
         const profile = await getCurrentUserProfile();
         if (auth.currentUser?.uid !== user.uid) return;
+        publishShareIdentity(user, profile);
         renderNavbarAvatar(
           resolveAvatarState(user, profile).photoURL,
           displayName,

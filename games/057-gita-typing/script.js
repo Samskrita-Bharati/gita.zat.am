@@ -159,6 +159,7 @@ async function startGame() {
     return;
   }
   start.disabled = false;
+  window.ggScoreShare?.clearCompletedScoreShare();
 
   console.log("new game started!");
   is_playing = true;
@@ -300,8 +301,8 @@ function gameOver(completedCorrectly = false) {
   
   
   input.style.display = "none";
-  share.style.display = "block";
-  share.focus();
+  share.style.display = completedCorrectly ? "block" : "none";
+  share.textContent = "✦ Share completion";
   
   if (is_random == false && !dailyChallenge) {
     save_history();
@@ -314,31 +315,29 @@ function gameOver(completedCorrectly = false) {
   }
   document.body.className = "viswaroopa";
 //  document.body.className = "winner";
-  ShareIt();
+  // This game currently measures time and typos; it does not submit a
+  // leaderboard score out of 100. Share a truthful "completed" time card.
+  if (completedCorrectly) {
+    const seconds=Math.max(0,Math.round(elapsedTime/1000));
+    // Display the completion time prominently in the game; share card uses
+    // zero extra Firestore calls and a result label instead of claiming rank.
+    window.ggScoreShare?.showCompletedScoreShare({
+      score: seconds, scoreType:'completion',
+      gameId:'057-gita-typing',gameName:'Bhagavad Gita Typing',
+      levelName:`Chapter ${ch_index+1} · Shloka ${sh_index+1} · ${seconds}s · ${num_errors} typos`,
+    });
+  }
 }
 
 var copyText;
 
 function ShareIt() {
-  
-  let linkURL = "https://zat.am/games/057-gita-typing";
-  
-  copyText = `#BhagavadGita I learnt the meaning of shloka ${sh_index+1} from chapter ${ch_index+1} in ${Math.round(elapsedTime/1000)} sec at ${linkURL}`;
-  
-  navigator.clipboard.writeText(copyText);
-  
-   if (navigator.canShare) {
-    navigator.share({
-      title: 'Share results',
-      text: `#BhagavadGita I learnt the meaning of shloka ${sh_index+1} from chapter ${ch_index+1} in ${Math.round(elapsedTime/1000)} sec at ${linkURL}`,
-      // url: linkURL,
-    })
-    .then(() => console.log('Successful share'))
-    .catch((error) => console.log('Error sharing', error));
-  }
-  
-//  alert("Copied the results to clipboard");
-  tooltip.innerHTML = "Results copied";
+  if (!window.ggScoreShare) return;
+  window.ggScoreShare.openScoreShare({
+    score: Math.max(0,Math.round(elapsedTime/1000)), scoreType:'completion',
+    gameId:'057-gita-typing',gameName:'Bhagavad Gita Typing',
+    levelName:`Chapter ${ch_index+1} · Shloka ${sh_index+1} · ${num_errors} typos`,
+  });
 }
 
 function outFunc() {

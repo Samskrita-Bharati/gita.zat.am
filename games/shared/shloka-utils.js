@@ -62,24 +62,21 @@ function resolveShlokaId(search, verses) {
   const firstId = todaysVerses[0].id;
   const secondId = todaysVerses[1]?.id ?? firstId;
   const parsedId = getRequestedId(search);
-  const lastVerseId = verses[verses.length - 1]?.id;
+  const maxId = verses.reduce((max, verse) => Math.max(max, Number(verse.id) || 0), 0);
   let resolvedId = parsedId ?? firstId;
 
-  if (resolvedId > secondId) {
-    const isCycleBoundaryLastVerse = secondId === 1 && resolvedId === lastVerseId;
-    if (!isCycleBoundaryLastVerse) {
-      resolvedId = secondId;
-    }
+  if (parsedId !== null && parsedId > maxId) {
+    return secondId;
+  }
+
+  if (parsedId !== null && parsedId > secondId && !findRecentSchedule(parsedId, verses)) {
+    resolvedId = secondId;
   }
 
   return resolvedId;
 }
 
-export async function getShlokaAssignmentFromUrl(search = window.location.search) {
-  const verses = await loadVerses();
-  const id = resolveShlokaId(search, verses);
-  if (id === null) return null;
-
+function findRecentSchedule(id, verses) {
   const today = new Date();
   const date = new Date(today.getFullYear(), today.getMonth(), today.getDate());
   const start = new Date(
@@ -97,6 +94,13 @@ export async function getShlokaAssignmentFromUrl(search = window.location.search
   }
 
   return null;
+}
+
+export async function getShlokaAssignmentFromUrl(search = window.location.search) {
+  const verses = await loadVerses();
+  const id = resolveShlokaId(search, verses);
+  if (id === null) return null;
+  return findRecentSchedule(id, verses);
 }
 
 export function splitShlokaWords(text) {

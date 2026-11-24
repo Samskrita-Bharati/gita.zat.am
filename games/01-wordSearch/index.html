@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="en">
   <head>
+
     <title>अन्वेषणम्</title>
     <link rel="icon" type="image/png" href="../assets/bp26c.png" />
     <meta charset="utf-8" />
@@ -148,23 +149,27 @@
       </div>
     </main>
 
-    <!-- Celebration overlay -->
-    <div id="bp26CelebrateOverlay">
+    <!-- Persistent completion dialog; the shared scoring module adds Share Score here. -->
+    <div
+      id="bp26CelebrateOverlay"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="bp26CelebrateTitle"
+      aria-describedby="bp26CelebrateSub"
+    >
       <div class="bp26CelebrateBox">
-        <div class="bp26Sparkles">✨🎉✨</div>
-
-        <div
-          id="bp26CelebrateTitle"
-          style="font-weight: 700; font-size: 18px; margin-bottom: 6px"
-        >
-          Submitted ✅
+        <p class="bp26CelebrateKicker">GG · ZAT.AM</p>
+        <div class="bp26Sparkles" aria-hidden="true">✦</div>
+        <h2 id="bp26CelebrateTitle">Word Search complete!</h2>
+        <p id="bp26CelebrateSub">You found all the words.</p>
+        <div id="bp26CelebrateScore" class="bp26CelebrateScore" hidden>
+          <span>FINAL SCORE</span>
+          <strong id="bp26CelebrateScoreValue">—</strong>
+          <small>OUT OF 100</small>
         </div>
-
-        <div id="bp26CelebrateSub" style="font-size: 14px; color: #374151">
-          Nice work!
+        <div id="bp26CelebrateActions" class="zatam-game-actions bp26CelebrateActions">
+          <button id="bp26CelebrateClose" class="bp26Btn" type="button">Close</button>
         </div>
-
-        <button id="bp26CelebrateClose" class="bp26Btn">Close</button>
       </div>
     </div>
 
@@ -186,16 +191,18 @@
 
         t.textContent = title;
 
-        s.textContent =
-          score === null ? subtitle : `${subtitle}  Score: ${score} ✨`;
+        s.textContent = subtitle;
+        const scoreCard = document.getElementById("bp26CelebrateScore");
+        scoreCard.hidden = score === null;
+        if (score !== null) {
+          document.getElementById("bp26CelebrateScoreValue").textContent = String(score);
+        }
 
+        // Stay open until the player deliberately closes it.
         overlay.style.display = "flex";
-
+        (document.querySelector("#bp26CelebrateActions .gg-share-inline-button") ||
+          document.getElementById("bp26CelebrateClose")).focus();
         bp26BurstConfetti(70);
-
-        setTimeout(() => {
-          overlay.style.display = "none";
-        }, 2200);
       }
 
       function bp26BurstConfetti(count = 60) {
@@ -229,20 +236,30 @@
 
         const overlay = document.getElementById("bp26CelebrateOverlay");
 
-        if (closeBtn) {
-          closeBtn.addEventListener(
-            "click",
-            () => (overlay.style.display = "none"),
-          );
-        }
-
-        if (overlay) {
-          overlay.addEventListener("click", (e) => {
-            if (e.target === overlay) {
-              overlay.style.display = "none";
-            }
-          });
-        }
+        const closeCompletion = () => {
+          overlay.style.display = "none";
+          document.getElementById("fwRetry")?.focus();
+        };
+        closeBtn?.addEventListener("click", closeCompletion);
+        overlay?.addEventListener("keydown", (event) => {
+          if (event.key === "Escape") {
+            event.preventDefault();
+            closeCompletion();
+          }
+          // Keep keyboard navigation inside the completion dialog.
+          if (event.key !== "Tab") return;
+          const controls = Array.from(overlay.querySelectorAll("button:not(:disabled)"));
+          if (!controls.length) return;
+          const first = controls[0];
+          const last = controls[controls.length - 1];
+          if (event.shiftKey && document.activeElement === first) {
+            event.preventDefault();
+            last.focus();
+          } else if (!event.shiftKey && document.activeElement === last) {
+            event.preventDefault();
+            first.focus();
+          }
+        });
       });
     </script>
 
@@ -543,17 +560,17 @@
             const finalScore = currentScore(completedIn);
             liveScoreEl.textContent = "Final Score: " + finalScore + " / 100";
             
-            const next = document.getElementById("fwNext");
 
+            const next = document.getElementById("fwNext");
             if (level.next) {
               const url = new URL(location.href);
               url.searchParams.set("size", level.next);
               url.hash = "";
               next.href = url.href;
               next.hidden = false;
-            }
+            } 
 
-            bp26Celebrate({ title: "Finished ✅", score: finalScore });
+            bp26Celebrate({ title: "Word Search complete!", subtitle: "You found every word. Great work!", score: finalScore });
             // $("#finishMessage").append("<br>AFTER " + nc + " clicks!");
             $("#finishMessage").show();
             $("#statusMessage").hide();

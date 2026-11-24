@@ -1,4 +1,8 @@
 import { makePuzzle, createRun, checkRun, SCORES } from "./game-logic.mjs";
+import {
+  showCompletedScoreShare,
+  clearCompletedScoreShare,
+} from "../shared/score-share.js";
 const $ = (id) => document.getElementById(id);
 let source,
   run,
@@ -77,6 +81,13 @@ function render() {
 function finish(outcome) {
   clearInterval(timer);
   $("result").hidden = false;
+  // Round-only result, never submitted to the leaderboard by this game.
+  showCompletedScoreShare({
+    score: run.score,
+    gameId: "059-fitb",
+    gameName: "Fill in the Blanks",
+    levelName: "Shloka challenge",
+  });
   $("resultTitle").textContent =
     outcome === "won"
       ? "Shloka complete!"
@@ -97,6 +108,7 @@ function finish(outcome) {
   render();
 }
 function start() {
+  clearCompletedScoreShare();
   try {
     const puzzle = makePuzzle(source.text, source.previous, source.next);
     clearInterval(timer);
