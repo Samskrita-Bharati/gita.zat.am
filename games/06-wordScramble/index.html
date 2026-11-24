@@ -1,419 +1,660 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
-<head>
-	<!-- Require login before showing the game -->
-	<style>
-		html:not(.gg-authenticated) {
-			visibility: hidden !important;
+  <head>
+    <!-- Require login before showing the game -->
+    <style>
+      html:not(.gg-authenticated) {
+        visibility: hidden !important;
+      }
+    </style>
+    <script type="module" src="../shared/auth-guard.js"></script>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>BodhaPlay scrambler</title>
+    <link rel="stylesheet" href="../../css/global.css" />
+    <link rel="stylesheet" href="../shared/game-theme.css" />
+    <style>
+      #z18-game-frame {
+        position: relative;
+        width: min(100%, 1024px);
+        height: var(--z18-frame-height, auto);
+        aspect-ratio: 4 / 3;
+        margin: 0 auto;
+        border: 1px solid var(--border);
+        overflow: hidden;
+      }
+      #z18-game-frame canvas {
+        display: block;
+        width: 100% !important;
+        height: 100% !important;
+      }
+		/* Responsive results UI only: gameplay continues to render in ZIM canvas. */
+		#z18-game-frame .z18-result-overlay {
+			position: absolute; inset: 0; z-index: 100; display: flex;
+			align-items: center; justify-content: center; padding: 16px;
+			box-sizing: border-box; background: rgba(8,28,51,.46); overflow-y: auto;
 		}
-	</style>
-	<script type="module" src="../shared/auth-guard.js"></script>
-	<meta charset="utf-8" />
-	<meta name="viewport" content="width=device-width, initial-scale=1" />
-	<title>BodhaPlay scrambler</title>
-	<link rel="stylesheet" href="../../css/global.css" />
-	<link rel="stylesheet" href="../shared/game-theme.css" />
-	<style>
-		#z18-game-frame {
-			position: relative;
-			width: min(100%, 1024px);
-			height: var(--z18-frame-height, auto);
-			aspect-ratio: 4 / 3;
-			margin: 0 auto;
-			border: 1px solid var(--border);
-			overflow: hidden;
+		#z18-game-frame .z18-result-card {
+			box-sizing: border-box; width: min(100%, 410px); max-height: 100%;
+			overflow-y: auto; padding: clamp(18px,4vw,30px);
+			border: 1px solid #e7d8bf; border-top: 4px solid var(--gold);
+			border-radius: 18px; background: var(--cream);
+			box-shadow: 0 20px 55px rgba(7,27,48,.28); color: var(--navy-dark);
+			font-family: system-ui,-apple-system,"Segoe UI",Arial,sans-serif;
+			text-align: center;
 		}
-		#z18-game-frame canvas {
-			display: block;
-			width: 100% !important;
-			height: 100% !important;
+		#z18-game-frame .z18-result-eyebrow {
+			margin: 0 0 6px; color: #b5653b; font-size: 11px;
+			font-weight: 800; letter-spacing: .12em; text-transform: uppercase;
 		}
-	</style>
-	<script type="module" src="../../navbar/navbar-loader.js"></script>
-	<script type="module" src="../../navbar/bilingual-toggle.js"></script>
-	<script type="module">
-		import { getShlokaTextFromUrl, splitShlokaWords, splitWordIntoGraphemes } from "../shared/shloka-utils.js";
-		import { initGameScore, submitGameScore, scoreFromPenalties } from "../shared/game-score.js";
-		import { cleanShlokaText } from "../../shlokasToday/shlokasToday.js";
-		import { GAME_CONFIG } from "./config.js";
-		import zim from "https://zimjs.org/cdn/019/zim_pizzazz";
-		const rootStyles = getComputedStyle(document.documentElement);
-		const rootColor = (name) => rootStyles.getPropertyValue(name).trim();
-		const themeColors = {
-			navy: rootColor("--navy"),
-			navyDark: rootColor("--navy-dark"),
-			gold: rootColor("--gold"),
-			goldLight: rootColor("--gold-light"),
-			cream: rootColor("--cream"),
-			creamDark: rootColor("--cream-dark"),
-			white: rootColor("--white"),
-			danger: rootColor("--danger"),
-			accentCoral: rootColor("--accent-coral"),
-			accentBlue: rootColor("--accent-blue"),
-			success: rootColor("--success"),
-		};
-		let rows = [];
-		let words = [];
-		let scrambledGraphemesByWord = [];
-		let remainingWords = [];
-		let gameId = null;
-		let currentWordIndex = 0;
-		let scrambler;
-		let emitter;
-		let score = 0;
-		let totalMoves = 0;
-		let giveUpCount = 0;
-		let wordTransitioning = false;
-		let rowFontSize = 20;
-		let rowTextOffset = 42;
-		let moveRightPadding = 12;
-		let moveNumberWidth = 0;
-		let moveLabelWidth = 0;
-		let moveColumnGap = 0;
-		let rowTextWidth = 0;
-		function done() {
-			if (wordTransitioning) return;
-			wordTransitioning = true;
-			const finishedScrambler = scrambler;
-			const movesForWord = score;
-			totalMoves += score;
-			window.setTimeout(function () {
-				try {
-					finishedScrambler?.dispose?.();
-				} catch (error) {
-					console.warn("[z18] Could not dispose completed scrambler:", error);
-				}
-				scrambler = null;
-				startNextWord();
-			}, 0);
-			emitter.spurt(150);
-			const row = rows[currentWordIndex];
-			row.scrambledLabel.dispose();
-			new Label({
-				text: words[currentWordIndex],
-				size: rowFontSize,
-				font: "Arial",
-				color: themeColors.success,
-				bold: true,
-				labelWidth: rowTextWidth,
-			}).pos(rowTextOffset, 0, LEFT, CENTER, row.box);
-			new Label({ text: "Move(s)", size: Math.max(10, rowFontSize - 1), font: "Arial", color: themeColors.accentBlue, align: RIGHT, labelWidth: moveLabelWidth })
-				.pos(moveRightPadding + moveNumberWidth + moveColumnGap, 0, RIGHT, CENTER, row.box);
-			new Label({ text: String(movesForWord), size: Math.max(10, rowFontSize - 1), font: "Arial", color: black, align: RIGHT, labelWidth: moveNumberWidth })
-				.pos(moveRightPadding, 0, RIGHT, CENTER, row.box);
-			S.update();
+		#z18-game-frame .z18-result-title {
+			margin: 0; color: var(--navy-dark); font-size: clamp(21px,5vw,27px);
+			font-weight: 750; line-height: 1.25;
 		}
-		function giveUpCurrentWord() {
-			if (wordTransitioning || !scrambler) return;
-			wordTransitioning = true;
-			const finishedScrambler = scrambler;
-			const word = words[currentWordIndex];
-			const wordLength = splitWordIntoGraphemes(word).length;
-			totalMoves += score + wordLength;
-			giveUpCount++;
-			window.setTimeout(function () {
-				try {
-					finishedScrambler?.dispose?.();
-				} catch (error) {
-					console.warn("[z18] Could not dispose skipped scrambler:", error);
-				}
-				scrambler = null;
-				startNextWord();
-			}, 0);
-			const row = rows[currentWordIndex];
-			row.scrambledLabel.dispose();
-			new Label({
-				text: word,
-				size: rowFontSize,
-				font: "Arial",
-				color: themeColors.danger,
-				bold: true,
-				labelWidth: rowTextWidth,
-			}).pos(rowTextOffset, 0, LEFT, CENTER, row.box);
-			new Label({ text: "Revealed", size: Math.max(10, rowFontSize - 1), font: "Arial", color: themeColors.navy, align: RIGHT, labelWidth: moveLabelWidth })
-				.pos(moveRightPadding + moveNumberWidth + moveColumnGap, 0, RIGHT, CENTER, row.box);
-			new Label({ text: `-${GAME_CONFIG.revealedWordPenalty} point`, size: Math.max(10, rowFontSize - 1), font: "Arial", color: themeColors.danger, align: RIGHT, labelWidth: moveNumberWidth })
-				.pos(moveRightPadding, 0, RIGHT, CENTER, row.box);
-			S.update();
+		#z18-game-frame .z18-result-context {
+			margin: 6px 0 17px; color: #61718a; font-size: 13px;
 		}
-		function shuffle(items) {
-			const shuffled = [...items];
-			for (let index = shuffled.length - 1; index > 0; index--) {
-				const randomIndex = Math.floor(Math.random() * (index + 1));
-				[shuffled[index], shuffled[randomIndex]] = [shuffled[randomIndex], shuffled[index]];
-			}
-			return shuffled;
+		#z18-game-frame .z18-result-score-panel {
+			padding: 16px 12px 14px; border: 1px solid #eadac3;
+			border-radius: 13px; background: #fffdf8;
 		}
-		function sampleWords(candidates, count) {
-			return shuffle(candidates).slice(0, count);
+		#z18-game-frame .z18-result-score-label {
+			color: #536881; font-size: 11px; font-weight: 800;
+			letter-spacing: .09em; text-transform: uppercase;
 		}
-		function scrambleGraphemes(graphemes) {
-			const scrambled = shuffle(graphemes);
-			if (scrambled.length > 1 && scrambled.every((value, index) => value === graphemes[index])) {
-				scrambled.push(scrambled.shift());
-			}
-			return scrambled;
+		#z18-game-frame .z18-result-score-value {
+			display: flex; align-items: baseline; justify-content: center; gap: 8px;
+			margin: 5px 0 10px; font-variant-numeric: tabular-nums;
 		}
-		function startNextWord() {
-			if (remainingWords.length === 0) {
-				const totalLetters = words.reduce((count, word) => count + splitWordIntoGraphemes(word).length, 0);
-				const extraMoves = Math.max(0, totalMoves - totalLetters);
-				const finalScore = scoreFromPenalties({ mistakes: extraMoves, hints: giveUpCount, mistakePenalty: 2, hintPenalty: GAME_CONFIG.revealedWordPenalty });
-				const widthScale = W / 1024;
-				const compact = W < 700 || H < 500;
-				const end = new Pane({
-					content: "",
-					width: W * 0.9,
-					height: H * 0.82,
-					backgroundColor: themeColors.creamDark,
-					color: themeColors.navyDark,
-					corner: 16,
-				});
-				const scoreSize = Math.max(24, Math.min(42, H * (compact ? 0.075 : 0.09)));
-				new Label(`Score: ${finalScore} / 100`, scoreSize, "Arial", themeColors.navyDark)
-					.pos(0, -H * 0.18, CENTER, CENTER, end);
-				new Label(`Moves: ${totalMoves}`, scoreSize * 0.8, "Arial", themeColors.navyDark)
-					.pos(0, -H * 0.06, CENTER, CENTER, end);
-				const status = new Label("Saving score…", Math.max(14, scoreSize * 0.48), "Arial", themeColors.navyDark)
-					.pos(0, H * 0.18, CENTER, CENTER, end);
-				const buttonWidth = Math.min(150 * widthScale, W * 0.34);
-				const buttonHeight = Math.max(42, 54 * widthScale);
-				const buttonLabelSize = Math.max(14, Math.min(22, buttonHeight * 0.42));
-				const cancel = new Button({
-					width: buttonWidth,
-					height: buttonHeight,
-					label: new Label({ text: "Done", size: buttonLabelSize, font: "Arial", color: themeColors.white, align: CENTER, valign: CENTER, labelWidth: buttonWidth - 12 }),
-					backgroundColor: themeColors.accentCoral,
-					rollBackgroundColor: themeColors.danger,
-					downBackgroundColor: themeColors.danger,
-					color: themeColors.white,
-					corner: 12,
-				}).pos(-W * 0.18, H * 0.04, CENTER, CENTER, end);
-				const redo = new Button({
-					width: buttonWidth,
-					height: buttonHeight,
-					label: new Label({ text: "पुनः 🤔", size: buttonLabelSize, font: "Arial", color: themeColors.navyDark, align: CENTER, valign: CENTER, labelWidth: buttonWidth - 12 }),
-					backgroundColor: themeColors.gold,
-					rollBackgroundColor: themeColors.goldLight,
-					downBackgroundColor: themeColors.navy,
-					color: themeColors.navyDark,
-					corner: 12,
-				}).pos(W * 0.18, H * 0.04, CENTER, CENTER, end);
-				cancel.on("click", () => end.hide());
-				redo.on("click", () => window.location.reload());
-				end.show();
-				end.noMouse();
-				timeout(1, () => end.mouse());
-				submitGameScore(finalScore, {
-					metrics: { totalMoves, totalLetters, extraMoves, giveUpCount, shlokaId: gameId ?? "daily" },
-				}).then((result) => {
-					status.text = result.ok ? "Score saved ✓" : "Sign in to save your score.";
-					S.update();
-				}).catch((error) => {
-					console.error("[z18] Score submission failed:", error);
-					status.text = "Score could not be saved.";
-					S.update();
-				});
-				return;
-			}
+		#z18-game-frame .z18-result-score-value strong {
+			font-size: clamp(50px,13vw,68px); font-weight: 800; line-height: 1;
+		}
+		#z18-game-frame .z18-result-score-value span {
+			font-size: 18px; font-weight: 600; color: #64748b;
+		}
+		#z18-game-frame .z18-result-moves {
+			margin: 0; font-size: 13px; color: #51617a;
+		}
+		#z18-game-frame .z18-result-moves strong { color: var(--navy-dark); }
+		#z18-game-frame .z18-result-status {
+			margin: 14px 0 16px; min-height: 19px; color: var(--navy-dark);
+			font-size: 13px; line-height: 1.4;
+		}
+		#z18-game-frame .z18-result-actions { display: grid; gap: 9px; }
+		#z18-game-frame .z18-result-secondary-actions {
+			display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 9px;
+		}
+		#z18-game-frame .z18-result-button {
+			box-sizing: border-box; width: 100%; min-height: 44px; padding: 10px 12px;
+			border: 1px solid #d9c8af; border-radius: 10px;
+			background: #fffdf8; color: var(--navy-dark);
+			font: 700 14px/1.3 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;
+			cursor: pointer; touch-action: manipulation;
+		}
+		#z18-game-frame .z18-result-button:hover { background: #f6eddc; }
+		#z18-game-frame .z18-result-button:focus-visible {
+			outline: 3px solid #ecb347; outline-offset: 2px;
+		}
+		#z18-game-frame .z18-result-button-share {
+			border-color: var(--navy-dark); background: var(--navy-dark); color: #fff;
+		}
+		#z18-game-frame .z18-result-button-share:hover { background: var(--navy); }
+		@media (max-width: 480px) {
+			#z18-game-frame .z18-result-overlay { padding: 12px; }
+			#z18-game-frame .z18-result-card { padding: 20px 18px; border-radius: 15px; }
+			#z18-game-frame .z18-result-context { margin-bottom: 13px; }
+			#z18-game-frame .z18-result-score-panel { padding: 13px 10px; }
+		}
+    </style>
+    <script type="module" src="../../navbar/navbar-loader.js"></script>
+    <script type="module" src="../../navbar/bilingual-toggle.js"></script>
+    <script type="module">
+      import {
+        getShlokaTextFromUrl,
+        splitShlokaWords,
+        splitWordIntoGraphemes,
+      } from "../shared/shloka-utils.js";
+      import {
+        initGameScore,
+        submitGameScore,
+        scoreFromPenalties,
+      } from "../shared/game-score.js";
+      import { openScoreShare } from "../shared/score-share.js";
+      import { cleanShlokaText } from "../../shlokasToday/shlokasToday.js";
+      import { GAME_CONFIG } from "./config.js";
+      import zim from "https://zimjs.org/cdn/019/zim_pizzazz";
+      const rootStyles = getComputedStyle(document.documentElement);
+      const rootColor = (name) => rootStyles.getPropertyValue(name).trim();
+      const themeColors = {
+        navy: rootColor("--navy"),
+        navyDark: rootColor("--navy-dark"),
+        gold: rootColor("--gold"),
+        goldLight: rootColor("--gold-light"),
+        cream: rootColor("--cream"),
+        creamDark: rootColor("--cream-dark"),
+        white: rootColor("--white"),
+        danger: rootColor("--danger"),
+        accentCoral: rootColor("--accent-coral"),
+        accentBlue: rootColor("--accent-blue"),
+        success: rootColor("--success"),
+      };
+      let rows = [];
+      let words = [];
+      let scrambledGraphemesByWord = [];
+      let remainingWords = [];
+      let gameId = null;
+      let currentWordIndex = 0;
+      let scrambler;
+      let emitter;
+      let score = 0;
+      let totalMoves = 0;
+      let giveUpCount = 0;
+      let wordTransitioning = false;
+      let rowFontSize = 20;
+      let rowTextOffset = 42;
+      let moveRightPadding = 12;
+      let moveNumberWidth = 0;
+      let moveLabelWidth = 0;
+      let moveColumnGap = 0;
+      let rowTextWidth = 0;
+      function done() {
+        if (wordTransitioning) return;
+        wordTransitioning = true;
+        const finishedScrambler = scrambler;
+        const movesForWord = score;
+        totalMoves += score;
+        window.setTimeout(function () {
+          try {
+            finishedScrambler?.dispose?.();
+          } catch (error) {
+            console.warn("[z18] Could not dispose completed scrambler:", error);
+          }
+          scrambler = null;
+          startNextWord();
+        }, 0);
+        emitter.spurt(150);
+        const row = rows[currentWordIndex];
+        row.scrambledLabel.dispose();
+        new Label({
+          text: words[currentWordIndex],
+          size: rowFontSize,
+          font: "Arial",
+          color: themeColors.success,
+          bold: true,
+          labelWidth: rowTextWidth,
+        }).pos(rowTextOffset, 0, LEFT, CENTER, row.box);
+        new Label({
+          text: "Move(s)",
+          size: Math.max(10, rowFontSize - 1),
+          font: "Arial",
+          color: themeColors.accentBlue,
+          align: RIGHT,
+          labelWidth: moveLabelWidth,
+        }).pos(
+          moveRightPadding + moveNumberWidth + moveColumnGap,
+          0,
+          RIGHT,
+          CENTER,
+          row.box,
+        );
+        new Label({
+          text: String(movesForWord),
+          size: Math.max(10, rowFontSize - 1),
+          font: "Arial",
+          color: black,
+          align: RIGHT,
+          labelWidth: moveNumberWidth,
+        }).pos(moveRightPadding, 0, RIGHT, CENTER, row.box);
+        S.update();
+      }
+      function giveUpCurrentWord() {
+        if (wordTransitioning || !scrambler) return;
+        wordTransitioning = true;
+        const finishedScrambler = scrambler;
+        const word = words[currentWordIndex];
+        const wordLength = splitWordIntoGraphemes(word).length;
+        totalMoves += score + wordLength;
+        giveUpCount++;
+        window.setTimeout(function () {
+          try {
+            finishedScrambler?.dispose?.();
+          } catch (error) {
+            console.warn("[z18] Could not dispose skipped scrambler:", error);
+          }
+          scrambler = null;
+          startNextWord();
+        }, 0);
+        const row = rows[currentWordIndex];
+        row.scrambledLabel.dispose();
+        new Label({
+          text: word,
+          size: rowFontSize,
+          font: "Arial",
+          color: themeColors.danger,
+          bold: true,
+          labelWidth: rowTextWidth,
+        }).pos(rowTextOffset, 0, LEFT, CENTER, row.box);
+        new Label({
+          text: "Revealed",
+          size: Math.max(10, rowFontSize - 1),
+          font: "Arial",
+          color: themeColors.navy,
+          align: RIGHT,
+          labelWidth: moveLabelWidth,
+        }).pos(
+          moveRightPadding + moveNumberWidth + moveColumnGap,
+          0,
+          RIGHT,
+          CENTER,
+          row.box,
+        );
+        new Label({
+          text: `-${GAME_CONFIG.revealedWordPenalty} point`,
+          size: Math.max(10, rowFontSize - 1),
+          font: "Arial",
+          color: themeColors.danger,
+          align: RIGHT,
+          labelWidth: moveNumberWidth,
+        }).pos(moveRightPadding, 0, RIGHT, CENTER, row.box);
+        S.update();
+      }
+      function shuffle(items) {
+        const shuffled = [...items];
+        for (let index = shuffled.length - 1; index > 0; index--) {
+          const randomIndex = Math.floor(Math.random() * (index + 1));
+          [shuffled[index], shuffled[randomIndex]] = [
+            shuffled[randomIndex],
+            shuffled[index],
+          ];
+        }
+        return shuffled;
+      }
+      function sampleWords(candidates, count) {
+        return shuffle(candidates).slice(0, count);
+      }
+      function scrambleGraphemes(graphemes) {
+        const scrambled = shuffle(graphemes);
+        if (
+          scrambled.length > 1 &&
+          scrambled.every((value, index) => value === graphemes[index])
+        ) {
+          scrambled.push(scrambled.shift());
+        }
+        return scrambled;
+      }
+      function startNextWord() {
+        if (remainingWords.length === 0) {
+          const totalLetters = words.reduce(
+            (count, word) => count + splitWordIntoGraphemes(word).length,
+            0,
+          );
+          const extraMoves = Math.max(0, totalMoves - totalLetters);
+          const finalScore = scoreFromPenalties({
+            mistakes: extraMoves,
+            hints: giveUpCount,
+            mistakePenalty: 2,
+            hintPenalty: GAME_CONFIG.revealedWordPenalty,
+          });
+          // Finished-game presentation only. ZIM still handles gameplay,
+          // and the score formula, Firebase submission and replay behavior are unchanged.
+          const overlay = document.createElement("div");
+          overlay.className = "z18-result-overlay";
+          overlay.setAttribute("role", "dialog");
+          overlay.setAttribute("aria-modal", "true");
+          overlay.setAttribute("aria-labelledby", "z18-result-title");
+          overlay.innerHTML = `
+            <section class="z18-result-card">
+              <p class="z18-result-eyebrow">Round complete</p>
+              <h2 class="z18-result-title" id="z18-result-title">BodhaPlay शब्दावली</h2>
+              <p class="z18-result-context" id="z18-result-context"></p>
+              <div class="z18-result-score-panel">
+                <div class="z18-result-score-label">Your score</div>
+                <div class="z18-result-score-value"><strong id="z18-result-score"></strong><span>/ 100</span></div>
+                <p class="z18-result-moves">Total moves: <strong id="z18-result-moves"></strong></p>
+              </div>
+              <p class="z18-result-status" id="z18-result-status" role="status" aria-live="polite">Saving score…</p>
+              <div class="z18-result-actions">
+                <button type="button" class="z18-result-button z18-result-button-share" id="z18-result-share">Share score</button>
+                <div class="z18-result-secondary-actions">
+                  <button type="button" class="z18-result-button" id="z18-result-done">Done</button>
+                  <button type="button" class="z18-result-button" id="z18-result-replay">पुनः Play again</button>
+                </div>
+              </div>
+            </section>`;
+          frameElement.append(overlay);
+          overlay.querySelector("#z18-result-context").textContent = gameId ? `Shloka ${gameId}` : "Daily shloka";
+          overlay.querySelector("#z18-result-score").textContent = String(finalScore);
+          overlay.querySelector("#z18-result-moves").textContent = String(totalMoves);
+          const status = overlay.querySelector("#z18-result-status");
+          overlay.querySelector("#z18-result-share").addEventListener("click", () => openScoreShare({
+            score: finalScore,
+            gameId: "z18",
+            gameName: "BodhaPlay शब्दावली",
+            levelName: gameId ? `Shloka ${gameId}` : "Daily shloka",
+          }));
+          overlay.querySelector("#z18-result-done").addEventListener("click", () => overlay.remove());
+          overlay.querySelector("#z18-result-replay").addEventListener("click", () => window.location.reload());
+          overlay.querySelector("#z18-result-share").focus();
+          submitGameScore(finalScore, {
+            metrics: {
+              totalMoves,
+              totalLetters,
+              extraMoves,
+              giveUpCount,
+              shlokaId: gameId ?? "daily",
+            },
+          })
+            .then((result) => {
+              status.textContent = result.ok
+                ? "Score saved ✓"
+                : "Sign in to save your score.";
+            })
+            .catch((error) => {
+              console.error("[z18] Score submission failed:", error);
+              status.textContent = "Score could not be saved.";
+            });
+          return;
+        }
 
-			const randomIndex = rand(remainingWords.length - 1);
-			const currentWord = remainingWords.splice(randomIndex, 1)[0];
-			currentWordIndex = currentWord.index;
-			score = 0;
-			wordTransitioning = false;
-			const graphemes = splitWordIntoGraphemes(currentWord.word);
-			const widthScale = W / 1024;
-			const tileSpacing = Math.max(2, 5 * widthScale);
-			const maxTileSize = Math.min(150 * widthScale, H * 0.2);
-			const horizontalPadding = Math.max(12, 48 * widthScale);
-			const tileSize = Math.min(
-				maxTileSize,
-				(W - horizontalPadding - tileSpacing * (graphemes.length - 1)) / graphemes.length,
-			);
-			const tileFontSize = Math.max(14, Math.round(56 * tileSize / 150));
-			const tiles = graphemes.map((letter) => new zim.Label({
-				text: letter,
-				color: themeColors.navyDark,
-				size: tileFontSize,
-				backing: new zim.Rectangle(
-					tileSize,
-					tileSize,
-					new RadialColor([themeColors.goldLight, themeColors.gold], [0, 1], 0, 0, 100, 0, 0, 0),
-					null,
-					0,
-					18,
-				),
-				align: CENTER,
-				valign: CENTER,
-			}));
-			const tileSet = new Tile({
-				obj: tiles,
-				unique: true,
-				cols: graphemes.length,
-				rows: 1,
-				spacingH: tileSpacing,
-				spacingV: tileSpacing,
-			});
-			scrambler = new Scrambler({ tile: tileSet, keys: graphemes, keyProperty: "text" }).pos(0, -H * 0.25, CENTER, CENTER);
-			scrambler.on("complete", done);
-			scrambler.on("pressup", () => score++);
-			S.update();
-		}
-		const search = window.location.search;
-		const idValues = new URLSearchParams(search).getAll("id");
-		const parsedId = idValues.length === 1 ? idValues[0] : null;
-		const numericId = parsedId && /^[1-9]\d*$/.test(parsedId) ? Number(parsedId) : null;
-		gameId = Number.isSafeInteger(numericId) ? numericId : null;
-		const shlokaText = await getShlokaTextFromUrl(search);
-		let verseReference = null;
-		try {
-			const versesResponse = await fetch(new URL("../../assets/bhagavad-gita-verses.json", import.meta.url));
-			if (!versesResponse.ok) throw new Error(`Verse data request failed: ${versesResponse.status}`);
-			const verses = await versesResponse.json();
-			verseReference = verses.find((verse) => cleanShlokaText(verse.txt) === shlokaText)
-				?? verses.find((verse) => verse.id === gameId)
-				?? null;
-		} catch (error) {
-			console.error("[z18] Could not load chapter and verse:", error);
-		}
-		// Verse-ending danda markers are punctuation, not part of the final word.
-		// Remove them before measuring or splitting the word into graphemes.
-		const eligibleWords = splitShlokaWords(shlokaText)
-			.map((word) => word.replace(/[।॥|]+$/u, ""))
-			.filter(Boolean)
-			.filter((word) => {
-				const graphemeCount = splitWordIntoGraphemes(word).length;
-				return graphemeCount >= GAME_CONFIG.minWordGraphemes
-					&& graphemeCount <= GAME_CONFIG.maxWordGraphemes;
-			});
-		words = sampleWords(eligibleWords, GAME_CONFIG.randomWordCount);
-		scrambledGraphemesByWord = words.map((word) => scrambleGraphemes(splitWordIntoGraphemes(word)));
-		if (words.length === 0) {
-			document.body.textContent = "No shloka found for this id.";
-			throw new Error("No shloka text available for this game.");
-		}
-		initGameScore({
-			gameId: "z18",
-			gameName: "BodhaPlay शब्दावली",
-			levelId: gameId ? String(gameId) : "daily",
-			levelName: gameId ? `Shloka ${gameId}` : "Daily shloka",
-		});
-		const frameElement = document.getElementById("z18-game-frame");
-		const frameWidth = Math.min(1024, Math.max(280, frameElement.clientWidth));
-		const isCompactViewport = window.matchMedia("(max-width: 1100px), (max-height: 700px)").matches;
-		const availableViewportHeight = Math.max(420, window.innerHeight - frameElement.getBoundingClientRect().top - 12);
-		const frameHeight = isCompactViewport
-			? Math.min(Math.round(frameWidth * 1.35), availableViewportHeight)
-			: Math.round(frameWidth * 0.75);
-		frameElement.style.setProperty("--z18-frame-height", `${frameHeight}px`);
-		new Frame("z18-game-frame", frameWidth, frameHeight, themeColors.white, themeColors.cream, ready);
-		function ready() {
-			const widthScale = W / 1024;
-			const barHeight = Math.max(30, 40 * widthScale);
-			const textSize = Math.max(12, 25 * widthScale);
-			const rowFontSizeFloor = isCompactViewport ? 18 : 12;
-			const rowHeight = Math.max(isCompactViewport ? 38 : 30, 48 * widthScale);
-			rowFontSize = Math.max(rowFontSizeFloor, 20 * widthScale);
-			rowTextOffset = isCompactViewport ? 70 * widthScale : 42 * widthScale;
-			moveRightPadding = Math.max(10, 16 * widthScale);
-			const preferredMoveNumberWidth = rowFontSize * 4.8;
-			const preferredMoveLabelWidth = rowFontSize * 4.6;
-			moveColumnGap = Math.max(4, 8 * widthScale);
-			const minWordWidth = Math.max(36, 48 * widthScale);
-			const maxRightColumnWidth = Math.max(0, W - rowTextOffset - moveRightPadding - minWordWidth - 10 * widthScale);
-			const columnScale = Math.min(1, maxRightColumnWidth / (preferredMoveNumberWidth + preferredMoveLabelWidth + moveColumnGap));
-			moveNumberWidth = preferredMoveNumberWidth * columnScale;
-			moveLabelWidth = preferredMoveLabelWidth * columnScale;
-			moveColumnGap *= columnScale;
-			const rightColumnWidth = moveNumberWidth + moveLabelWidth + moveColumnGap;
-			rowTextWidth = Math.max(1, W - rowTextOffset - moveRightPadding - rightColumnWidth - 10 * widthScale);
-			const bar = new Rectangle(W, barHeight, themeColors.navy, null, 0, 10 * widthScale).addTo();
-			F.makeIcon({ box: themeColors.navy }).scaleTo(bar, 90, 90).loc(10 * widthScale, 3 * widthScale);
-			const referenceText = verseReference
-				? `Chapter - ${verseReference.ch}   Verse - ${verseReference.vn}`
-				: "Chapter - —   Verse - —";
-			new Label(referenceText, textSize, "Arial", themeColors.goldLight).pos(0, 2 * widthScale, CENTER, CENTER, bar);
-			rows = [];
-			const listTop = isCompactViewport
-				? Math.min(H * 0.62, Math.max(barHeight + 190 * widthScale, H * 0.52))
-				: H * 0.56;
-			const giveUpButtonHeight = Math.max(34, 42 * widthScale);
-			const listGap = 8 * widthScale;
-			const buttonLift = Math.max(0, giveUpButtonHeight / 2 - listGap);
-			const listHeight = H - listTop - giveUpButtonHeight - listGap;
-			loop(words.length, i => {
-				const row = { box: new Container(W, rowHeight) };
-				new Label(`${i + 1}.`, rowFontSize, "Arial", black)
-					.pos(12 * widthScale, 0, LEFT, CENTER, row.box);
-				row.scrambledLabel = new Label({ text: scrambledGraphemesByWord[i].join(" "), size: rowFontSize, font: "Arial", color: themeColors.navy, labelWidth: rowTextWidth })
-					.pos(rowTextOffset, 0, LEFT, CENTER, row.box);
-				row.box.mouseChildren = false;
-				rows.push(row);
-			});
-			const giveUpButtonWidth = Math.max(150, 190 * widthScale);
-			const giveUpLabelSize = Math.max(11, Math.min(18, (giveUpButtonWidth - 24) / 10, (giveUpButtonHeight - 8) * 0.55));
-			new Button({
-				width: giveUpButtonWidth,
-				height: giveUpButtonHeight,
-				label: new Label({
-					text: "Complete for me",
-					size: giveUpLabelSize,
-					font: "Arial",
-					color: themeColors.white,
-					align: CENTER,
-					valign: CENTER,
-					labelWidth: giveUpButtonWidth - 16,
-				}),
-				backgroundColor: themeColors.navy,
-				rollBackgroundColor: themeColors.navyDark,
-				downBackgroundColor: themeColors.navyDark,
-				color: themeColors.white,
-				corner: 10,
-			}).pos(0, listTop - buttonLift, CENTER, TOP).on("click", giveUpCurrentWord);
-			new List({
-				backdropColor: themeColors.creamDark,
-				corner: 14,
-				paddingH: 0,
-				paddingV: 0,
-				valign: TOP,
-				indent: 0,
-				width: W,
-				height: listHeight,
-				viewNum: Math.max(1, Math.floor(listHeight / rowHeight)),
-				list: rows.map(({ box }) => box),
-				dropCopy: false,
-				vertical: true,
-				scrollBarActive: true,
-				scrollBarDrag: true,
-				scrollBarV: true,
-				scrollWheel: true,
-				dropWidth: W,
-				dropHeight: rowHeight,
-				dropHitTest: "reg",
-				dropEnd: false
-			}).loc(0, listTop + giveUpButtonHeight + listGap);
-			remainingWords = words.map((word, index) => ({ word, index }));
-			startNextWord();
-			emitter = new Emitter({
-				obj: new Rectangle(15, 15, [themeColors.gold, themeColors.accentCoral, themeColors.accentBlue, themeColors.success]),
-				startPaused: true,
-				random: {
-					scale: { min: 1, max: 4 },
-					rotation: { min: 0, max: 360 }
-				},
-				angle: { min: 180, max: 270 },
-				vertical: true,
-				height: scrambler.height,
-				width: 10,
-				force: { min: 4, max: 8 },
-				num: 5 // five at a time
-			}).pos(0, -H * 0.25, CENTER, CENTER);
-		}
-	</script>
-</head>
-<body data-page="games" class="zatam-themed-game">
-	<div id="navbar-mount"></div>
-	<div id="z18-game-frame"></div>
-</body>
+        const randomIndex = rand(remainingWords.length - 1);
+        const currentWord = remainingWords.splice(randomIndex, 1)[0];
+        currentWordIndex = currentWord.index;
+        score = 0;
+        wordTransitioning = false;
+        const graphemes = splitWordIntoGraphemes(currentWord.word);
+        const widthScale = W / 1024;
+        const tileSpacing = Math.max(2, 5 * widthScale);
+        const maxTileSize = Math.min(150 * widthScale, H * 0.2);
+        const horizontalPadding = Math.max(12, 48 * widthScale);
+        const tileSize = Math.min(
+          maxTileSize,
+          (W - horizontalPadding - tileSpacing * (graphemes.length - 1)) /
+            graphemes.length,
+        );
+        const tileFontSize = Math.max(14, Math.round((56 * tileSize) / 150));
+        const tiles = graphemes.map(
+          (letter) =>
+            new zim.Label({
+              text: letter,
+              color: themeColors.navyDark,
+              size: tileFontSize,
+              backing: new zim.Rectangle(
+                tileSize,
+                tileSize,
+                new RadialColor(
+                  [themeColors.goldLight, themeColors.gold],
+                  [0, 1],
+                  0,
+                  0,
+                  100,
+                  0,
+                  0,
+                  0,
+                ),
+                null,
+                0,
+                18,
+              ),
+              align: CENTER,
+              valign: CENTER,
+            }),
+        );
+        const tileSet = new Tile({
+          obj: tiles,
+          unique: true,
+          cols: graphemes.length,
+          rows: 1,
+          spacingH: tileSpacing,
+          spacingV: tileSpacing,
+        });
+        scrambler = new Scrambler({
+          tile: tileSet,
+          keys: graphemes,
+          keyProperty: "text",
+        }).pos(0, -H * 0.25, CENTER, CENTER);
+        scrambler.on("complete", done);
+        scrambler.on("pressup", () => score++);
+        S.update();
+      }
+      const search = window.location.search;
+      const idValues = new URLSearchParams(search).getAll("id");
+      const parsedId = idValues.length === 1 ? idValues[0] : null;
+      const numericId =
+        parsedId && /^[1-9]\d*$/.test(parsedId) ? Number(parsedId) : null;
+      gameId = Number.isSafeInteger(numericId) ? numericId : null;
+      const shlokaText = await getShlokaTextFromUrl(search);
+      let verseReference = null;
+      try {
+        const versesResponse = await fetch(
+          new URL("../../assets/bhagavad-gita-verses.json", import.meta.url),
+        );
+        if (!versesResponse.ok)
+          throw new Error(
+            `Verse data request failed: ${versesResponse.status}`,
+          );
+        const verses = await versesResponse.json();
+        verseReference =
+          verses.find((verse) => cleanShlokaText(verse.txt) === shlokaText) ??
+          verses.find((verse) => verse.id === gameId) ??
+          null;
+      } catch (error) {
+        console.error("[z18] Could not load chapter and verse:", error);
+      }
+      // Verse-ending danda markers are punctuation, not part of the final word.
+      // Remove them before measuring or splitting the word into graphemes.
+      const eligibleWords = splitShlokaWords(shlokaText)
+        .map((word) => word.replace(/[।॥|]+$/u, ""))
+        .filter(Boolean)
+        .filter((word) => {
+          const graphemeCount = splitWordIntoGraphemes(word).length;
+          return (
+            graphemeCount >= GAME_CONFIG.minWordGraphemes &&
+            graphemeCount <= GAME_CONFIG.maxWordGraphemes
+          );
+        });
+      words = sampleWords(eligibleWords, GAME_CONFIG.randomWordCount);
+      scrambledGraphemesByWord = words.map((word) =>
+        scrambleGraphemes(splitWordIntoGraphemes(word)),
+      );
+      if (words.length === 0) {
+        document.body.textContent = "No shloka found for this id.";
+        throw new Error("No shloka text available for this game.");
+      }
+      initGameScore({
+        gameId: "z18",
+        gameName: "BodhaPlay शब्दावली",
+        levelId: gameId ? String(gameId) : "daily",
+        levelName: gameId ? `Shloka ${gameId}` : "Daily shloka",
+      });
+      const frameElement = document.getElementById("z18-game-frame");
+      const frameWidth = Math.min(
+        1024,
+        Math.max(280, frameElement.clientWidth),
+      );
+      const isCompactViewport = window.matchMedia(
+        "(max-width: 1100px), (max-height: 700px)",
+      ).matches;
+      const availableViewportHeight = Math.max(
+        420,
+        window.innerHeight - frameElement.getBoundingClientRect().top - 12,
+      );
+      const frameHeight = isCompactViewport
+        ? Math.min(Math.round(frameWidth * 1.35), availableViewportHeight)
+        : Math.round(frameWidth * 0.75);
+      frameElement.style.setProperty("--z18-frame-height", `${frameHeight}px`);
+      new Frame(
+        "z18-game-frame",
+        frameWidth,
+        frameHeight,
+        themeColors.white,
+        themeColors.cream,
+        ready,
+      );
+      function ready() {
+        const widthScale = W / 1024;
+        const barHeight = Math.max(30, 40 * widthScale);
+        const textSize = Math.max(12, 25 * widthScale);
+        const rowFontSizeFloor = isCompactViewport ? 18 : 12;
+        const rowHeight = Math.max(
+          isCompactViewport ? 38 : 30,
+          48 * widthScale,
+        );
+        rowFontSize = Math.max(rowFontSizeFloor, 20 * widthScale);
+        rowTextOffset = isCompactViewport ? 70 * widthScale : 42 * widthScale;
+        moveRightPadding = Math.max(10, 16 * widthScale);
+        const preferredMoveNumberWidth = rowFontSize * 4.8;
+        const preferredMoveLabelWidth = rowFontSize * 4.6;
+        moveColumnGap = Math.max(4, 8 * widthScale);
+        const minWordWidth = Math.max(36, 48 * widthScale);
+        const maxRightColumnWidth = Math.max(
+          0,
+          W - rowTextOffset - moveRightPadding - minWordWidth - 10 * widthScale,
+        );
+        const columnScale = Math.min(
+          1,
+          maxRightColumnWidth /
+            (preferredMoveNumberWidth +
+              preferredMoveLabelWidth +
+              moveColumnGap),
+        );
+        moveNumberWidth = preferredMoveNumberWidth * columnScale;
+        moveLabelWidth = preferredMoveLabelWidth * columnScale;
+        moveColumnGap *= columnScale;
+        const rightColumnWidth =
+          moveNumberWidth + moveLabelWidth + moveColumnGap;
+        rowTextWidth = Math.max(
+          1,
+          W -
+            rowTextOffset -
+            moveRightPadding -
+            rightColumnWidth -
+            10 * widthScale,
+        );
+        const bar = new Rectangle(
+          W,
+          barHeight,
+          themeColors.navy,
+          null,
+          0,
+          10 * widthScale,
+        ).addTo();
+        F.makeIcon({ box: themeColors.navy })
+          .scaleTo(bar, 90, 90)
+          .loc(10 * widthScale, 3 * widthScale);
+        const referenceText = verseReference
+          ? `Chapter - ${verseReference.ch}   Verse - ${verseReference.vn}`
+          : "Chapter - —   Verse - —";
+        new Label(referenceText, textSize, "Arial", themeColors.goldLight).pos(
+          0,
+          2 * widthScale,
+          CENTER,
+          CENTER,
+          bar,
+        );
+        rows = [];
+        const listTop = isCompactViewport
+          ? Math.min(H * 0.62, Math.max(barHeight + 190 * widthScale, H * 0.52))
+          : H * 0.56;
+        const giveUpButtonHeight = Math.max(34, 42 * widthScale);
+        const listGap = 8 * widthScale;
+        const buttonLift = Math.max(0, giveUpButtonHeight / 2 - listGap);
+        const listHeight = H - listTop - giveUpButtonHeight - listGap;
+        loop(words.length, (i) => {
+          const row = { box: new Container(W, rowHeight) };
+          new Label(`${i + 1}.`, rowFontSize, "Arial", black).pos(
+            12 * widthScale,
+            0,
+            LEFT,
+            CENTER,
+            row.box,
+          );
+          row.scrambledLabel = new Label({
+            text: scrambledGraphemesByWord[i].join(" "),
+            size: rowFontSize,
+            font: "Arial",
+            color: themeColors.navy,
+            labelWidth: rowTextWidth,
+          }).pos(rowTextOffset, 0, LEFT, CENTER, row.box);
+          row.box.mouseChildren = false;
+          rows.push(row);
+        });
+        const giveUpButtonWidth = Math.max(150, 190 * widthScale);
+        const giveUpLabelSize = Math.max(
+          11,
+          Math.min(
+            18,
+            (giveUpButtonWidth - 24) / 10,
+            (giveUpButtonHeight - 8) * 0.55,
+          ),
+        );
+        new Button({
+          width: giveUpButtonWidth,
+          height: giveUpButtonHeight,
+          label: new Label({
+            text: "Complete for me",
+            size: giveUpLabelSize,
+            font: "Arial",
+            color: themeColors.white,
+            align: CENTER,
+            valign: CENTER,
+            labelWidth: giveUpButtonWidth - 16,
+          }),
+          backgroundColor: themeColors.navy,
+          rollBackgroundColor: themeColors.navyDark,
+          downBackgroundColor: themeColors.navyDark,
+          color: themeColors.white,
+          corner: 10,
+        })
+          .pos(0, listTop - buttonLift, CENTER, TOP)
+          .on("click", giveUpCurrentWord);
+        new List({
+          backdropColor: themeColors.creamDark,
+          corner: 14,
+          paddingH: 0,
+          paddingV: 0,
+          valign: TOP,
+          indent: 0,
+          width: W,
+          height: listHeight,
+          viewNum: Math.max(1, Math.floor(listHeight / rowHeight)),
+          list: rows.map(({ box }) => box),
+          dropCopy: false,
+          vertical: true,
+          scrollBarActive: true,
+          scrollBarDrag: true,
+          scrollBarV: true,
+          scrollWheel: true,
+          dropWidth: W,
+          dropHeight: rowHeight,
+          dropHitTest: "reg",
+          dropEnd: false,
+        }).loc(0, listTop + giveUpButtonHeight + listGap);
+        remainingWords = words.map((word, index) => ({ word, index }));
+        startNextWord();
+        emitter = new Emitter({
+          obj: new Rectangle(15, 15, [
+            themeColors.gold,
+            themeColors.accentCoral,
+            themeColors.accentBlue,
+            themeColors.success,
+          ]),
+          startPaused: true,
+          random: {
+            scale: { min: 1, max: 4 },
+            rotation: { min: 0, max: 360 },
+          },
+          angle: { min: 180, max: 270 },
+          vertical: true,
+          height: scrambler.height,
+          width: 10,
+          force: { min: 4, max: 8 },
+          num: 5, // five at a time
+        }).pos(0, -H * 0.25, CENTER, CENTER);
+      }
+    </script>
+  </head>
+  <body data-page="games" class="zatam-themed-game">
+    <div id="navbar-mount"></div>
+    <div id="z18-game-frame"></div>
+  </body>
 </html>

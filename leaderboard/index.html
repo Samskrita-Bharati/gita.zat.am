@@ -2,7 +2,11 @@
 <html lang="en">
   <head>
     <!-- Hidden before first paint; authentication guard reveals authorized pages. -->
-    <style>html:not(.gg-authenticated) { visibility: hidden !important; }</style>
+    <style>
+      html:not(.gg-authenticated) {
+        visibility: hidden !important;
+      }
+    </style>
     <script type="module" src="../games/shared/auth-guard.js"></script>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -11,7 +15,6 @@
 
     <link rel="stylesheet" href="../css/global.css" />
     <link rel="stylesheet" href="leaderboardStyles.css" />
-
   </head>
 
   <body class="leaderboard-page" data-page="leaderboard">
@@ -36,6 +39,15 @@
         </div>
 
         <div class="lb-hero-actions">
+          <button
+            type="button"
+            id="lbHeroShare"
+            class="lb-share-btn"
+            disabled
+            hidden
+          >
+            ✦ Share My Achievement
+          </button>
           <a
             href="../index.html"
             class="back-btn lb-secondary-action"
@@ -43,7 +55,6 @@
           >
             ← Back to Games
           </a>
-
         </div>
       </section>
 
@@ -159,11 +170,7 @@
             </div>
 
             <div class="podium">
-              <div
-                class="podium-card rank-2"
-                id="card-2"
-                data-color="#C0C0C0"
-              >
+              <div class="podium-card rank-2" id="card-2" data-color="#C0C0C0">
                 <div class="podium-medal">🥈</div>
                 <div class="rank">#2</div>
                 <div class="name" id="name-2">---</div>
@@ -171,11 +178,7 @@
                 <div class="score" id="score-2">---</div>
               </div>
 
-              <div
-                class="podium-card rank-1"
-                id="card-1"
-                data-color="#FFD700"
-              >
+              <div class="podium-card rank-1" id="card-1" data-color="#FFD700">
                 <div class="podium-crown">Champion</div>
                 <div class="podium-medal">🥇</div>
                 <div class="rank">#1</div>
@@ -184,11 +187,7 @@
                 <div class="score" id="score-1">---</div>
               </div>
 
-              <div
-                class="podium-card rank-3"
-                id="card-3"
-                data-color="#CD7F32"
-              >
+              <div class="podium-card rank-3" id="card-3" data-color="#CD7F32">
                 <div class="podium-medal">🥉</div>
                 <div class="rank">#3</div>
                 <div class="name" id="name-3">---</div>
@@ -218,7 +217,14 @@
             </div>
 
             <div class="lb-history-load">
-              <button type="button" id="loadMoreHistoryBtn" class="lb-more-link" hidden>Load older history months</button>
+              <button
+                type="button"
+                id="loadMoreHistoryBtn"
+                class="lb-more-link"
+                hidden
+              >
+                Load older history months
+              </button>
             </div>
             <div class="pagination" id="pagination">
               <button id="prevBtn" type="button">← Previous</button>
@@ -275,17 +281,33 @@
               </div>
 
               <p id="myRankHint" class="lb-my-rank-hint"></p>
+              <button
+                type="button"
+                id="lbShareMyRank"
+                class="lb-share-btn lb-rank-share-btn"
+                disabled
+                hidden
+              >
+                ✦ Share My Achievement
+              </button>
             </div>
           </section>
 
-          <section class="side-card lb-history-preview-card" id="recentHistoryCard">
+          <section
+            class="side-card lb-history-preview-card"
+            id="recentHistoryCard"
+          >
             <div class="lb-side-heading">
               <div>
                 <span class="lb-section-kicker">Your Activity</span>
                 <h3>My Recent Game History</h3>
               </div>
 
-              <button id="viewAllHistoryBtn" class="lb-text-action" type="button">
+              <button
+                id="viewAllHistoryBtn"
+                class="lb-text-action"
+                type="button"
+              >
                 View All →
               </button>
             </div>
@@ -340,7 +362,9 @@
           <div class="info-icon">🏆</div>
           <div>
             <h4>Track Progress</h4>
-            <p>Compare best scores while every attempt stays in your history.</p>
+            <p>
+              Compare best scores while every attempt stays in your history.
+            </p>
           </div>
         </article>
 

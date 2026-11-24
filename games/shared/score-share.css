@@ -1,0 +1,315 @@
+/* Mobile-first score sharing; matches GG's navy, cream and gold design tokens. */
+.gg-share-inline-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 11px 20px;
+  margin: 13px auto 6px;
+  border-radius: 10px;
+  border: 1px solid #df9f29;
+  background: #0b2b4f;
+  color: #fffaf2;
+  font:
+    700 14px/1.35 Arial,
+    "Noto Sans Devanagari",
+    sans-serif;
+  box-shadow: 0 3px 10px #09264a20;
+  cursor: pointer;
+}
+.gg-share-inline-button:hover {
+  background: #143d6b;
+}
+.gg-share-inline-button:focus-visible {
+  outline: 3px solid #ffd36b;
+  outline-offset: 3px;
+}
+.zatam-game-actions > .gg-share-inline-button {
+  margin: 0;
+}
+#finishMessage > .gg-share-inline-button {
+  display: flex;
+  width: max-content;
+  max-width: 100%;
+  margin: 12px auto 4px;
+}
+.gg-share-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483647;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: auto;
+  padding: 16px;
+  background: rgba(9, 38, 74, 0.75);
+  font-family: Arial, "Noto Sans Devanagari", sans-serif;
+}
+.gg-share-dialog {
+  box-sizing: border-box;
+  width: min(100%, 490px);
+  max-height: min(95dvh, 950px);
+  overflow: auto;
+  border-radius: 21px;
+  padding: 22px;
+  background: #fffaf2;
+  color: #09264a;
+  box-shadow: 0 28px 90px #061c3a80;
+  border: 1px solid #eadfce;
+}
+.gg-share-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+.gg-share-kicker {
+  display: block;
+  color: #bd653b;
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+.gg-share-top h2 {
+  font-size: 22px;
+  line-height: 1.2;
+  margin: 4px 0 0;
+  color: #09264a;
+}
+.gg-share-close {
+  flex: none;
+  width: 35px;
+  height: 35px;
+  border-radius: 12px;
+  background: #fff;
+  border: 1px solid #eadfce;
+  color: #09264a;
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+}
+.gg-share-description {
+  color: #687789;
+  font-size: 13px;
+  margin: 9px 0 13px;
+}
+.gg-share-preview {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 150px;
+  max-height: min(42dvh, 400px);
+  overflow: hidden;
+  border-radius: 14px;
+  background: #f8f1e5;
+  border: 1px solid #eadfce;
+}
+.gg-share-preview img {
+  display: block;
+  max-height: min(42dvh, 400px);
+  width: auto;
+  max-width: 100%;
+  object-fit: contain;
+  border-radius: 10px;
+  box-shadow: 0 4px 16px #09264a25;
+}
+.gg-share-preview img:not([src]) {
+  display: none;
+}
+/* Status has its own reserved row, so it never obscures the scorecard. */
+.gg-share-preview-updating img {
+  opacity: 0.76;
+}
+.gg-share-render-status {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 24px;
+  margin: 8px 0 2px;
+  color: #65778b;
+  font:
+    600 12px/1.4 Arial,
+    sans-serif;
+  text-align: center;
+}
+.gg-share-render-status[data-state="ready"] {
+  color: #287b52;
+}
+.gg-share-render-status[data-state="error"] {
+  color: #bd4842;
+}
+.gg-share-render-spinner {
+  box-sizing: border-box;
+  flex: none;
+  width: 14px;
+  height: 14px;
+  border: 2px solid #d8c6aa;
+  border-top-color: #c8912c;
+  border-radius: 50%;
+  animation: gg-share-spin 0.7s linear infinite;
+}
+.gg-share-render-spinner[hidden] {
+  display: none;
+}
+@keyframes gg-share-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .gg-share-render-spinner {
+    animation: none;
+    border-top-color: #0b2b4f;
+  }
+}
+.gg-share-privacy {
+  display: flex;
+  gap: 9px;
+  align-items: center;
+  margin: 14px 0;
+  font-size: 12px;
+  color: #3c4c60;
+  cursor: pointer;
+}
+.gg-share-privacy input {
+  width: 17px;
+  height: 17px;
+  accent-color: #0b2b4f;
+}
+.gg-share-privacy input:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+.gg-share-name-hint {
+  margin: -8px 0 12px 26px;
+  color: #69778a;
+  font-size: 11px;
+  line-height: 1.35;
+}
+.gg-share-name-hint[hidden] {
+  display: none;
+}
+.gg-share-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 9px;
+}
+.gg-share-actions button,
+.gg-share-copy,
+.gg-share-socials button {
+  font:
+    700 13px Arial,
+    sans-serif;
+  border-radius: 11px;
+  padding: 12px 9px;
+  cursor: pointer;
+}
+.gg-share-primary {
+  background: #0b2b4f;
+  color: white;
+  border: 1px solid #0b2b4f;
+}
+.gg-share-secondary {
+  background: #ffd36b;
+  color: #09264a;
+  border: 1px solid #f6b23b;
+}
+.gg-share-primary:disabled,
+.gg-share-secondary:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}
+.gg-share-social-heading {
+  color: #687789;
+  font-size: 11px;
+  font-weight: 700;
+  margin: 13px 0 0;
+}
+.gg-share-socials {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-top: 10px;
+}
+.gg-share-socials button {
+  background: white;
+  color: #0b2b4f;
+  border: 1px solid #eadfce;
+}
+.gg-share-copy-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 10px;
+}
+.gg-share-copy {
+  display: block;
+  width: 100%;
+  background: transparent;
+  color: #0b2b4f;
+  border: 1px solid #a8b6c7;
+}
+.gg-share-copy:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.gg-share-dialog button:focus-visible {
+  outline: 3px solid #f6b23b;
+  outline-offset: 2px;
+}
+.gg-share-notice {
+  min-height: 17px;
+  margin: 9px 0 0;
+  text-align: center;
+  font-size: 12px;
+  color: #2f855a;
+}
+.gg-share-notice.gg-share-error {
+  color: #c2413b;
+}
+.gg-share-footnote {
+  font-size: 10px;
+  color: #687789;
+  text-align: center;
+  margin: 4px 0 0;
+}
+@media (max-width: 540px) {
+  .gg-share-overlay {
+    align-items: flex-end;
+    padding: 0;
+  }
+  .gg-share-dialog {
+    border-radius: 22px 22px 0 0;
+    padding: 19px 16px max(20px, env(safe-area-inset-bottom));
+    max-height: 94dvh;
+  }
+  .gg-share-preview,
+  .gg-share-preview img {
+    max-height: 35dvh;
+  }
+  .gg-share-inline-button {
+    width: 100%;
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .gg-share-dialog {
+    animation: gg-share-enter 0.16s ease-out;
+  }
+  @keyframes gg-share-enter {
+    from {
+      opacity: 0.6;
+      transform: translateY(9px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+.gg-share-socials button:disabled {
+  opacity: 0.55;
+  cursor: wait;
+}

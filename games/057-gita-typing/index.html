@@ -8,6 +8,10 @@
     <link rel="stylesheet" href="../../css/global.css">
     <link rel="stylesheet" href="style.css">
     <meta name="viewport" content="width=device-width, initial-scale=1" >
+    <script type="module">
+      import {openScoreShare,showCompletedScoreShare,clearCompletedScoreShare} from "../shared/score-share.js";
+      window.ggScoreShare={openScoreShare,showCompletedScoreShare,clearCompletedScoreShare};
+    </script>
     <script src="script.js" defer></script>
     <link rel="icon" href="Gita_typing_game.png" type="image/x-icon">
     <link rel="manifest" href="manifest.json" >

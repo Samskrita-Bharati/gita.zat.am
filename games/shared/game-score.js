@@ -45,7 +45,11 @@
 // still returns a final 0-100 score.
 // =====================================================
 
-import { auth, db, onAuthStateChanged } from "../../auth/api/firebase-config.js";
+import {
+  auth,
+  db,
+  onAuthStateChanged,
+} from "../../auth/api/firebase-config.js";
 
 import {
   doc,
@@ -56,6 +60,10 @@ import {
   arrayUnion,
 } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
 import { getShlokaAssignmentFromUrl } from "./shloka-utils.js";
+import {
+  showCompletedScoreShare,
+  clearCompletedScoreShare,
+} from "./score-share.js";
 
 const SCORE_MIN = 0;
 const SCORE_MAX = 100;
@@ -96,7 +104,6 @@ function normalizeGameName(value) {
     .trim()
     .slice(0, 120);
 }
-
 
 function normalizeOptionalLevelId(value) {
   if (value === undefined || value === null || value === "") {
@@ -193,9 +200,13 @@ async function updateShlokaProgress(uid, assignment) {
     throw new Error("[Zat.am Score] Invalid shloka assignment.");
   }
 
-  await setDoc(doc(db, "shlokaProgress", `${uid}_${month}`), {
-    completedShlokas: arrayUnion(id),
-  }, { merge: true });
+  await setDoc(
+    doc(db, "shlokaProgress", `${uid}_${month}`),
+    {
+      completedShlokas: arrayUnion(id),
+    },
+    { merge: true },
+  );
 
   // Keep the calendar's per-session copy in sync when it has already been read.
   try {
@@ -203,7 +214,10 @@ async function updateShlokaProgress(uid, assignment) {
     const cached = sessionStorage.getItem(cacheKey);
     if (cached !== null) {
       const completedShlokas = JSON.parse(cached);
-      if (Array.isArray(completedShlokas) && !completedShlokas.some((value) => String(value) === String(id))) {
+      if (
+        Array.isArray(completedShlokas) &&
+        !completedShlokas.some((value) => String(value) === String(id))
+      ) {
         completedShlokas.push(id);
         sessionStorage.setItem(cacheKey, JSON.stringify(completedShlokas));
       }
@@ -262,7 +276,8 @@ async function ensureParentExists(gameId, label) {
   })();
   initializedParents.set(gameId, operation);
   operation.catch(() => {
-    if (initializedParents.get(gameId) === operation) initializedParents.delete(gameId);
+    if (initializedParents.get(gameId) === operation)
+      initializedParents.delete(gameId);
   });
   return operation;
 }
@@ -291,6 +306,7 @@ export function initGameScore({
   state.runStartedAt = Date.now();
   state.submitted = false;
   state.initialized = true;
+  clearCompletedScoreShare();
 
   console.info("[Zat.am Score] Initialized", {
     gameId: state.gameId,
@@ -308,6 +324,7 @@ export function initGameScore({
 }
 
 export function resetGameScore() {
+  clearCompletedScoreShare();
   state.runStartedAt = Date.now();
   state.submitted = false;
 
@@ -458,6 +475,15 @@ export async function submitGameScore(
   }
 
   const finalScore = normalizeScore(score);
+  // Purely client-side share UI. A player's completed result is shareable even
+  // when offline or not signed in; no extra Firestore calls are made.
+  showCompletedScoreShare({
+    score: finalScore,
+    gameId: state.gameId,
+    gameName: state.gameName,
+    levelName: state.levelName || undefined,
+    playerName: auth.currentUser?.displayName || "",
+  });
   const user = await getAuthenticatedUser();
 
   // Main-site games may still be playable while logged out.
