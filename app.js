@@ -46,7 +46,7 @@ export const menu = [
     dir: "games/06-wordScramble",
     cover: "./games/06-wordScramble/cover.svg",
     desc: `Unscramble Sanskrit vocabulary.`,
-  },
+  }
 ];
 
 // =====================================================

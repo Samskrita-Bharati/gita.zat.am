@@ -1,5 +1,6 @@
 import { getDailySchedule, SCHEDULE_START } from "../shlokasToday/daily-schedule.mjs";
 import { cleanShlokaText } from "../shlokasToday/shlokasToday.js";
+import { menu } from "../app.js";
 import { auth, onAuthStateChanged } from "../auth/api/firebase-config.js";
 import { getCompletedShlokaIds } from "../auth/api/streak.js";
 
@@ -19,26 +20,26 @@ cleanUrl.searchParams.delete("month");
 cleanUrl.searchParams.delete("date");
 window.history.replaceState(null, "", `${cleanUrl.pathname}${cleanUrl.search}${cleanUrl.hash}`);
 
-const games = [
-  { dir: "01-wordSearch/index.html", cover: "01-wordSearch/cover.svg", title: "Word Search" },
-  { dir: "02-arrange", cover: "02-arrange/cover.svg", title: "Arrange" },
-  { dir: "057-gita-typing", cover: "057-gita-typing/cover.svg", title: "Gita Typing" },
-  { dir: "04-suutram", cover: "04-suutram/cover.svg", title: "Suutram" },
-  { dir: "05-fillBlank", cover: "05-fillBlank/cover.svg", title: "Fill in the Blank" },
-  { dir: "06-wordScramble", cover: "06-wordScramble/cover.svg", title: "BodhaPlay" },
-];
-
 function showGamePicker(anchor, verse) {
   gamePicker.replaceChildren();
-  games.forEach((game) => {
+  menu.forEach((game) => {
     const link = document.createElement("a");
     link.className = "game-picker-option";
-    link.href = `../games/${game.dir}${game.dir.endsWith(".html") ? "" : "/"}?id=${encodeURIComponent(verse.id)}`;
-    link.setAttribute("aria-label", game.title);
-    link.title = game.title;
+    const isExternal = /^https?:\/\//i.test(game.dir);
+    const gamePath = isExternal
+      ? game.dir
+      : `../${game.dir}${game.dir.endsWith(".html") || game.dir.endsWith("/") ? "" : "/"}`;
+    const gameUrl = new URL(gamePath, window.location.href);
+    gameUrl.searchParams.set("id", verse.id);
+    link.href = gameUrl.href;
+    const label = game.pickerLabel || game.title.trim();
+    link.setAttribute("aria-label", label);
+    link.title = label;
     const icon = document.createElement("img");
-    icon.src = `../games/${game.cover}`;
-    icon.alt = game.title;
+    icon.src = isExternal
+      ? "../assets/शत.म्.png"
+      : `../${game.cover.replace(/^\.\//, "")}`;
+    icon.alt = label;
     link.appendChild(icon);
     gamePicker.appendChild(link);
   });
