@@ -723,7 +723,7 @@ input:checked + .slider:before {
 #fwRetry svg {
   width: 18px;
   height: 18px;
-}  
+}
 
 @media (max-width: 768px){
 
