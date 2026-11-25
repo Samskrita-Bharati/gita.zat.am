@@ -13,7 +13,7 @@ const GAME_PAGE_FOLDERS = Object.freeze({
   "strands": "04-suutram",
   "059-fitb": "05-fillBlank",
   "z18": "06-wordScramble",
-  "057-gita-typing": "057-gita-typing",
+  "07-gitaTyping": "07-gitaTyping",
 });
 const CSS_URL = new URL("./score-share.css", import.meta.url).href;
 const KRISHNA_URL = new URL("../../srikrishna-gg-wa.jpg", import.meta.url).href;
@@ -791,7 +791,7 @@ export function showCompletedScoreShare(input = {}) {
   document.dispatchEvent(new Event("gg-score-share-ready"));
   // ZIM canvas result dialogs and the React Strands modal provide their own
   // contextual button. The typing game already has its own #share button.
-  if (["z18", "strands", "057-gita-typing"].includes(currentData.gameId))
+  if (["z18", "strands", "07-gitaTyping"].includes(currentData.gameId))
     return;
   const container = findResultContainer(currentData.gameId);
   if (!container) return;
