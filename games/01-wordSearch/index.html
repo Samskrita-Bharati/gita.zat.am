@@ -139,7 +139,7 @@
               <li>Tap the first अक्षर (character) of each word.</li>
               <li>Words can appear horizontally, vertically, or diagonally in any direction. Found words are highlighted.</li>
               <li>Incorrect clicks cost 1 point. Correct clicks count towards the Words Found counter.</li>
-              <li>The first hint shows the shloka words (-10 points).The second bolds the target words (-20 points). Each hint is charged once.</li>
+              <li>Hint 1 shows the full shloka in order (−10 points). Hint 2 then unlocks and bolds the hidden words (−20 points). Each hint costs points once.</li>
               <li>Choose a difficulty to play a new board, or select Retry to try again.</li>
               <li>Final scores are submitted to the leaderboard</li>
             </ol>
@@ -268,7 +268,7 @@
     ================================================== -->
 
     <script type="module"> 
-      import{getShlokaTextFromUrl, splitShlokaWords, splitWordIntoGraphemes} from "../shared/shloka-utils.js"
+      import{getShlokaVerseFromUrl, splitShlokaWords, splitWordIntoGraphemes} from "../shared/shloka-utils.js?v=159f9147"
 
       import{
         initGameScore, 
@@ -340,7 +340,8 @@
       }
 
       // var selectId = new URLSearchParams(window.location.search).get("id");
-      var data = await getShlokaTextFromUrl(window.location.search);
+      const verse = await getShlokaVerseFromUrl(window.location.search);
+      const data = cleanShlokaText(verse?.txt ?? "");
 
       var wordList = splitShlokaWords(data)
       .map(word => word.replace(/[।॥]/g, "").trim())
@@ -385,6 +386,7 @@
           N_WORDS_TO_FIND = 5;
          }
         }
+        const candidateWords = wordList;
         wordList = wordList.filter(word =>
           splitWordIntoGraphemes(word).length <= Math.max(N_ROWS, N_COLS)
         );
@@ -393,10 +395,27 @@
 
         N_WORDS_TO_FIND = Math.min (N_WORDS_TO_FIND, wordList.length);
 
-        if(wordList.length ===0){
-          liveScoreEl.textContent = "No Shloka fit in the board";
+        if (wordList.length === 0) {
+          const next = document.getElementById("fwNext");
+          const fitsMedium = N_COLS === 5 && candidateWords.some(
+            (word) => splitWordIntoGraphemes(word).length <= 7
+          );
+
+          if (fitsMedium) {
+            const mediumUrl = new URL(window.location.href);
+            mediumUrl.searchParams.set("size", "7");
+            next.href = mediumUrl.href;
+            next.textContent = "Play Medium";
+            liveScoreEl.textContent = "This shloka’s words need a larger grid.";
+          } else {
+            next.href = "../../test.html";
+            next.textContent = "Back to games";
+            liveScoreEl.textContent = "Word Search is unavailable for this shloka.";
+          }
+
+          next.hidden = false;
           return;
-        }
+}
         var MAX_MARKER_IDX = 6;
 
         function initScoreByDifficulty() {
@@ -510,13 +529,6 @@
             const finalScore = currentScore(completedIn);
             liveScoreEl.textContent = "Final Score: " + finalScore + " / 100";
             
-            try{
-            const result = await submitGameScore(finalScore);
-            console.log("Score submission result:", result);
-            } catch(error){
-            console.log("Score submission failed:", error);
-            }
-            
             const next = document.getElementById("fwNext");
             if (level.next) {
               const url = new URL(location.href);
@@ -531,6 +543,25 @@
             $("#finishMessage").show();
             $("#statusMessage").hide();
             $("#lead").hide();
+            const scoreSummary = liveScoreEl.textContent;
+            liveScoreEl.textContent = `${scoreSummary} · Saving score…`;
+
+            try {
+              const result = await submitGameScore(finalScore, {
+                levelId: `${verse.ch}.${verse.vn}-${level.id}`,
+                levelName: `Shloka ${verse.ch}.${verse.vn} · ${level.name}`,
+              });
+              if (result.ok) {
+                liveScoreEl.textContent = `${scoreSummary} · Saved to leaderboard`;
+              } else if (result.reason === "not-signed-in") {
+                liveScoreEl.textContent = `${scoreSummary} · Sign in to save future scores`;
+              } else {
+                liveScoreEl.textContent = `${scoreSummary} · Leaderboard save not confirmed`;
+              }
+            } catch (error) {
+              console.error("Word Search score submission failed:", error);
+              liveScoreEl.textContent = `${scoreSummary} · Leaderboard save not confirmed`;
+            }
           }
         };
         var directions = {
