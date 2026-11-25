@@ -185,7 +185,7 @@ start.addEventListener("click", async () => {
   wordElements[0].classList.add("highlight");
 
   gameData.scorer?.initGameScore({
-    gameId: "07-gitaTyping",
+    gameId: "057-gita-typing",
     gameName: "Gita Typing",
   });
 
