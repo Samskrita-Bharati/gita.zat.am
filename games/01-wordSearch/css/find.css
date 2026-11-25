@@ -734,3 +734,17 @@ input:checked + .slider:before {
     right: 10px;
   } 
 }
+
+@media (min-width: 768px) and (max-width: 1024px) {
+  #fwGameShell #grid td {
+    font-size: 21px !important;
+  }
+
+  #fwGameShell .fw-instructions {
+    font-size: 18px !important;
+  }
+
+  #fwGameShell .fw-panel h2 {
+    font-size: 20px !important;
+  }
+} 
