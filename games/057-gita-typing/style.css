@@ -11,7 +11,7 @@
   text-align: center;
 }
 
-.typing-card > :empty {
+.typing-card > :is(#info, #reference, #quote, #message, #meaning):empty {
   display: none;
 }
 

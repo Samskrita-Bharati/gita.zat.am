@@ -42,6 +42,40 @@ function localDateKey(date) {
   ].join("-");
 }
 
+function selectScheduledPair(today) {
+  const { schedule, verses } = gameData;
+  const ids = new URLSearchParams(window.location.search).getAll("id");
+
+  if (ids.length === 0) {
+    return { date: today, pair: schedule.getDailySchedule(verses, today).verses };
+  }
+
+  const id = Number(ids[0]);
+  if (
+    ids.length !== 1 ||
+    !/^[1-9]\d*$/.test(ids[0]) ||
+    !Number.isSafeInteger(id) ||
+    !verses.some((verse) => verse.id === id)
+  ) {
+    throw new Error("That shloka ID is invalid.");
+  }
+
+  const date = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+
+  while (true) {
+    const scheduled = schedule.getDailySchedule(verses, date);
+    if (scheduled.status === "upcoming") break;
+
+    if (scheduled.verses.some((verse) => verse.id === id)) {
+      return { date, pair: scheduled.verses };
+    }
+
+    date.setDate(date.getDate() - 1);
+  }
+
+  throw new Error("That shloka hasn’t been released yet.");
+}
+
 function verseLabel(verse) {
   return `Chapter ${verse.ch}, Shloka ${verse.vn}`;
 }
@@ -119,20 +153,21 @@ start.addEventListener("click", async () => {
   message.textContent = "Loading today’s shlokas…";
 
   try {
-    gameData ??= await loadGameData();
+  gameData ??= await loadGameData();
 
-    const today = new Date();
-    const scheduled = gameData.schedule.getDailySchedule(gameData.verses, today);
-    if (scheduled.verses.length !== 2) {
-      throw new Error("There are no scheduled shlokas for today.");
-    }
+      const { date, pair } = selectScheduledPair(new Date());
 
-    round = {
-      date: localDateKey(today),
-      verses: scheduled.verses.map((verse) => getTypingVerse(verse, gameData.typing)),
-    };
+  if (pair.length !== 2) {
+    throw new Error("There aren’t two shlokas scheduled for this day.");
+  }
 
-    renderVerses(round.verses);
+  round = {
+    date: localDateKey(date),
+    verses: pair.map((verse) => getTypingVerse(verse, gameData.typing)),
+  };
+
+  renderVerses(round.verses);
+
   } catch (error) {
     console.error(error);
     message.textContent = error.message;
