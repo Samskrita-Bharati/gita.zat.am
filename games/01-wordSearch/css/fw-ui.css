@@ -156,7 +156,7 @@
 #fwGameShell #hintPopup {
   inset: 0;
   z-index: 6000;
-  width: auto;
+  width: auto; 
   height: auto;
   overflow: auto;
 }
