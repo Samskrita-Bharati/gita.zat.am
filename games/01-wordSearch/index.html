@@ -1,7 +1,6 @@
 <!doctype html>
 <html lang="en">
   <head>
-
     <title>अन्वेषणम्</title>
     <link rel="icon" type="image/png" href="../assets/bp26c.png" />
     <meta charset="utf-8" />
@@ -138,9 +137,9 @@
             <ol>
               <li>Find the Sanskrit words from the Bhagavad Gita shloka</li> 
               <li>Tap the first अक्षर (character) of each word.</li>
-              <li>Words can appear right, down, or diagonally down and right. Found words are highlighted.</li>
+              <li>Words can appear horizontally, vertically, or diagonally in any direction. Found words are highlighted.</li>
               <li>Incorrect clicks cost 1 point. Correct clicks count towards the Words Found counter.</li>
-              <li>The first hint shows the shloka words (-10 points).The second bolds the target words (-20 points). Each hint is charged once.</li>
+              <li>Hint 1 shows the full shloka in order (−10 points). Hint 2 then unlocks and bolds the hidden words (−20 points). Each hint costs points once.</li>
               <li>Choose a difficulty to play a new board, or select Retry to try again.</li>
               <li>Final scores are submitted to the leaderboard</li>
             </ol>
@@ -269,7 +268,7 @@
     ================================================== -->
 
     <script type="module"> 
-      import{getShlokaVerseFromUrl, splitShlokaWords, splitWordIntoGraphemes} from "../shared/shloka-utils.js"
+      import{getShlokaVerseFromUrl, splitShlokaWords, splitWordIntoGraphemes} from "../shared/shloka-utils.js?v=159f9147"
 
       import{
         initGameScore, 
@@ -343,11 +342,7 @@
       // var selectId = new URLSearchParams(window.location.search).get("id");
       const verse = await getShlokaVerseFromUrl(window.location.search);
       const data = cleanShlokaText(verse?.txt ?? "");
-      // if (selectId){
-      //   const cleanURL = new URL(window.location.href);
-      //   cleanURL.searchParams.delete("id");
-      //   window.history.replaceState({}, "", cleanURL);
-      // } 
+
       var wordList = splitShlokaWords(data)
       .map(word => word.replace(/[।॥]/g, "").trim())
       .filter(word => splitWordIntoGraphemes(word).length > 1);
@@ -451,10 +446,7 @@
           }
 
           countAnswers();
-            window.placedWords = placedWords;
-          // console.log("Placed Words: ", placedWords);
-          // console.log("Shloka Words: ", wordList);
-          // console.log("Selected Words: ", words);
+          window.placedWords = placedWords;
           console.log("Word List: ", answers);
           hideHint();
           resizeGrid();
@@ -500,8 +492,6 @@
         var nAnswersPresent = 0;
 
         var countAnswers = function () {
-          // var rowIdx = 0;
-          // var colIdx = 0;
           answers = [...placedWords];
           nAnswersPresent = answers.length;
           $("#totalWords").text(nAnswersPresent);
@@ -516,27 +506,6 @@
 
           }
         };
-
-
-          // for (rowIdx = 0; rowIdx < N_ROWS; rowIdx++) {
-          //   for (colIdx = 0; colIdx < N_COLS; colIdx++) {
-          //     var matches = processCell(
-          //       $("#tblCell_" + rowIdx + "_" + colIdx).get(0),
-          //       true,
-          //     );
-          //     answers = answers.concat(matches);
-          //     nAnswersPresent += matches.length;
-          //   }
-          // }
-
-        //   $("#finishMessage").hide();
-        //   $("#nPresent").text(String.fromCharCode(0x0966 + nAnswersPresent));
-        //   $("#nFound").text(0);
-        //   var answerIdx = 0;
-        //   for (answerIdx = 0; answerIdx < answers.length; answerIdx++) {
-        //     $("#answers").append("<li>" + answers[answerIdx] + "</li>");
-        //   }
-        // };
 
         var cellClick = async function(e) {
           if (!hasStarted || isGameFinished) return;
@@ -560,7 +529,6 @@
             const finalScore = currentScore(completedIn);
             liveScoreEl.textContent = "Final Score: " + finalScore + " / 100";
             
-
             const next = document.getElementById("fwNext");
             if (level.next) {
               const url = new URL(location.href);
@@ -596,6 +564,17 @@
             }
           }
         };
+        var directions = {
+        L: [0, -1], 
+        R: [0, 1], 
+        D: [1, 0], 
+        U: [-1, 0], 
+        DIL: [1, -1], 
+        DIR: [1, 1,], 
+        DIU: [-1, 1], 
+        DID: [-1, -1]
+        };
+
 
         var processCell = function (cell, doNotMark) {
           if ($(cell).hasClass("found")) {
@@ -605,103 +584,41 @@
           var cellRowIdx = parseInt(cell.id.split("_")[1]);
           var cellColIdx = parseInt(cell.id.split("_")[2]);
           var matches = [];
-          var rowIdx = 0;
-          var colIdx = 0;
-          var matchCandidate = "";
 
-          for (colIdx = cellColIdx; colIdx < N_COLS; colIdx++) {
-            matchCandidate =
-              matchCandidate +
-              $("#tblCell_" + cellRowIdx + "_" + colIdx).text();
+          for (var direction of Object.values(directions)){
+          var matchCandidate = "";
+          var rowIdx = cellRowIdx;
+          var colIdx = cellColIdx;
+
+          while(
+            rowIdx >=0 &&
+            rowIdx < N_ROWS &&
+            colIdx >= 0 &&
+            colIdx < N_COLS
+          ){
+
+           matchCandidate +=
+            $("#tblCell_" + rowIdx + "_" + colIdx).text();
 
              if (isProperMatch(matchCandidate, doNotMark)) {
-              
               matches.push(matchCandidate);
 
-                if (doNotMark) {
-                continue;
-              }
-
-              markMatch(
-                cellRowIdx,
-                cellColIdx,
-                cellRowIdx,
-                colIdx,
-                matchCandidate,
-              );
-            }
-          }
-
-          matchCandidate = "";
-          rowIdx = 0;
-          colIdx = 0;
-
-          for (rowIdx = cellRowIdx; rowIdx < N_ROWS; rowIdx++) {
-            matchCandidate =
-              matchCandidate +
-              $("#tblCell_" + rowIdx + "_" + cellColIdx).text();
-
-            if (
-              convertToArrayOfAksharas(matchCandidate).length > 1 &&
-              isProperMatch(matchCandidate, doNotMark)
-              
-          ){
-              matches.push(matchCandidate);
-
-              if (doNotMark) {
-                continue;
-              }
-
-              markMatch(
+                if (!doNotMark) {
+                markMatch(
                 cellRowIdx,
                 cellColIdx,
                 rowIdx,
-                cellColIdx,
-                matchCandidate,
+                colIdx,
+                matchCandidate
               );
             }
           }
-
-          matchCandidate = "";
-          rowIdx = 0;
-          colIdx = 0;
-
-          for (
-            var diagIdx = 0;
-            diagIdx + cellRowIdx < N_ROWS && diagIdx + cellColIdx < N_COLS;
-            diagIdx++
-          ) {
-            matchCandidate =
-              matchCandidate +
-              $(
-                "#tblCell_" +
-                  (diagIdx + cellRowIdx) +
-                  "_" +
-                  (diagIdx + cellColIdx),
-              ).text();
-
-            if (
-              convertToArrayOfAksharas(matchCandidate).length > 1 &&
-              isProperMatch(matchCandidate, doNotMark)
-          ) {
-              matches.push(matchCandidate);
-
-              if (doNotMark) {
-                continue;
-              }
-
-              markMatch(
-                cellRowIdx,
-                cellColIdx,
-                diagIdx + cellRowIdx,
-                diagIdx + cellColIdx,
-                matchCandidate,
-              );
-            }
-          }
-
-          return matches;
-        };
+          rowIdx += direction[0];
+          colIdx += direction[1];
+        }
+      }
+        return matches;
+    }
 
         var markMatch = function (
           startRowIdx,
@@ -723,37 +640,21 @@
 
           $("#tblCell_" + startRowIdx + "_" + startColIdx).addClass("found");
 
-          if (startRowIdx == endRowIdx) {
-            var colIdx;
+          var rowStep = Math.sign(endRowIdx - startRowIdx);
+          var colStep = Math.sign(endColIdx - startColIdx);
 
-            for (colIdx = startColIdx; colIdx <= endColIdx; colIdx++) {
-              var cellId = "tblCell_" + startRowIdx + "_" + colIdx;
+          var distance = Math.max(
+            Math.abs(endRowIdx - startRowIdx), 
+            Math.abs(endColIdx - startColIdx)
+          );
 
-              markCell(cellId, word);
-            }
+          for(var cellIdx = 0; cellIdx<=distance; cellIdx++){
+            var cellId = 
+            "tblCell_" +
+            (startRowIdx + cellIdx * rowStep) +
+            "_" +
+            (startColIdx + cellIdx * colStep);
 
-            return;
-          }
-
-          if (startColIdx == endColIdx) {
-            var rowIdx;
-
-            for (rowIdx = startRowIdx; rowIdx <= endRowIdx; rowIdx++) {
-              var cellId = "tblCell_" + rowIdx + "_" + startColIdx;
-
-              markCell(cellId, word);
-            }
-
-            return;
-          }
-
-          var cellIdx = 0;
-          for (cellIdx = 0; cellIdx < endColIdx - startColIdx + 1; cellIdx++) {
-            var cellId =
-              "tblCell_" +
-              (startRowIdx + cellIdx) +
-              "_" +
-              (startColIdx + cellIdx);
             markCell(cellId, word);
           }
         };
@@ -866,8 +767,8 @@
             attemptedSlots.push(slot);
             var slotRowIdx = parseInt(slot.split("_")[1]);
             var slotColIdx = parseInt(slot.split("_")[2]);
-            var directionsRemaining = ["H", "V", "D"];
 
+            var directionsRemaining = Object.keys(directions);
             nextDirection: while (directionsRemaining.length > 0) {
               var direction =
                 directionsRemaining[
@@ -885,28 +786,11 @@
 
               for (wordIdx = 0; wordIdx < word.length; wordIdx++) {
                 var charToPut = word[wordIdx];
-                var targetCell = undefined;
-
-                switch (direction) {
-                  case "H":
-                    targetCell =
-                      "#tblCell_" + slotRowIdx + "_" + (slotColIdx + wordIdx);
-                    break;
-
-                  case "V":
-                    targetCell =
-                      "#tblCell_" + (slotRowIdx + wordIdx) + "_" + slotColIdx;
-                    break;
-
-                  case "D":
-                    targetCell =
-                      "#tblCell_" +
-                      (slotRowIdx + wordIdx) +
-                      "_" +
-                      (slotColIdx + wordIdx);
-
-                  default:
-                }
+                var targetCell = 
+                "#tblCell_" +
+                (slotRowIdx + directions[direction][0] * wordIdx)+
+                "_" +
+                (slotColIdx + directions[direction][1] * wordIdx);
 
                 if ($(targetCell).length == 0) {
                   continue nextDirection;
@@ -923,27 +807,12 @@
 
               for (wordIdx = 0; wordIdx < word.length; wordIdx++) {
                 var charToPut = word[wordIdx];
-                var targetCell = undefined;
+                var targetCell = 
 
-                switch (direction) {
-                  case "H":
-                    targetCell =
-                      "#tblCell_" + slotRowIdx + "_" + (slotColIdx + wordIdx);
-                    break;
-
-                  case "V":
-                    targetCell =
-                      "#tblCell_" + (slotRowIdx + wordIdx) + "_" + slotColIdx;
-                    break;
-
-                  case "D":
-                    targetCell =
-                      "#tblCell_" +
-                      (slotRowIdx + wordIdx) +
-                      "_" +
-                      (slotColIdx + wordIdx);
-                  default:
-                }
+                "#tblCell_" +
+                (slotRowIdx + directions[direction][0] * wordIdx)+
+                "_" +
+                (slotColIdx + directions[direction][1] * wordIdx);
 
                 var ttChar = translit.transliterate(
                   String(charToPut),
