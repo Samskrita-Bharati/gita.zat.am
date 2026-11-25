@@ -42,9 +42,9 @@
       </header>
 
       <div id="lead">
-        अस्मिन् अक्षरसमूहे अद्यतन-कथा-तः पदानि सन्ति । कति ?
-        <span style="font-weight: bold" id="nPresent"> ५ </span>
-        । करोतु अन्वेषणम् ।
+        There are
+        <span style="font-weight: bold" id="nPresent"></span>
+        words from today's story hidden in this letter grid. Find them!
         <br />
         <span id="lead2"></span>
       </div>
@@ -116,12 +116,12 @@
             <div>
               <button id="fwHint1" type="button" onclick="showHint1()" disabled>
                 <img src="./imgs/hint.png" alt="help" />
-                नामपदानि .. <span>(−10 points)</span>
+                Shloka<span>(−10 points)</span>
               </button>
 
               <button id="fwHint2" type="button" onclick="showHint2()" disabled>
                 <img src="./imgs/hint2.png" alt="help" />
-                .. कानि ??? <span>(−20 points)</span>
+                Highlight<span>(−20 points)</span>
               </button>
             </div>
 
@@ -497,7 +497,7 @@
           $("#totalWords").text(nAnswersPresent);
           
           $("#finishMessage").hide();
-          $("#nPresent").text(translit.numberToDevanagari(nAnswersPresent));
+          $("#nPresent").text(nAnswersPresent);
           $("#nFound").text(0);
           $("#answers").empty();
           var answerIdx = 0;
