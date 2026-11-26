@@ -4,6 +4,14 @@ const quote = document.getElementById("quote");
 const input = document.getElementById("typedValue");
 const message = document.getElementById("message");
 const meaning = document.getElementById("meaning");
+const resultDialog = document.getElementById("bp26CelebrateOverlay");
+const resultSubtitle = document.getElementById("bp26CelebrateSub");
+const resultScore = document.getElementById("bp26CelebrateScoreValue");
+const resultStatus = document.getElementById("typingResultStatus");
+
+resultDialog.addEventListener("close", () => {
+  if (!start.disabled) start.focus();
+});
 
 let gameData;
 let round;
@@ -197,41 +205,52 @@ async function finishRound() {
   input.hidden = true;
   showMeanings(round.verses);
 
+  const [shloka] = round.verses;
   const score = Math.max(0, 100 - mistakes * 5);
   const summary = `Shloka complete! ${score}/100 · Mistakes: ${mistakes}`;
-  message.textContent = summary;
 
   start.textContent = "Replay";
   start.hidden = false;
   start.disabled = true;
 
+  resultSubtitle.textContent = `Chapter ${shloka.verse.ch}, Shloka ${shloka.verse.vn} · Mistakes: ${mistakes}`;
+  resultScore.textContent = String(score);
+  resultStatus.textContent = "Saving score…";
+  message.textContent = `${summary} · Saving score…`;
+  resultDialog.showModal();
+
+  let saveStatus;
   try {
     if (!gameData.scorer) {
-      message.textContent = `${summary} · Leaderboard unavailable.`;
-      return;
+      saveStatus = "Leaderboard unavailable.";
+    } else {
+      const result = await gameData.scorer.submitGameScore(score, {
+        levelId: round.date,
+        levelName: `Daily Typing · ${round.date}`,
+        metrics: {
+          mistakes,
+          puzzleDate: round.date,
+          shlokaId: shloka.verse.id,
+        },
+      });
+
+      if (result.ok) {
+        saveStatus = "Score saved to the leaderboard.";
+      } else if (result.reason === "not-signed-in") {
+        saveStatus = "Sign in to save future scores.";
+      } else if (result.reason === "already-submitted") {
+        saveStatus = "Score already submitted for this round.";
+      } else {
+        saveStatus = "Could not confirm the leaderboard save.";
+      }
     }
-
-    message.textContent = `${summary} · Saving…`;
-
-    const [shloka] = round.verses;
-    const result = await gameData.scorer.submitGameScore(score, {
-      levelId: round.date,
-      levelName: `Daily Typing · ${round.date}`,
-      metrics: {
-        mistakes,
-        puzzleDate: round.date,
-        shlokaId: shloka.verse.id,
-      },
-    });
-
-    message.textContent = result.ok
-      ? `${summary} · Score saved to the leaderboard.`
-      : `${summary} · Score could not be saved.`;
   } catch (error) {
-    console.error("Could not confirm the leaderboard save.", error);
-    message.textContent = `${summary} · Could not confirm the leaderboard save.`;
+    console.error("Could not confirm the typing score save.", error);
+    saveStatus = "Could not confirm the leaderboard save.";
   } finally {
+    resultStatus.textContent = saveStatus;
+    message.textContent = `${summary} · ${saveStatus}`;
     start.disabled = false;
-    start.focus();
+    if (!resultDialog.open) start.focus();
   }
 }
