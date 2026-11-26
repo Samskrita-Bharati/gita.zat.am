@@ -207,3 +207,84 @@ input#typedValue[aria-invalid="true"] {
 .typing-verse p {
   margin: 0;
 }
+
+.typing-result-dialog {
+  box-sizing: border-box;
+  width: min(420px, calc(100% - 32px));
+  max-height: calc(100dvh - 32px);
+  margin: auto;
+  padding: clamp(20px, 5vw, 32px);
+  overflow-y: auto;
+  border: 1px solid #ecddc6;
+  border-top: 4px solid #f6b23b;
+  border-radius: 20px;
+  background: #fffaf2;
+  color: #09264a;
+  box-shadow: 0 25px 70px rgba(7, 29, 55, 0.3);
+  text-align: center;
+}
+
+.typing-result-dialog::backdrop {
+  background: rgba(9, 38, 74, 0.72);
+}
+
+.typing-result-kicker {
+  margin: 0;
+  color: #99460d;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.13em;
+}
+
+.typing-result-sparkle {
+  display: grid;
+  place-items: center;
+  width: 54px;
+  height: 54px;
+  margin: 14px auto 12px;
+  border-radius: 50%;
+  background: #fff0ca;
+  color: #9a5c00;
+  font-size: 1.8rem;
+}
+
+.typing-result-dialog h2 {
+  margin: 0;
+  color: #09264a;
+  font-size: clamp(1.3rem, 5vw, 1.625rem);
+}
+
+#bp26CelebrateSub,
+#typingResultStatus {
+  margin: 0.75rem 0;
+  color: #526a86;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.typing-result-score {
+  display: grid;
+  justify-items: center;
+  gap: 3px;
+  padding: 1rem;
+  border: 1px solid #dce7f1;
+  border-radius: 13px;
+  background: #f0f5fa;
+}
+
+.typing-result-score span,
+.typing-result-score small {
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.typing-result-score strong {
+  font-size: clamp(2.75rem, 11vw, 3.625rem);
+  line-height: 1.15;
+}
+
+.typing-result-dialog .zatam-game-actions > button {
+  flex: 1 1 125px;
+  min-height: 46px;
+}
