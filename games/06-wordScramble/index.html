@@ -148,6 +148,8 @@
       let emitter;
       let score = 0;
       let totalMoves = 0;
+      let actualMoveCount = 0;
+      let zeroPenaltyMoveLimit = 0;
       let giveUpCount = 0;
       let wordTransitioning = false;
       let rowFontSize = 20;
@@ -157,12 +159,16 @@
       let moveLabelWidth = 0;
       let moveColumnGap = 0;
       let rowTextWidth = 0;
+      let totalMovesLabel = null;
+      function refreshTotalMovesLabel() {
+        if (!totalMovesLabel) return;
+        totalMovesLabel.text = `Total Move(s): ${actualMoveCount}`;
+      }
       function done() {
         if (wordTransitioning) return;
         wordTransitioning = true;
         const finishedScrambler = scrambler;
         const movesForWord = score;
-        totalMoves += score;
         window.setTimeout(function () {
           try {
             finishedScrambler?.dispose?.();
@@ -183,28 +189,7 @@
           bold: true,
           labelWidth: rowTextWidth,
         }).pos(rowTextOffset, 0, LEFT, CENTER, row.box);
-        new Label({
-          text: "Move(s)",
-          size: Math.max(10, rowFontSize - 1),
-          font: "Arial",
-          color: themeColors.accentBlue,
-          align: RIGHT,
-          labelWidth: moveLabelWidth,
-        }).pos(
-          moveRightPadding + moveNumberWidth + moveColumnGap,
-          0,
-          RIGHT,
-          CENTER,
-          row.box,
-        );
-        new Label({
-          text: String(movesForWord),
-          size: Math.max(10, rowFontSize - 1),
-          font: "Arial",
-          color: black,
-          align: RIGHT,
-          labelWidth: moveNumberWidth,
-        }).pos(moveRightPadding, 0, RIGHT, CENTER, row.box);
+        row.moveCountLabel.text = String(movesForWord);
         S.update();
       }
       function giveUpCurrentWord() {
@@ -213,7 +198,7 @@
         const finishedScrambler = scrambler;
         const word = words[currentWordIndex];
         const wordLength = splitWordIntoGraphemes(word).length;
-        totalMoves += score + wordLength;
+        totalMoves += wordLength;
         giveUpCount++;
         window.setTimeout(function () {
           try {
@@ -226,6 +211,8 @@
         }, 0);
         const row = rows[currentWordIndex];
         row.scrambledLabel.dispose();
+        row.moveLabel.dispose();
+        row.moveCountLabel.dispose();
         new Label({
           text: word,
           size: rowFontSize,
@@ -413,7 +400,15 @@
           keyProperty: "text",
         }).pos(0, -H * 0.25, CENTER, CENTER);
         scrambler.on("complete", done);
-        scrambler.on("pressup", () => score++);
+        scrambler.on("pressup", () => {
+          score++;
+          totalMoves++;
+          actualMoveCount++;
+          refreshTotalMovesLabel();
+          const row = rows[currentWordIndex];
+          if (row?.moveCountLabel) row.moveCountLabel.text = String(score);
+          S.update();
+        });
         S.update();
       }
       const search = window.location.search;
@@ -453,6 +448,10 @@
           );
         });
       words = sampleWords(eligibleWords, GAME_CONFIG.randomWordCount);
+      zeroPenaltyMoveLimit = words.reduce(
+        (count, word) => count + splitWordIntoGraphemes(word).length,
+        0,
+      );
       scrambledGraphemesByWord = words.map((word) =>
         scrambleGraphemes(splitWordIntoGraphemes(word)),
       );
@@ -559,6 +558,14 @@
         const listGap = 8 * widthScale;
         const buttonLift = Math.max(0, giveUpButtonHeight / 2 - listGap);
         const listHeight = H - listTop - giveUpButtonHeight - listGap;
+        new Label({
+          text: `Stay within ${zeroPenaltyMoveLimit} moves and avoid reveals for full marks`,
+          size: Math.max(13, 18 * widthScale),
+          font: "Arial",
+          color: themeColors.navyDark,
+          labelWidth: W - 24 * widthScale,
+          align: CENTER,
+        }).pos(0, barHeight + 14 * widthScale, CENTER, TOP);
         loop(words.length, (i) => {
           const row = { box: new Container(W, rowHeight) };
           new Label(`${i + 1}.`, rowFontSize, "Arial", black).pos(
@@ -575,10 +582,32 @@
             color: themeColors.navy,
             labelWidth: rowTextWidth,
           }).pos(rowTextOffset, 0, LEFT, CENTER, row.box);
+          row.moveLabel = new Label({
+            text: "Move(s)",
+            size: Math.max(10, rowFontSize - 1),
+            font: "Arial",
+            color: themeColors.accentBlue,
+            align: RIGHT,
+            labelWidth: moveLabelWidth,
+          }).pos(
+            moveRightPadding + moveNumberWidth + moveColumnGap,
+            0,
+            RIGHT,
+            CENTER,
+            row.box,
+          );
+          row.moveCountLabel = new Label({
+            text: "0",
+            size: Math.max(10, rowFontSize - 1),
+            font: "Arial",
+            color: black,
+            align: RIGHT,
+            labelWidth: moveNumberWidth,
+          }).pos(moveRightPadding, 0, RIGHT, CENTER, row.box);
           row.box.mouseChildren = false;
           rows.push(row);
         });
-        const giveUpButtonWidth = Math.max(150, 190 * widthScale);
+        const giveUpButtonWidth = Math.max(245, 290 * widthScale);
         const giveUpLabelSize = Math.max(
           11,
           Math.min(
@@ -591,7 +620,7 @@
           width: giveUpButtonWidth,
           height: giveUpButtonHeight,
           label: new Label({
-            text: "Complete for me",
+            text: "Complete for me (-20 points)",
             size: giveUpLabelSize,
             font: "Arial",
             color: themeColors.white,
@@ -629,6 +658,24 @@
           dropHitTest: "reg",
           dropEnd: false,
         }).loc(0, listTop + giveUpButtonHeight + listGap);
+        const isSmallScreen = window.matchMedia("(max-width: 600px)").matches;
+        totalMovesLabel = new Label({
+          text: `Total Move(s): ${actualMoveCount}`,
+          size: Math.max(12, 15 * widthScale),
+          font: "Arial",
+          color: themeColors.navyDark,
+          align: isSmallScreen ? CENTER : RIGHT,
+          labelWidth: isSmallScreen
+            ? W - 24 * widthScale
+            : Math.min(W - 24 * widthScale, 220 * widthScale),
+        }).pos(
+          isSmallScreen ? 0 : 12 * widthScale,
+          isSmallScreen
+            ? listTop - buttonLift - 38 * widthScale
+            : listTop + giveUpButtonHeight + listGap - 20 * widthScale,
+          isSmallScreen ? CENTER : RIGHT,
+          TOP,
+        );
         remainingWords = words.map((word, index) => ({ word, index }));
         startNextWord();
         emitter = new Emitter({
