@@ -42,40 +42,6 @@ function localDateKey(date) {
   ].join("-");
 }
 
-function selectScheduledPair(today) {
-  const { schedule, verses } = gameData;
-  const ids = new URLSearchParams(window.location.search).getAll("id");
-
-  if (ids.length === 0) {
-    return { date: today, pair: schedule.getDailySchedule(verses, today).verses };
-  }
-
-  const id = Number(ids[0]);
-  if (
-    ids.length !== 1 ||
-    !/^[1-9]\d*$/.test(ids[0]) ||
-    !Number.isSafeInteger(id) ||
-    !verses.some((verse) => verse.id === id)
-  ) {
-    throw new Error("That shloka ID is invalid.");
-  }
-
-  const date = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-
-  while (true) {
-    const scheduled = schedule.getDailySchedule(verses, date);
-    if (scheduled.status === "upcoming") break;
-
-    if (scheduled.verses.some((verse) => verse.id === id)) {
-      return { date, pair: scheduled.verses };
-    }
-
-    date.setDate(date.getDate() - 1);
-  }
-
-  throw new Error("That shloka hasn’t been released yet.");
-}
-
 function verseLabel(verse) {
   return `Chapter ${verse.ch}, Shloka ${verse.vn}`;
 }
@@ -106,12 +72,12 @@ function renderVerses(verses) {
   quote.replaceChildren();
   wordElements = [];
 
-  for (const [index, item] of verses.entries()) {
+  for (const item of verses) {
     const section = document.createElement("section");
     section.className = "typing-verse";
 
     const heading = document.createElement("h2");
-    heading.textContent = `${index + 1}. ${verseLabel(item.verse)}`;
+    heading.textContent = verseLabel(item.verse);
     section.append(heading);
 
     for (const line of item.text.split(",")) {
@@ -134,7 +100,7 @@ function renderVerses(verses) {
 
 function showMeanings(verses) {
   const title = document.createElement("h2");
-  title.textContent = "English Meanings";
+  title.textContent = "English Meaning";
   meaning.replaceChildren(title);
 
   for (const item of verses) {
@@ -150,20 +116,22 @@ function showMeanings(verses) {
 
 start.addEventListener("click", async () => {
   start.disabled = true;
-  message.textContent = "Loading today’s shlokas…";
+  message.textContent = "Loading today’s shloka…";
 
   try {
   gameData ??= await loadGameData();
 
-      const { date, pair } = selectScheduledPair(new Date());
+  const today = new Date();
+  const { verses } = gameData.schedule.getDailySchedule(gameData.verses, today);
+  const shloka = verses[0];
 
-  if (pair.length !== 2) {
-    throw new Error("There aren’t two shlokas scheduled for this day.");
+  if (!shloka) {
+    throw new Error("There is no scheduled shloka for today.");
   }
 
   round = {
-    date: localDateKey(date),
-    verses: pair.map((verse) => getTypingVerse(verse, gameData.typing)),
+    date: localDateKey(today),
+    verses: [getTypingVerse(shloka, gameData.typing)],
   };
 
   renderVerses(round.verses);
@@ -230,7 +198,7 @@ async function finishRound() {
   showMeanings(round.verses);
 
   const score = Math.max(0, 100 - mistakes * 5);
-  const summary = `Both shlokas complete! ${score}/100 · Mistakes: ${mistakes}`;
+  const summary = `Shloka complete! ${score}/100 · Mistakes: ${mistakes}`;
   message.textContent = summary;
 
   start.textContent = "Replay";
@@ -245,15 +213,14 @@ async function finishRound() {
 
     message.textContent = `${summary} · Saving…`;
 
-    const [first, second] = round.verses;
+    const [shloka] = round.verses;
     const result = await gameData.scorer.submitGameScore(score, {
       levelId: round.date,
       levelName: `Daily Typing · ${round.date}`,
       metrics: {
         mistakes,
         puzzleDate: round.date,
-        firstShlokaId: first.verse.id,
-        secondShlokaId: second.verse.id,
+        shlokaId: shloka.verse.id,
       },
     });
 
