@@ -798,9 +798,7 @@ const hasInProgressRun = Boolean(
         submittingScore={submittingScore}
 
         onReplay={restartCurrentTheme}
-        onViewBoard={() => setResultsDismissed(true)}
-
-        onBack={() => window.location.assign(new URL('../../', window.location.href))}
+        onViewLeaderboard={() => window.location.assign("../../leaderboard/index.html")}        onBack={() => window.location.assign(new URL('../../', window.location.href))}
 
         language={language}
 
