@@ -20,8 +20,8 @@ export const menu = [
     id: 3,
     title: "Gita Typing Game",
     pickerLabel: "Typing",
-    dir: "games/057-gita-typing",
-    cover: "./games/057-gita-typing/cover.svg",
+    dir: "games/07-gitaTyping",
+    cover: "./games/07-gitaTyping/cover.svg",
     desc: `Practice typing on English (Harvard-Kyoto) transliteration of the shlokas from Bhagavad Gita`,
   },
   {
@@ -46,7 +46,7 @@ export const menu = [
     dir: "games/06-wordScramble",
     cover: "./games/06-wordScramble/cover.svg",
     desc: `Unscramble Sanskrit vocabulary.`,
-  },
+  }
 ];
 
 // =====================================================

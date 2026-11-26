@@ -6,6 +6,9 @@
     <script type="module" src="../shared/auth-guard.js"></script>
     <title>Bhagavad Gita Typing Game</title>
     <link rel="stylesheet" href="../../css/global.css">
+    <link rel="stylesheet" href="../../css/global.css">
+    <link rel="stylesheet" href="../shared/game-theme.css">
+    <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="style.css">
     <meta name="viewport" content="width=device-width, initial-scale=1" >
     <script type="module">
@@ -16,46 +19,43 @@
     <link rel="icon" href="Gita_typing_game.png" type="image/x-icon">
     <link rel="manifest" href="manifest.json" >
   </head>
-  <body data-page="games">
-
-    <!-- Shared Zat.am Navbar -->
+  <body data-page="games" class="zatam-themed-game">
     <div id="navbar-mount"></div>
 
-    <h1>
-      Bhagavad Gita typing game
-    </h1>
-    <p id="dailyChallengeNotice" hidden></p>
-    
-    <p id="info">
-      Practice your typing skills with a verse from the Sacred book. 
-      When you get it right, you will see the meaning of the shloka.
-      <br>
-      <br> Click the start game button to begin
-    </p>
-    <button type="button" class="button" id="start">
-      Start Game <i class="rocket"></i>
-    </button>
-    <p id="reference"></p>
-    <p id="quote"></p>
-    <p id="message"></p>
-    
-    <p class="tooltip"><div>
-      <button id="share" onclick="ShareIt()" onmouseout="outFunc()">
-      <span class="tooltiptext" id="myTooltip">Copy to clipboard</span>
-      
-      </button>
-    </div></p>
-    
-    <p id="meaning"></p>
-    <div id="viswaroopa"></div>
-    <input type="text" id="typedValue">
-    <main>
-    <p id="settings"><div>
-      Shloka progression:
-    <input type="radio" id="rand" name="progression" value="1"><label for="rand"> Random </label>
-    <input type="radio" id="seq"  name="progression" value="0" checked="checked"><label for="seq"> Sequential </label>
-    <input type="radio" id="nectar"  name="progression" value="2"><label for="nectar"> 51 key verses </label>
-    </div></p>
+    <main class="zatam-game-shell typing-shell">
+      <header class="zatam-game-header">
+        <h1 class="zatam-game-title">Bhagavad Gita Typing</h1>
+      </header>
+
+      <p id="dailyChallengeNotice" class="zatam-game-instructions" hidden></p>
+
+      <section class="zatam-game-card typing-card" aria-label="Typing challenge">
+        <p id="info">
+          Type both of today’s shlokas in order, matching uppercase and lowercase letters.
+          Each mistake costs 5 points. Finish both to see your score and the English meanings.
+        </p>
+
+        <p id="reference"></p>
+        <p id="quote" lang="sa-Latn"></p>
+
+        <input
+          id="typedValue"
+          type="text"
+          aria-label="Type the highlighted word"
+          autocomplete="off"
+          autocapitalize="off"
+          spellcheck="false"
+        >
+
+        <div id="message" role="status"></div>
+        <p id="meaning"></p>
+
+        <div class="zatam-game-actions">
+          <button id="start" type="button" class="zatam-game-btn zatam-game-btn-primary">
+            Start Game
+          </button>
+        </div>
+      </section>
     </main>
     <script>
       // Old offline caches contain an unauthenticated game page.
@@ -63,7 +63,7 @@
       if ("serviceWorker" in navigator) {
         navigator.serviceWorker.getRegistrations().then((registrations) => {
           registrations.forEach((registration) => {
-            if (registration.scope.includes("/games/057-gita-typing/")) {
+            if (registration.scope.includes("/games/07-gitaTyping/")) {
               registration.unregister();
             }
           });
@@ -76,8 +76,6 @@
   <footer>
     <span style="white-space: nowrap"> &copy; 2023 <a href="https://www.pradeepd.com/hobbies/apps">Pradeep D</a>, <a href="https://www.iseek.page">iSeek</a>. Ref: T.N. Sethumadhavan, 2010, "Srimad Bhagavad Gita", esamskriti.com </span>
  </footer>
-  
-
     <!-- Shared Zat.am Navbar -->
     <script
       type="module"

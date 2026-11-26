@@ -1,10 +1,10 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
-import { resolveDailyChallenge, saveDailyCompletion } from "../games/057-gita-typing/daily-challenge.mjs";
+import { resolveDailyChallenge, saveDailyCompletion } from "../games/07-gitaTyping/daily-challenge.mjs";
 
 const verses = JSON.parse(await readFile(new URL("../assets/bhagavad-gita-verses.json", import.meta.url)));
-const typing = JSON.parse(await readFile(new URL("../games/057-gita-typing/bhagavadgita.txt", import.meta.url)));
+const typing = JSON.parse(await readFile(new URL("../games/07-gitaTyping/bhagavadgita.txt", import.meta.url)));
 const resolve = (search) => resolveDailyChallenge(search, verses, typing.shlokas, typing.meanings);
 
 function dateForVerse(verse) {

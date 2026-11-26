@@ -18,7 +18,7 @@ test('cumulative points may exceed 100; only actual numeric rankings are include
 });
 
 test('typing uses a duration card instead of fabricating a 0-100 leaderboard score',()=>{
-  const result=normalizeShareResult({score:124,scoreType:'completion',gameId:'057-gita-typing'});
+  const result=normalizeShareResult({score:124,scoreType:'completion',gameId:'07-gitaTyping'});
   assert.equal(result.scoreType,'completion');assert.equal(result.score,124);
 });
 
@@ -41,7 +41,7 @@ test('share control uses completed-result containers, not a floating viewport bu
   for (const selector of ['#successMessage','#finishMessage','#result','01-wordSearch']) assert.ok(shareSource.includes(selector));
   assert.match(shareSource,/actionRow\.prepend\(button\)/);
   assert.doesNotMatch(css,/\.gg-score-share-shortcut\s*\{/);
-  assert.match(shareSource,/\["z18",\s*"strands",\s*"057-gita-typing"\]/);
+  assert.match(shareSource,/\["z18",\s*"strands",\s*"07-gitaTyping"\]/);
 });
 
 test('mobile sharing sends an actual PNG file and social fallbacks explain manual attachment',()=>{
@@ -113,7 +113,7 @@ test('share URLs follow the current folders without changing legacy Firebase IDs
     'strands':'04-suutram',
     '059-fitb':'05-fillBlank',
     'z18':'06-wordScramble',
-    '057-gita-typing':'057-gita-typing',
+    '07-gitaTyping':'07-gitaTyping',
   };
   for (const [gameId, pageFolder] of Object.entries(urls)) {
     assert.equal(normalizeShareResult({score:90,gameId}).url,
@@ -124,7 +124,7 @@ test('share URLs follow the current folders without changing legacy Firebase IDs
 test('all six active games retain a completed-game share integration', () => {
   const wordSearch = readFileSync(new URL('../games/01-wordSearch/index.html', import.meta.url), 'utf8');
   const arrange = readFileSync(new URL('../games/02-arrange/index.html', import.meta.url), 'utf8');
-  const typing = readFileSync(new URL('../games/057-gita-typing/script.js', import.meta.url), 'utf8');
+  const typing = readFileSync(new URL('../games/07-gitaTyping/script.js', import.meta.url), 'utf8');
   const strands = readFileSync(new URL('../games/04-suutram/index.html', import.meta.url), 'utf8');
   const fillBlank = readFileSync(new URL('../games/05-fillBlank/game.js', import.meta.url), 'utf8');
   const scrambler = readFileSync(new URL('../games/06-wordScramble/index.html', import.meta.url), 'utf8');

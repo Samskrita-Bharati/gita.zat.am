@@ -2,12 +2,12 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import vm from "node:vm";
-import * as dailyTools from "../games/057-gita-typing/daily-challenge.mjs";
+import * as dailyTools from "../games/07-gitaTyping/daily-challenge.mjs";
 
-const source = (await readFile(new URL("../games/057-gita-typing/script.js", import.meta.url), "utf8"))
+const source = (await readFile(new URL("../games/07-gitaTyping/script.js", import.meta.url), "utf8"))
   .replace('import("./daily-challenge.mjs")', "Promise.resolve(dailyTools)");
 const verses = JSON.parse(await readFile(new URL("../assets/bhagavad-gita-verses.json", import.meta.url)));
-const typing = JSON.parse(await readFile(new URL("../games/057-gita-typing/bhagavadgita.txt", import.meta.url)));
+const typing = JSON.parse(await readFile(new URL("../games/07-gitaTyping/bhagavadgita.txt", import.meta.url)));
 
 function makeElement() {
   return {
@@ -30,7 +30,7 @@ function game(search = "?date=2026-10-20&id=1", blockWrites = false) {
   const storage = { getItem: (key) => values.get(key) ?? null, setItem: (key, value) => { if (blockWrites) throw new Error("Storage blocked"); values.set(key, value); } };
   const context = {
     URL, URLSearchParams, Date, Math, JSON, console, dailyTools, localStorage: storage,
-    window: { location: { search, href: `https://example.test/games/057-gita-typing/${search}` } },
+    window: { location: { search, href: `https://example.test/games/07-gitaTyping/${search}` } },
     document: { body: {}, getElementById: (id) => elements[id], createElement: makeElement, querySelector: () => ({ value: "0" }) },
     navigator: { clipboard: { writeText: async () => {} } },
     fetch: async (url) => ({ ok: true, json: async () => url === "bhagavadgita.txt" ? typing : verses }),

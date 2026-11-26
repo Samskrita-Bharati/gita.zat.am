@@ -71,8 +71,7 @@ function render() {
     };
     $("pool").append(button);
   });
-  $("retries").textContent =
-    `${Math.min(run.finished && run.locked.every(Boolean) ? run.submissions - 1 : run.submissions, 4)} / 4`;
+  $("attempts").textContent = `${run.submissions} / 5`;
   $("score").textContent = run.finished ? run.score : SCORES[run.submissions];
   $("check").disabled =
     run.finished || run.choices.some((w, i) => !run.locked[i] && w === null);

@@ -140,7 +140,7 @@ service cloud.firestore {
     }
 
     function supportedGame(gameId) {
-      return gameId in ['018-as', '050-asp', '057-gita-typing', 'fw', 'ma', 'z18', 'strands', '059-fitb'];
+      return gameId in ['018-as', '050-asp', '07-gitaTyping', 'fw', 'ma', 'z18', 'strands', '059-fitb'];
     }
 
     function leaderboardDocument(gameId) {
