@@ -334,6 +334,19 @@ service cloud.firestore {
       allow create, update, delete: if false;
     }
 
+    // Referral collections are server-owned. The Cloudflare referral Worker
+    // uses a restricted Google service account; client SDKs may not write
+    // counts, claims, or codes. Existing game permissions remain untouched.
+    match /referralCodes/{code} {
+      allow read, write: if false;
+    }
+    match /referralClaims/{userId} {
+      allow read, write: if false;
+    }
+    match /referralStats/{userId} {
+      allow read, write: if false;
+    }
+
     // Deny all other access.
     match /{document=**} {
       allow read, write: if false;

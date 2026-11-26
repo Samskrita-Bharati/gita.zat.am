@@ -1528,30 +1528,37 @@ async function refreshData() {
 
 let gameOptionsInitialized = false;
 
-document.querySelectorAll(".lb-view-tab:not(.gg-referral-tab)").forEach((button) => {
-  button.addEventListener("click", async () => {
-    const nextView = button.dataset.view || "overall";
-    if (nextView === "game" && state.activeView !== "game") {
-      state.openGameId = gameSelect.value === "all" ? null : gameSelect.value;
-      state.gamePage = 1;
-    }
-    state.activeView = nextView;
-    if (!gameOptionsInitialized) {
-      await loadGameOptions();
-      gameOptionsInitialized = true;
-    }
+document
+  .querySelectorAll(".lb-view-tab:not(.gg-referral-tab)")
+  .forEach((button) => {
+    button.addEventListener("click", async () => {
+      const nextView = button.dataset.view || "overall";
 
-    if (state.activeView === "overall") {
-      gameSelect.value = "all";
-      levelSelect.value = "all";
-    } else {
-      gameSelect.disabled = false;
-      await refreshLevelOptions();
-    }
+      if (nextView === "game" && state.activeView !== "game") {
+        state.openGameId =
+          gameSelect.value === "all" ? null : gameSelect.value;
 
-    await refreshData();
+        state.gamePage = 1;
+      }
+
+      state.activeView = nextView;
+
+      if (!gameOptionsInitialized) {
+        await loadGameOptions();
+        gameOptionsInitialized = true;
+      }
+
+      if (state.activeView === "overall") {
+        gameSelect.value = "all";
+        levelSelect.value = "all";
+      } else {
+        gameSelect.disabled = false;
+        await refreshLevelOptions();
+      }
+
+      await refreshData();
+    });
   });
-});
 
 gameSelect.addEventListener("change", async () => {
   state.openGameId = gameSelect.value === "all" ? null : gameSelect.value;

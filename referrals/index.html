@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Invite Friends · GG Zat.am</title>
+  <style>html:not(.gg-authenticated){visibility:hidden!important}</style>
+  <script type="module" src="../games/shared/auth-guard.js"></script>
+  <link rel="stylesheet" href="../css/global.css" />
+  <link rel="stylesheet" href="./referrals.css" />
+</head>
+<body class="gg-invite-page">
+<div id="navbar-mount"></div>
+<main class="ref-page">
+  <a class="ref-back" href="../leaderboard/index.html">← Back to Leaderboard</a>
+  <section class="ref-hero">
+    <div class="ref-hero-text">
+      <span class="ref-eyebrow">GG · ZAT.AM COMMUNITY</span>
+      <h1>Learn together. Invite friends.</h1>
+      <p>Share the joy of Sanskrit learning. Every verified new member you invite counts toward your referral ranking — separate from game points.</p>
+    </div>
+    <div class="ref-hero-symbol" aria-hidden="true">✦</div>
+  </section>
+  <section class="ref-panel" aria-labelledby="ref-link-title">
+    <div class="ref-section-heading"><div><span class="ref-eyebrow">YOUR INVITATION</span><h2 id="ref-link-title">Your personal referral link</h2></div></div>
+    <p class="ref-muted">Your friend needs to create a new account and verify their email. Google sign-ups also count when eligible. Invitations are remembered for up to 30 days in their browser.</p>
+    <div class="ref-link-row"><input id="ref-link" type="text" readonly value="Loading your link…" aria-label="Your referral link" /><button id="ref-copy" class="ref-button ref-button-primary" type="button" disabled>Copy link</button></div>
+    <div class="ref-actions"><button id="ref-native-share" class="ref-button ref-button-outline" type="button" disabled>↗ Share invitation</button><a id="ref-whatsapp" class="ref-button ref-button-outline" href="#" target="_blank" rel="noopener noreferrer" aria-disabled="true">WhatsApp</a></div>
+    <p id="ref-feedback" class="ref-feedback" role="status" aria-live="polite"></p>
+  </section>
+  <section class="ref-stat-grid" aria-label="Your referral statistics">
+    <article class="ref-stat"><span>Confirmed referrals</span><strong id="ref-confirmed">—</strong><small>Verified new registrations</small></article>
+    <article class="ref-stat"><span>Your referral rank</span><strong id="ref-rank">—</strong><small id="ref-rank-caption">Among top 10 inviters</small></article>
+  </section>
+  <section class="ref-panel" aria-labelledby="ref-list-title">
+    <div class="ref-section-heading"><div><span class="ref-eyebrow">COMMUNITY</span><h2 id="ref-list-title">Top Referrers</h2></div><a class="ref-text-link" href="../leaderboard/index.html?view=referrals">View Leaderboard</a></div>
+    <div id="ref-top-list" class="ref-top-list"><p class="ref-muted">Loading community rankings…</p></div>
+  </section>
+  <section class="ref-guide" aria-label="How referrals work"><h2>How it works</h2><div class="ref-guide-grid"><div><strong>01 · Invite</strong><p>Share your unique link with a friend.</p></div><div><strong>02 · Register</strong><p>They create a new GG account.</p></div><div><strong>03 · Verify</strong><p>Once verified, your referral count grows.</p></div></div></section>
+</main>
+<script type="module" src="../navbar/navbar-loader.js"></script>
+<script type="module" src="./invite.js"></script>
+</body></html>

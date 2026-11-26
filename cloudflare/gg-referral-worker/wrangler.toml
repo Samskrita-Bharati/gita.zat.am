@@ -1,0 +1,10 @@
+name = "gg-zatam-referrals"
+main = "src/index.js"
+compatibility_date = "2026-11-01"
+
+[vars]
+FIREBASE_PROJECT_ID = "gg-zatam"
+FIREBASE_WEB_API_KEY = "AIzaSyDSWtsf3Cj06lZh5f4XX2wiuZtLMxm1IPw"
+ALLOWED_ORIGIN = "https://gg.zat.am"
+# For local testing only, configure ALLOW_LOCALHOST=1 separately.
+# SERVICE_ACCOUNT_JSON must be added with `npx wrangler secret put SERVICE_ACCOUNT_JSON`.
