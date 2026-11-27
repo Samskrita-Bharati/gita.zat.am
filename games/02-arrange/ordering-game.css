@@ -18,6 +18,14 @@ body.zatam-themed-game.zatam-ordering-game {
   margin-bottom: 1.25rem;
 }
 
+.ordering-game-english-name {
+  margin: -0.35rem 0 0.45rem;
+  color: var(--navy);
+  font-size: var(--font-size-lg);
+  font-weight: 800;
+  letter-spacing: 0.03em;
+}
+
 .ordering-game-header .mangalam {
   margin: 0 0 0.35rem;
   color: var(--accent-coral);
@@ -27,8 +35,28 @@ body.zatam-themed-game.zatam-ordering-game {
 
 .ordering-game-instructions {
   max-width: 860px;
+  margin: 0 auto 1rem;
+  padding: 0.85rem 1rem;
+  color: var(--text);
+  background: var(--cream-dark);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
   margin-inline: auto;
   text-align: center;
+}
+
+.ordering-game-instructions h2 {
+  margin: 0;
+  color: var(--navy-dark);
+  font-size: var(--font-size-lg);
+}
+
+.ordering-game-instructions ol {
+  display: grid;
+  gap: 0.3rem;
+  margin: 0.55rem 0 0;
+  padding-left: 1.5rem;
+  text-align: left;
 }
 
 .ordering-game-stats {
