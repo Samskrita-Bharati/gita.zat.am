@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="../../css/global.css" />
     <link rel="stylesheet" href="../shared/game-theme.css" />
     <link rel="stylesheet" href="./css/fw-ui.css" />
-
+    <link rel="stylesheet" href="../shared/popup-built/sanskrit-strands.css?v=6"/> 
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
     <script
@@ -274,6 +274,17 @@
         initGameScore, 
         submitGameScore
       } from "../shared/game-score.js"
+      
+      import {
+    showScorePopup,
+    closeScorePopup
+    } from "../shared/popup-built/score-popup.js?v=6";
+
+import "../04-suutram/share-bridge.js";
+    
+window.showScorePopup = showScorePopup;
+window.closeScorePopup = closeScorePopup;
+
       import { getDailySchedule } from "../../shlokasToday/daily-schedule.mjs";
       import { cleanShlokaText } from "../../shlokasToday/shlokasToday.js";      
       var wpp = 15;
@@ -527,6 +538,19 @@
 
             const completedIn = elapsedSeconds();
             const finalScore = currentScore(completedIn);
+
+            const breakdown = {
+            wordPoints: 0,
+            completionPoints: 100,
+            speedBonus: 0,
+            hintPenalty: (usedHints.has(1) ? 10 : 0) +
+                         (usedHints.has(2) ? 20: 0),
+            total: finalScore,
+            elapsedSeconds: completedIn,
+            hintsUsed: usedHints.size,
+            stars: usedHints.size === 0 && completedIn < 180 ? 3 :
+            completedIn < 360 ? 2 : 1
+         };
             liveScoreEl.textContent = "Final Score: " + finalScore + " / 100";
             
             const next = document.getElementById("fwNext");
@@ -537,9 +561,6 @@
               next.href = url.href;
               next.hidden = false;
             } 
-
-            bp26Celebrate({ title: "Word Search complete!", subtitle: "You found every word. Great work!", score: finalScore });
-            // $("#finishMessage").append("<br>AFTER " + nc + " clicks!");
             $("#finishMessage").show();
             $("#statusMessage").hide();
             $("#lead").hide();
@@ -552,7 +573,7 @@
                 levelName: `Shloka ${verse.ch}.${verse.vn} · ${level.name}`,
               });
               if (result.ok) {
-                liveScoreEl.textContent = `${scoreSummary} · Saved to leaderboard`;
+                liveScoreEl.textContent = `${scoreSummary} · Leaderboard score saved: ${finalScore}/100`;
               } else if (result.reason === "not-signed-in") {
                 liveScoreEl.textContent = `${scoreSummary} · Sign in to save future scores`;
               } else {
@@ -562,6 +583,16 @@
               console.error("Word Search score submission failed:", error);
               liveScoreEl.textContent = `${scoreSummary} · Leaderboard save not confirmed`;
             }
+         showScorePopup({
+        title: `श्लोकः ${verse.ch}.${verse.vn}`,
+        breakdown: breakdown,
+        bestScore: finalScore,
+        leaderboard: `Leaderboard score saved: ${finalScore}/100`,
+        submittingScore: false,
+        onReplay: () => window.location.reload(),
+        onViewLeaderboard: () => window.location.assign("../../leaderboard/index.html"),
+        onBack: () => window.location.assign("http://127.0.0.1:5505/")
+        });
           }
         };
         var directions = {
@@ -944,18 +975,6 @@
         hasStarted = true;
         initScoreByDifficulty();
         updateHints();
-
-      //   const startButton = document.getElementById("fwStart");
-      //   startButton.disabled = false;
-      //   startButton.addEventListener("click", () => {
-      //     hasStarted = true;
-      //     startButton.disabled = true;
-      //     initScoreByDifficulty();
-      //     updateHints();
-      //   }, { once: true });
-//       hasStarted = true;
-// initScoreByDifficulty();
-// updateHints();
       }
 
       function sV(obj) {

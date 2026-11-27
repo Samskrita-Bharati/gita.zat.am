@@ -3,6 +3,17 @@ import {
   showCompletedScoreShare,
   clearCompletedScoreShare,
 } from "../shared/score-share.js";
+
+import {
+  showScorePopup, 
+  closeScorePopup
+} from "../shared/popup-built/score-popup.js?v=6"
+
+import "../04-suutram/share-bridge.js"
+
+window.showScorePopup = showScorePopup;
+window.closeScorePopup = closeScorePopup;
+ 
 const $ = (id) => document.getElementById(id);
 let source,
   run,
@@ -77,9 +88,10 @@ function render() {
     run.finished || run.choices.some((w, i) => !run.locked[i] && w === null);
   $("clear").disabled = run.finished;
 }
+
 function finish(outcome) {
   clearInterval(timer);
-  $("result").hidden = false;
+  $("result").hidden = outcome === "won";
   // Round-only result, never submitted to the leaderboard by this game.
   showCompletedScoreShare({
     score: run.score,
@@ -105,7 +117,38 @@ function finish(outcome) {
     outcome === "won" ? "success" : "error",
   );
   render();
+
+  if (outcome === "won"){
+    const finalScore = run.score; 
+
+    const completedIn = Math.min(60, Math.max(0, 
+      Math.floor((Date.now() - (run.deadline - 60000)) / 1000)
+    ));
+
+       const breakdown = {
+       wordPoints: 0,
+       completionPoints: 100,
+       speedBonus: 0,
+       hintPenalty: 0,
+      total: finalScore,
+      elapsedSeconds: completedIn,
+      hintsUsed: 0,
+      stars: completedIn < 20 ? 3 :
+             completedIn < 40 ? 2 : 1
+       };
+     showScorePopup({
+        title: `श्लोकः ${source.verse.ch}.${source.verse.vn}`,
+        breakdown: breakdown,
+        bestScore: finalScore,
+        leaderboard: `Leaderboard score saved: ${finalScore}/100`,
+        submittingScore: false,
+        onReplay: () => window.location.reload(),
+        onViewLeaderboard: () => window.location.assign("../../leaderboard/index.html"),
+        onBack: () => window.location.assign("../../")
+    });
+  }
 }
+
 function start() {
   clearCompletedScoreShare();
   try {

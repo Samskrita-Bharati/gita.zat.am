@@ -17,6 +17,7 @@
     <link rel="stylesheet" href="../../css/global.css" />
     <link rel="stylesheet" href="../shared/game-theme.css" />
     <link rel="stylesheet" href="./ordering-game.css" />
+    <link rel="stylesheet" href="../shared/popup-built/sanskrit-strands.css?v=6"/> 
     <script src="https://cdn.jsdelivr.net/npm/@sanskrit-coders/sanscript@1.1.0/sanscript.min.js"></script>
     <script
       type="text/javascript"
@@ -134,27 +135,29 @@
         if (firstCard) firstCard.focus();
       }
 
-      function showResult(finalScore) {
-        resultScoreElement.textContent = finalScore + " / 100";
-        resultDetailsElement.textContent =
-          "You ordered all " +
-          words.length +
-          " parts of this shloka in " +
-          formatTime(elapsedSeconds) +
-          " with " +
-          wrongMatches +
-          (wrongMatches === 1 ? " incorrect match." : " incorrect matches.");
-        scoreSaveStatusElement.className =
-          "zatam-game-status zatam-game-status-info";
-        scoreSaveStatusElement.textContent = "Saving your score...";
-        $("#successMessage").stop(true, true).css("opacity", 0).show().animate(
-          {
-            opacity: 1,
-          },
-          180,
-        );
-      }
+function showResult(finalScore) {
+    const breakdown = {
+        wordPoints: 0,
+        completionPoints: 100,
+        speedBonus: 0,
+        hintPenalty: 0,
+        total: finalScore,
+        elapsedSeconds: elapsedSeconds,
+        hintsUsed: 0,
+        stars: 3
+    };
 
+    showScorePopup({
+        title: `श्लोकः ${dailyVerse.ch}.${dailyVerse.vn}`,
+        breakdown: breakdown,
+        bestScore: finalScore,
+        leaderboard: `Leaderboard score saved: ${finalScore}/100`,
+        submittingScore: false,
+        onReplay: () => window.location.reload(),
+        onViewLeaderboard: () => window.location.assign("../../leaderboard/index.html"),
+        onBack: () => window.location.assign("../../")
+    });
+}
       async function saveCompletedScore(finalScore) {
         if (!window.orderingGameScore) {
           scoreSaveStatusElement.textContent =
@@ -599,6 +602,15 @@
         submitGameScore,
       } from "../shared/game-score.js";
 
+      
+      import {
+    showScorePopup,
+    closeScorePopup
+    } from "../shared/popup-built/score-popup.js?v=6";
+
+    import "../04-suutram/share-bridge.js";
+window.showScorePopup = showScorePopup;
+window.closeScorePopup = closeScorePopup;
       initGameScore({
         gameId: "018-as",
         gameName: "सुभाषितम्",

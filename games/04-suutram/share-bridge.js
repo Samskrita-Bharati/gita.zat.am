@@ -19,13 +19,16 @@ function refreshShareControl() {
     shareButton.className = "gg-strands-share-action";
     shareButton.dataset.ggStrandsShare = "true";
     shareButton.textContent = "✦ Share my score";
-    shareButton.addEventListener("click", () => {
-      openCompletedScoreShare();
+    shareButton.addEventListener("click", async() => {
+      const share  = await import(
+        new URL("../shared/score-share.js", window.location.href).href
+      );
+      share.openCompletedScoreShare();
     });
     // Insert before React's action row, leaving game controls untouched.
     card.insertBefore(shareButton, actions);
   }
-  shareButton.disabled = !hasCompletedScoreShare();
+  shareButton.disabled = false;
   shareButton.title = shareButton.disabled
     ? "Preparing your shareable result…"
     : "";
