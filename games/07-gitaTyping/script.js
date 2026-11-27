@@ -215,7 +215,7 @@ async function finishRound() {
   const breakdown = {
      wordPoints: 0,
      completionPoints: 100,
-     speedBonus: 0,
+     speedBonus: 0, 
      hintPenalty: 0,
      total: score,
      elapsedSeconds: 0,
