@@ -90,3 +90,31 @@
     line-height: 2.6;
   }
 }
+
+.fitb-mangalam {
+  margin: 0 0 1rem;
+  color: var(--accent-coral);
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.zatam-game-header .zatam-game-eyebrow {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-size: 1.125rem;
+  letter-spacing: normal;
+}
+
+.fitb-daily-references {
+  margin: 0 0 1rem;
+  padding: 0.75rem 1rem;
+
+  background: var(--cream-dark);
+  border-left: 4px solid var(--gold);
+  border-radius: var(--radius-sm);
+
+  color: var(--navy-dark);
+  font-size: var(--font-size-base);
+  font-weight: 700;
+  line-height: 1.7;
+}

@@ -149,6 +149,21 @@ function finish(outcome) {
   }
 }
 
+function showDailyShlokaReferences() {
+  const references = source.dailyVerses.map((verse) => {
+    const isCurrent =
+      String(verse.id) === String(source.verse.id);
+
+    return (
+      `Chapter ${verse.ch}, Verse ${verse.vn}` +
+      (isCurrent ? " (current)" : "")
+    );
+  });
+
+  $("dailyShlokaReferences").textContent =
+    `Daily shlokas: ${references.join(" • ")}`;
+}
+
 function start() {
   clearCompletedScoreShare();
   try {
@@ -158,6 +173,7 @@ function start() {
     selected = 0;
     $("intro").hidden = true;
     $("board").hidden = false;
+    showDailyShlokaReferences();
     $("result").hidden = true;
     $("time").textContent = "1:00";
     $("time").classList.remove("time-warning");
