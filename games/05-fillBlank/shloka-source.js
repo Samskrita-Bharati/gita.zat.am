@@ -98,6 +98,17 @@ export async function loadChallengeSource() {
     text,
     verse: verses[verseIndex],
     dayIndex,
-    ...adjacentDays(verses, dayIndex, VERSES_PER_DAY),
+
+    dailyVerses: versesForDay(
+      verses,
+      dayIndex,
+      VERSES_PER_DAY,
+    ),
+
+    ...adjacentDays(
+      verses,
+      dayIndex,
+      VERSES_PER_DAY,
+    ),
   };
 }

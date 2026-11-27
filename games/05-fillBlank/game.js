@@ -89,64 +89,154 @@ function render() {
   $("clear").disabled = run.finished;
 }
 
+function showShlokaMeaning() {
+  const verse = source?.verse;
+
+  const translation =
+    typeof verse?.translation === "string"
+      ? verse.translation.trim()
+      : "";
+
+  const meaning =
+    typeof verse?.meaning === "string"
+      ? verse.meaning.trim()
+      : "";
+
+  if (translation) {
+    $("meaningText").textContent = translation;
+
+    $("meaningDescription").textContent =
+      "English translation of this shloka.";
+  } else {
+    const englishParts = meaning
+      .split(";")
+      .map((entry) => {
+        const separator = entry.indexOf("—");
+
+        return separator >= 0
+          ? entry.slice(separator + 1).trim()
+          : "";
+      })
+      .filter(Boolean);
+
+    $("meaningText").textContent =
+      englishParts.length > 0
+        ? englishParts.join("; ")
+        : "An English meaning is not available for this shloka.";
+
+    $("meaningDescription").textContent =
+      "English word meanings from this shloka.";
+  }
+
+  $("meaningSection").hidden = false;
+}
+
 function finish(outcome) {
+  if (run.resultShown) return;
+
+  run.resultShown = true;
+
   clearInterval(timer);
+
+  const finalScore = run.score;
+
+  const completedIn = Math.min(
+    60,
+    Math.max(
+      0,
+      Math.floor(
+        (Date.now() - (run.deadline - 60000)) / 1000,
+      ),
+    ),
+  );
+
+  // Successful rounds use the shared popup.
   $("result").hidden = outcome === "won";
-  // Round-only result, never submitted to the leaderboard by this game.
-  showCompletedScoreShare({
-    score: run.score,
-    gameId: "059-fitb",
-    gameName: "Fill in the Blanks",
-    levelName: "Shloka challenge",
-  });
+
   $("resultTitle").textContent =
     outcome === "won"
       ? "Shloka complete!"
       : outcome === "timeout"
         ? "Time is up"
         : "No submissions left";
-  $("finalScore").textContent = `${run.score} / 100`;
+
+  $("finalScore").textContent = `${finalScore} / 100`;
+
   $("details").textContent =
     outcome === "won"
       ? `Solved on submission ${run.submissions} of 5.`
       : "Try another round when you are ready.";
+
   say(
     outcome === "won"
       ? "All three words are correct. Well done!"
       : "Round finished.",
     outcome === "won" ? "success" : "error",
   );
+
   render();
 
-  if (outcome === "won"){
-    const finalScore = run.score; 
+  // Meaning remains on the page after closing the popup.
+  showShlokaMeaning();
 
-    const completedIn = Math.min(60, Math.max(0, 
-      Math.floor((Date.now() - (run.deadline - 60000)) / 1000)
-    ));
+  // Preserve your existing score-sharing integration.
+  showCompletedScoreShare({
+    score: finalScore,
+    gameId: "059-fitb",
+    gameName: "Fill in the Blanks",
+    levelName: "Shloka challenge",
+  });
 
-       const breakdown = {
-       wordPoints: 0,
-       completionPoints: 100,
-       speedBonus: 0,
-       hintPenalty: 0,
-      total: finalScore,
-      elapsedSeconds: completedIn,
-      hintsUsed: 0,
-      stars: completedIn < 20 ? 3 :
-             completedIn < 40 ? 2 : 1
-       };
-     showScorePopup({
-        title: `श्लोकः ${source.verse.ch}.${source.verse.vn}`,
-        breakdown: breakdown,
-        bestScore: finalScore,
-        leaderboard: `Leaderboard score saved: ${finalScore}/100`,
-        submittingScore: false,
-        onReplay: () => window.location.reload(),
-        onViewLeaderboard: () => window.location.assign("../../leaderboard/index.html"),
-        onBack: () => window.location.assign("../../")
-    });
-  }
+  if (outcome !== "won") return;
+
+  const breakdown = {
+    wordPoints: 0,
+    completionPoints: finalScore,
+    speedBonus: 0,
+    hintPenalty: 0,
+    total: finalScore,
+    elapsedSeconds: completedIn,
+    hintsUsed: 0,
+    stars:
+      completedIn < 20
+        ? 3
+        : completedIn < 40
+          ? 2
+          : 1,
+  };
+
+  showScorePopup({
+    title: `श्लोकः ${source.verse.ch}.${source.verse.vn}`,
+    breakdown,
+    bestScore: finalScore,
+    leaderboard:
+      `Round score: ${finalScore}/100. Not submitted to leaderboard.`,
+    submittingScore: false,
+
+    onReplay: () => {
+      closeScorePopup();
+      start();
+    },
+
+    onViewLeaderboard: () => {
+      window.location.assign(
+        "../../leaderboard/index.html",
+      );
+    },
+
+    onBack: () => {
+      window.location.assign("../../");
+    },
+  });
+}
+
+function showDailyShlokaReferences() {
+  const references = source.dailyVerses.map(
+    (verse) => `Chapter ${verse.ch}, Verse ${verse.vn}`,
+  );
+
+  $("dailyShlokaReferences").textContent =
+    `Daily shlokas: ${references.join(" • ")}`;
 }
 
 function start() {
@@ -158,7 +248,10 @@ function start() {
     selected = 0;
     $("intro").hidden = true;
     $("board").hidden = false;
+    showDailyShlokaReferences();
     $("result").hidden = true;
+    $("meaningSection").hidden = true;
+    $("meaningText").textContent = "";
     $("time").textContent = "1:00";
     $("time").classList.remove("time-warning");
     say("Select a blank, then choose its missing word.");

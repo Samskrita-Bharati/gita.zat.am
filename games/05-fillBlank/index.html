@@ -21,7 +21,10 @@
     <div id="navbar-mount"></div>
     <main class="zatam-game-shell fill-shell">
       <header class="zatam-game-header">
-        <span class="zatam-game-eyebrow">Daily shloka challenge</span>
+        <p class="fitb-mangalam" lang="sa">॥ श्रीः ॥</p>
+        <span class="zatam-game-eyebrow" lang="sa">
+          रिक्तस्थानपूर्तिः
+        </span>
         <h1 class="zatam-game-title">Fill in the Blank</h1>
         <p class="zatam-game-subtitle">
           Three missing words. Nine choices. One minute.
@@ -72,6 +75,10 @@
         </div>
         <div id="board" hidden>
           <p
+            id="dailyShlokaReferences"
+            class="fitb-daily-references"
+          ></p>
+          <p
             id="verse"
             lang="sa"
             aria-label="Shloka with three missing words"
@@ -94,6 +101,26 @@
         >
           Loading the selected shloka…
         </p>
+      </section>
+      <section
+        id="meaningSection"
+        class="zatam-game-card shloka-meaning"
+        aria-labelledby="meaningTitle"
+        hidden
+      >
+        <h2
+          id="meaningTitle"
+          class="zatam-game-section-title"
+        >
+          English Meaning
+        </h2>
+
+        <p
+          id="meaningDescription"
+          class="meaning-description"
+        ></p>
+
+        <p id="meaningText" lang="en"></p>
       </section>
       <section id="result" class="zatam-game-result" hidden>
         <h2 id="resultTitle" class="zatam-game-result-title"></h2>
