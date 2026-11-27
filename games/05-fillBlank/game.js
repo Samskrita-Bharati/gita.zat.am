@@ -231,15 +231,9 @@ function finish(outcome) {
 }
 
 function showDailyShlokaReferences() {
-  const references = source.dailyVerses.map((verse) => {
-    const isCurrent =
-      String(verse.id) === String(source.verse.id);
-
-    return (
-      `Chapter ${verse.ch}, Verse ${verse.vn}` +
-      (isCurrent ? " (current)" : "")
-    );
-  });
+  const references = source.dailyVerses.map(
+    (verse) => `Chapter ${verse.ch}, Verse ${verse.vn}`,
+  );
 
   $("dailyShlokaReferences").textContent =
     `Daily shlokas: ${references.join(" • ")}`;
