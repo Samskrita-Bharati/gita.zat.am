@@ -8,12 +8,27 @@
     <link rel="stylesheet" href="../../css/global.css">
     <link rel="stylesheet" href="../../css/global.css">
     <link rel="stylesheet" href="../shared/game-theme.css">
+    <link rel="stylesheet" href="../shared/popup-built/sanskrit-strands.css?v=6">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="style.css">
     <meta name="viewport" content="width=device-width, initial-scale=1" >
     <script type="module">
       import {openScoreShare,showCompletedScoreShare,clearCompletedScoreShare} from "../shared/score-share.js";
-      window.ggScoreShare={openScoreShare,showCompletedScoreShare,clearCompletedScoreShare};
+      import {
+        showScorePopup, 
+        closeScorePopup
+      } from "../shared/popup-built/score-popup.js?v=6"
+     
+      import "../04-suutram/share-bridge.js";
+      window.ggScoreShare={
+        openScoreShare,
+        showCompletedScoreShare,
+        clearCompletedScoreShare
+      };
+
+      window.showScorePopup = showScorePopup;
+      window.closeScorePopup = closeScorePopup;
+
     </script>
     <script src="script.js" defer></script>
     <link rel="icon" href="Gita_typing_game.png" type="image/x-icon">
@@ -57,7 +72,7 @@
         </div>
       </section>
     </main>
-    <dialog
+    <!-- <dialog
       id="bp26CelebrateOverlay"
       class="typing-result-dialog"
       aria-labelledby="bp26CelebrateTitle"
@@ -85,7 +100,7 @@
           Close
         </button>
       </form>
-    </dialog>
+    </dialog> -->
     <script>
       // Old offline caches contain an unauthenticated game page.
       // Disable this game's legacy service worker and delete its cache.
