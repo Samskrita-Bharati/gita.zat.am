@@ -13,7 +13,8 @@
     <title>BodhaPlay scrambler</title>
     <link rel="stylesheet" href="../../css/global.css" />
     <link rel="stylesheet" href="../shared/game-theme.css" />
-    <style>
+    <link rel="stylesheet" href="../shared/popup-built/sanskrit-strands.css?v=6">
+   <style>
       #z18-game-frame {
         position: relative;
         width: min(100%, 1024px);
@@ -119,6 +120,17 @@
         submitGameScore,
         scoreFromPenalties,
       } from "../shared/game-score.js";
+
+      import {
+          showScorePopup,
+          closeScorePopup
+      }  from "../shared/popup-built/score-popup.js?v=6";
+
+      import "../04-suutram/share-bridge.js";
+
+      window.showScorePopup = showScorePopup;
+      window.closeScorePopup = closeScorePopup;
+
       import { openScoreShare } from "../shared/score-share.js";
       import { cleanShlokaText } from "../../shlokasToday/shlokasToday.js";
       import { GAME_CONFIG } from "./config.js";
@@ -282,46 +294,26 @@
             mistakePenalty: 2,
             hintPenalty: GAME_CONFIG.revealedWordPenalty,
           });
-          // Finished-game presentation only. ZIM still handles gameplay,
-          // and the score formula, Firebase submission and replay behavior are unchanged.
-          const overlay = document.createElement("div");
-          overlay.className = "z18-result-overlay";
-          overlay.setAttribute("role", "dialog");
-          overlay.setAttribute("aria-modal", "true");
-          overlay.setAttribute("aria-labelledby", "z18-result-title");
-          overlay.innerHTML = `
-            <section class="z18-result-card">
-              <p class="z18-result-eyebrow">Round complete</p>
-              <h2 class="z18-result-title" id="z18-result-title">BodhaPlay शब्दावली</h2>
-              <p class="z18-result-context" id="z18-result-context"></p>
-              <div class="z18-result-score-panel">
-                <div class="z18-result-score-label">Your score</div>
-                <div class="z18-result-score-value"><strong id="z18-result-score"></strong><span>/ 100</span></div>
-                <p class="z18-result-moves">Total moves: <strong id="z18-result-moves"></strong></p>
-              </div>
-              <p class="z18-result-status" id="z18-result-status" role="status" aria-live="polite">Saving score…</p>
-              <div class="z18-result-actions">
-                <button type="button" class="z18-result-button z18-result-button-share" id="z18-result-share">Share score</button>
-                <div class="z18-result-secondary-actions">
-                  <button type="button" class="z18-result-button" id="z18-result-done">Done</button>
-                  <button type="button" class="z18-result-button" id="z18-result-replay">पुनः Play again</button>
-                </div>
-              </div>
-            </section>`;
-          frameElement.append(overlay);
-          overlay.querySelector("#z18-result-context").textContent = gameId ? `Shloka ${gameId}` : "Daily shloka";
-          overlay.querySelector("#z18-result-score").textContent = String(finalScore);
-          overlay.querySelector("#z18-result-moves").textContent = String(totalMoves);
-          const status = overlay.querySelector("#z18-result-status");
-          overlay.querySelector("#z18-result-share").addEventListener("click", () => openScoreShare({
-            score: finalScore,
-            gameId: "z18",
-            gameName: "BodhaPlay शब्दावली",
-            levelName: gameId ? `Shloka ${gameId}` : "Daily shloka",
-          }));
-          overlay.querySelector("#z18-result-done").addEventListener("click", () => overlay.remove());
-          overlay.querySelector("#z18-result-replay").addEventListener("click", () => window.location.reload());
-          overlay.querySelector("#z18-result-share").focus();
+            const breakdown = {
+            wordPoints: 0,
+            completionPoints: 100,
+            speedBonus: 0,
+            hintPenalty: extraMoves * 2 + giveUpCount * GAME_CONFIG.revealedWordPenalty,
+            total: finalScore,
+            elapsedSeconds: 0,
+            hintsUsed: giveUpCount,
+            stars: finalScore >=90 ? 3 : finalScore >= 70 ?2 : 1,
+         };
+         showScorePopup({
+            title: `श्लोकः ${verseReference.ch}.${verseReference.vn}`,
+            breakdown: breakdown,
+            bestScore: finalScore,
+            leaderboard: `Leaderboard score saved: ${finalScore}/100`,
+            submittingScore: false,
+            onReplay: () => window.location.reload(),
+            onViewLeaderboard: () => window.location.assign("../../leaderboard/index.html"),
+            onBack: () => window.location.assign("../../")
+         })
           submitGameScore(finalScore, {
             metrics: {
               totalMoves,
