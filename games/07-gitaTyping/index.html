@@ -31,8 +31,8 @@
 
       <section class="zatam-game-card typing-card" aria-label="Typing challenge">
         <p id="info">
-          Type both of today’s shlokas in order, matching uppercase and lowercase letters.
-          Each mistake costs 5 points. Finish both to see your score and the English meanings.
+          Type today’s shloka, matching uppercase and lowercase letters.
+          Each mistake costs 5 points. Finish to see your score and the English meaning.
         </p>
 
         <p id="reference"></p>
@@ -57,6 +57,35 @@
         </div>
       </section>
     </main>
+    <dialog
+      id="bp26CelebrateOverlay"
+      class="typing-result-dialog"
+      aria-labelledby="bp26CelebrateTitle"
+      aria-describedby="bp26CelebrateSub"
+    >
+      <p class="typing-result-kicker">GG · ZAT.AM</p>
+      <div class="typing-result-sparkle" aria-hidden="true">✦</div>
+      <h2 id="bp26CelebrateTitle">Shloka complete!</h2>
+      <p id="bp26CelebrateSub"></p>
+
+      <div class="typing-result-score">
+        <span>FINAL SCORE</span>
+        <strong id="bp26CelebrateScoreValue">0</strong>
+        <small>OUT OF 100</small>
+      </div>
+
+      <p id="typingResultStatus" role="status"></p>
+
+      <form id="bp26CelebrateActions" class="zatam-game-actions" method="dialog">
+        <button
+          type="submit"
+          class="zatam-game-btn zatam-game-btn-secondary"
+          autofocus
+        >
+          Close
+        </button>
+      </form>
+    </dialog>
     <script>
       // Old offline caches contain an unauthenticated game page.
       // Disable this game's legacy service worker and delete its cache.

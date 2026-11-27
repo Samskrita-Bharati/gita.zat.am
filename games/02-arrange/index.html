@@ -47,6 +47,7 @@
       var dailyVerse = null;
       var dailyDate = null;
       var todayIds = [];
+      var tutorialOpen = false;
 
       $(function () {
         void loadDailyGame();
@@ -98,7 +99,7 @@
       }
 
       function startTimer() {
-        if (hasStarted || !gameActive) return;
+        if (hasStarted || !gameActive || tutorialOpen) return;
 
         hasStarted = true;
         if (window.orderingGameScore) window.orderingGameScore.reset();
@@ -113,6 +114,25 @@
 
         window.clearInterval(timerId);
         timerId = null;
+      }
+
+      function showTutorial() {
+        var tutorial = document.getElementById("howToPlayModal");
+        tutorialOpen = Boolean(tutorial);
+        if (!tutorial) return;
+
+        tutorial.hidden = false;
+        var button = document.getElementById("howToPlayStart");
+        if (button) button.focus();
+      }
+
+      function closeTutorial() {
+        var tutorial = document.getElementById("howToPlayModal");
+        if (tutorial) tutorial.hidden = true;
+        tutorialOpen = false;
+
+        var firstCard = document.querySelector("#cardPile > div");
+        if (firstCard) firstCard.focus();
       }
 
 function showResult(finalScore) {
@@ -242,6 +262,7 @@ function showResult(finalScore) {
       }
 
       function selectCard(card) {
+        if (tutorialOpen) return;
         startTimer();
         if (card.hasClass("correct")) return;
 
@@ -264,6 +285,7 @@ function showResult(finalScore) {
       }
 
       function selectSlot(slot) {
+        if (tutorialOpen) return;
         if (slot.data("matched")) return;
 
         if (!selectedCard) {
@@ -389,10 +411,11 @@ function showResult(finalScore) {
             });
         }
         shuffle();
+        showTutorial();
       }
 
       function matchCardToSlot(slot, card) {
-        if (!gameActive) return;
+        if (!gameActive || tutorialOpen) return;
         startTimer();
         var slotNumber = slot.data("number");
         var cardNumber = card.data("number");
@@ -460,6 +483,7 @@ function showResult(finalScore) {
         <p class="mangalam">॥ श्रीः ॥</p>
         <span class="zatam-game-eyebrow">क्रमक्रीडा</span>
         <h1 class="zatam-game-title">सुभाषितम्</h1>
+        <p class="ordering-game-english-name">Arrange the Shloka</p>
         <p class="zatam-game-subtitle">
           Arrange today’s shloka in its proper order. Select a number, then
           select the matching part.
@@ -534,6 +558,36 @@ function showResult(finalScore) {
         >
           पुनः (punaH) Again
         </button>
+      </section>
+
+      <section
+        id="howToPlayModal"
+        class="ordering-tutorial-backdrop"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="howToPlayTitle"
+        hidden
+      >
+        <div class="ordering-tutorial-card">
+          <p class="ordering-tutorial-eyebrow">Quick tutorial</p>
+          <h2 id="howToPlayTitle">How to Play</h2>
+          <ol class="ordering-tutorial-steps">
+            <li><span>1</span><p>Select a numbered card.</p></li>
+            <li><span>2</span><p>Select the shloka part that belongs in that position.</p></li>
+            <li><span>3</span><p>Match every card correctly to complete the shloka.</p></li>
+          </ol>
+          <p class="ordering-tutorial-note">
+            Your timer starts only after you close these instructions.
+          </p>
+          <button
+            id="howToPlayStart"
+            class="zatam-game-btn zatam-game-btn-primary ordering-tutorial-start"
+            type="button"
+            onclick="closeTutorial()"
+          >
+            Got it
+          </button>
+        </div>
       </section>
 
       <footer class="ordering-footer">

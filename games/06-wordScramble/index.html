@@ -10,7 +10,7 @@
     <script type="module" src="../shared/auth-guard.js"></script>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>BodhaPlay scrambler</title>
+    <title>Word Scramble</title>
     <link rel="stylesheet" href="../../css/global.css" />
     <link rel="stylesheet" href="../shared/game-theme.css" />
     <link rel="stylesheet" href="../shared/popup-built/sanskrit-strands.css?v=6">
@@ -29,6 +29,27 @@
         width: 100% !important;
         height: 100% !important;
       }
+		#z18-how-to-play {
+			position: absolute; z-index: 5; right: 8px;
+			width: 28px; height: 28px; padding: 0; border: 1.5px solid var(--gold-light);
+			border-radius: 50%; background: transparent; color: var(--gold-light);
+			font: 700 17px/1 system-ui,sans-serif; cursor: pointer;
+		}
+		#z18-how-to-play:focus-visible { outline: 2px solid var(--gold-light); outline-offset: 3px; }
+		#z18-help-dialog {
+			width: min(520px, calc(100vw - 32px)); max-height: calc(100vh - 40px);
+			padding: 0; border: 1px solid #e7d8bf; border-radius: 16px;
+			color: var(--navy-dark); background: var(--cream);
+			box-shadow: 0 20px 55px rgba(7,27,48,.3);
+			font-family: system-ui,-apple-system,"Segoe UI",Arial,sans-serif;
+		}
+		#z18-help-dialog::backdrop { background: rgba(8,28,51,.58); }
+		.z18-help-content { padding: 24px; }
+		.z18-help-content h2 { margin: 0 0 16px; font-size: 22px; }
+		.z18-help-content h3 { margin: 17px 0 7px; font-size: 16px; }
+		.z18-help-content p,.z18-help-content li { font-size: 14px; line-height: 1.55; }
+		.z18-help-content ol { padding-left: 22px; }
+		.z18-help-close { float: right; border: 0; background: transparent; color: var(--navy-dark); font-size: 25px; cursor: pointer; }
 		/* Responsive results UI only: gameplay continues to render in ZIM canvas. */
 		#z18-game-frame .z18-result-overlay {
 			position: absolute; inset: 0; z-index: 100; display: flex;
@@ -136,6 +157,11 @@
       import { GAME_CONFIG } from "./config.js";
       import zim from "https://zimjs.org/cdn/019/zim_pizzazz";
       const rootStyles = getComputedStyle(document.documentElement);
+      const helpDialog = document.getElementById("z18-help-dialog");
+      helpDialog.querySelector(".z18-help-close").addEventListener("click", () => helpDialog.close());
+      helpDialog.addEventListener("click", (event) => {
+        if (event.target === helpDialog) helpDialog.close();
+      });
       const rootColor = (name) => rootStyles.getPropertyValue(name).trim();
       const themeColors = {
         navy: rootColor("--navy"),
@@ -294,26 +320,32 @@
             mistakePenalty: 2,
             hintPenalty: GAME_CONFIG.revealedWordPenalty,
           });
+          // Finished-game presentation only. ZIM still handles gameplay,
+          // and the score formula, Firebase submission and replay behavior are unchanged.
             const breakdown = {
             wordPoints: 0,
             completionPoints: 100,
             speedBonus: 0,
-            hintPenalty: extraMoves * 2 + giveUpCount * GAME_CONFIG.revealedWordPenalty,
+            hintPenalty: extraMoves * 2 + giveUpCount *
+                         GAME_CONFIG.revealedWordPenalty,
             total: finalScore,
             elapsedSeconds: 0,
             hintsUsed: giveUpCount,
-            stars: finalScore >=90 ? 3 : finalScore >= 70 ?2 : 1,
+            stars: finalScore >= 90 ? 3 : finalScore >= 70 ? 20 : 1
          };
-         showScorePopup({
-            title: `श्लोकः ${verseReference.ch}.${verseReference.vn}`,
-            breakdown: breakdown,
-            bestScore: finalScore,
-            leaderboard: `Leaderboard score saved: ${finalScore}/100`,
-            submittingScore: false,
-            onReplay: () => window.location.reload(),
-            onViewLeaderboard: () => window.location.assign("../../leaderboard/index.html"),
-            onBack: () => window.location.assign("../../")
-         })
+
+         
+      showScorePopup({
+        title: `श्लोकः ${verseReference.ch}.${verseReference.vn}`,
+        breakdown: breakdown,
+        bestScore: finalScore,
+        leaderboard: `Leaderboard score saved: ${finalScore}/100`,
+        submittingScore: false,
+        onReplay: () => window.location.reload(),
+        onViewLeaderboard: () => window.location.assign("../../leaderboard/index.html"),
+        onBack: () => window.location.assign("../../")
+    });
+
           submitGameScore(finalScore, {
             metrics: {
               totalMoves,
@@ -453,7 +485,7 @@
       }
       initGameScore({
         gameId: "z18",
-        gameName: "BodhaPlay शब्दावली",
+        gameName: "Word Scramble",
         levelId: gameId ? String(gameId) : "daily",
         levelName: gameId ? `Shloka ${gameId}` : "Daily shloka",
       });
@@ -529,6 +561,17 @@
           0,
           10 * widthScale,
         ).addTo();
+        const helpLink = document.createElement("button");
+        helpLink.type = "button";
+        helpLink.id = "z18-how-to-play";
+        helpLink.textContent = "?";
+        helpLink.setAttribute("aria-label", "How to Play");
+        const helpButtonSize = Math.min(28, barHeight - 6);
+        helpLink.style.width = `${helpButtonSize}px`;
+        helpLink.style.height = `${helpButtonSize}px`;
+        helpLink.style.top = `${(barHeight - helpButtonSize) / 2}px`;
+        helpLink.addEventListener("click", () => helpDialog.showModal());
+        frameElement.append(helpLink);
         F.makeIcon({ box: themeColors.navy })
           .scaleTo(bar, 90, 90)
           .loc(10 * widthScale, 3 * widthScale);
@@ -695,5 +738,15 @@
   <body data-page="games" class="zatam-themed-game">
     <div id="navbar-mount"></div>
     <div id="z18-game-frame"></div>
+    <dialog id="z18-help-dialog" aria-labelledby="z18-help-title">
+      <div class="z18-help-content">
+        <button class="z18-help-close" type="button" aria-label="Close help">&times;</button>
+        <h2 id="z18-help-title">How to Play</h2>
+        <h3>How to play</h3>
+        <p>Drag the letter tiles to unscramble all five words from the verse. Reveal a word if you get stuck.</p>
+        <h3>Scoring</h3>
+        <p>Start with 100 points. Each extra move costs 2 points; each revealed word costs 20. Minimum score: 0.</p>
+      </div>
+    </dialog>
   </body>
 </html>

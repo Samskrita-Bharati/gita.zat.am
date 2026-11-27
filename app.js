@@ -41,7 +41,7 @@ export const menu = [
   },
   {
     id: 6,
-    title: "BodhaPlay: शब्दावली",
+    title: "Word Scramble",
     pickerLabel: "Scramble",
     dir: "games/06-wordScramble",
     cover: "./games/06-wordScramble/cover.svg",
