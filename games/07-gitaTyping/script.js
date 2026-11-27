@@ -4,14 +4,14 @@ const quote = document.getElementById("quote");
 const input = document.getElementById("typedValue");
 const message = document.getElementById("message");
 const meaning = document.getElementById("meaning");
-const resultDialog = document.getElementById("bp26CelebrateOverlay");
-const resultSubtitle = document.getElementById("bp26CelebrateSub");
-const resultScore = document.getElementById("bp26CelebrateScoreValue");
-const resultStatus = document.getElementById("typingResultStatus");
+// const resultDialog = document.getElementById("bp26CelebrateOverlay");
+// const resultSubtitle = document.getElementById("bp26CelebrateSub");
+// const resultScore = document.getElementById("bp26CelebrateScoreValue");
+// const resultStatus = document.getElementById("typingResultStatus");
 
-resultDialog.addEventListener("close", () => {
-  if (!start.disabled) start.focus();
-});
+// resultDialog.addEventListener("close", () => {
+//   if (!start.disabled) start.focus();
+// });
 
 let gameData;
 let round;
@@ -199,7 +199,6 @@ input.addEventListener("input", (event) => {
     void finishRound();
   }
 });
-
 async function finishRound() {
   playing = false;
   input.hidden = true;
@@ -213,13 +212,18 @@ async function finishRound() {
   start.hidden = false;
   start.disabled = true;
 
-  resultSubtitle.textContent = `Chapter ${shloka.verse.ch}, Shloka ${shloka.verse.vn} · Mistakes: ${mistakes}`;
-  resultScore.textContent = String(score);
-  resultStatus.textContent = "Saving score…";
-  message.textContent = `${summary} · Saving score…`;
-  resultDialog.showModal();
-
-  let saveStatus;
+  const breakdown = {
+     wordPoints: 0,
+     completionPoints: 100,
+     speedBonus: 0, 
+     hintPenalty: 0,
+     total: score,
+     elapsedSeconds: 0,
+     hintsUsed: 0,
+     stars: score >= 90 ? 3 : score >= 70 ? 2 : 1
+  }
+  message.textContent = `${summary} · Saving score…`
+    let saveStatus;
   try {
     if (!gameData.scorer) {
       saveStatus = "Leaderboard unavailable.";
@@ -235,7 +239,7 @@ async function finishRound() {
       });
 
       if (result.ok) {
-        saveStatus = "Score saved to the leaderboard.";
+        saveStatus = `Leaderboard score saved: ${score}/100`;
       } else if (result.reason === "not-signed-in") {
         saveStatus = "Sign in to save future scores.";
       } else if (result.reason === "already-submitted") {
@@ -248,9 +252,19 @@ async function finishRound() {
     console.error("Could not confirm the typing score save.", error);
     saveStatus = "Could not confirm the leaderboard save.";
   } finally {
-    resultStatus.textContent = saveStatus;
+    // resultStatus.textContent = saveStatus;
     message.textContent = `${summary} · ${saveStatus}`;
     start.disabled = false;
-    if (!resultDialog.open) start.focus();
+
+   window.showScorePopup({
+        title: `श्लोकः ${shloka.verse.ch}.${shloka.verse.vn}`,
+        breakdown: breakdown,
+        bestScore: score,
+        leaderboard: saveStatus,
+        submittingScore: false,
+        onReplay: () => window.location.reload(),
+        onViewLeaderboard: () => window.location.assign("../../leaderboard/index.html"),
+        onBack: () => window.location.assign("../../")
+    });
   }
 }
